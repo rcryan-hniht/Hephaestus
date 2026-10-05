@@ -1,0 +1,8 @@
+node_modules
+dist
+.vercel
+.mcp.json
+AGENTS.md
+.claude
+.gemini
+.codex
