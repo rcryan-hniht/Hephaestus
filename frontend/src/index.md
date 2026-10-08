@@ -34,7 +34,7 @@ Logo Hephaestus bên trái. Tên bản vẽ và trạng thái xử lý ở giữ
 
 ### Canvas 3D trung tâm
 
-- Canvas chiếm phần lớn màn hình, nền đen với cấu kiện đủ tương phản.
+- Canvas chiếm phần lớn màn hình, mặc định nền trắng/xám nhạt theo tham chiếu mô hình kiến trúc; có thể chuyển nền tối. Cấu kiện và đường cạnh phải tương phản với nền đang chọn.
 - Tự hiển thị mô hình sau khi dựng xong, camera fit toàn bộ công trình.
 - Thanh công cụ: “Phối cảnh”, “Mặt bằng”, “Mặt đứng”, “Đặt lại góc nhìn”, “Vừa khung”.
 - Bộ chọn tầng, bật/tắt mái, tường, cửa, cột, sàn và kích thước.
@@ -48,6 +48,21 @@ Khi chọn cấu kiện, hiển thị loại, tầng, kích thước, nguồn b�
 ### Di động
 
 Canvas ở trung tâm, công cụ có nhãn rõ ràng. Bảng bản vẽ và thuộc tính mở dưới dạng ngăn kéo; không che toàn bộ mô hình cùng lúc. Hỗ trợ một ngón xoay, hai ngón pan/pinch zoom. Không có cuộn ngang trang.
+
+## Tham chiếu kết quả 3D sau khi nạp bản vẽ chi tiết
+
+Ảnh người dùng cung cấp là tham chiếu cho cách trình bày mô hình đầu ra: một công trình kiến trúc nhiều tầng nhìn từ góc phối cảnh trên cao, có nền khu đất, tường bao, sàn, mái, cửa và các cấu kiện bên trong nhìn thấy được.
+
+- Chế độ mặc định sau khi dựng: “Kiến trúc”, nền canvas trắng hoặc xám rất nhạt để đọc rõ hình khối như ảnh tham chiếu. Phần điều khiển bên ngoài canvas vẫn giữ giao diện đen/trắng.
+- Mô hình dùng bề mặt trắng/xám trung tính, đường cạnh xám mảnh và bóng tiếp xúc nhẹ; không dùng màu sắc hoặc hiệu ứng khúc xạ làm mất chi tiết bản vẽ.
+- Tường, kính và một số bề mặt có thể bán trong suốt để quan sát không gian bên trong. Có điều khiển mức trong suốt; chế độ đặc vẫn phải đọc rõ cấu kiện.
+- Tách nhóm tường, sàn, mái, cửa, cửa sổ, cột, cầu thang và phần khu đất khi bản vẽ cung cấp dữ liệu tương ứng.
+- Có đường nét mặt bằng trên nền khu đất để đối chiếu vị trí công trình khi nguồn có mặt bằng tổng thể; không tự thêm ranh giới hoặc cảnh quan không có trong dữ liệu.
+- Camera ban đầu ở góc phối cảnh chéo từ trên cao, fit toàn bộ công trình và khu đất. Người dùng có thể orbit, pan, zoom và chuyển sang hình chiếu trực giao.
+- Bật/tắt mái, ẩn tầng phía trên hoặc dùng mặt cắt để xem các tầng dưới; cấu kiện vẫn chọn được riêng lẻ.
+- Ưu tiên chất lượng đường cạnh và thứ tự hiển thị bề mặt trong suốt, tránh nhấp nháy, đường cạnh xuyên sai và che khuất lựa chọn.
+
+Ảnh chỉ quy định phong cách hiển thị và mức chi tiết mong muốn, không phải công trình mẫu để sao chép. Hình khối, số tầng, lỗ mở, cầu thang, cao độ và kích thước phải được dựng từ bản vẽ người dùng nạp. Nếu bản vẽ chưa đủ dữ liệu để tạo chi tiết như ảnh, đánh dấu phần thiếu hoặc giả định và cho phép bổ sung mặt đứng, mặt cắt hoặc thông số.
 
 ## Đầu vào và cách dựng mô hình
 
@@ -110,7 +125,7 @@ Khi thay tệp, giữ mô hình hiện tại cho đến khi mô hình mới hợ
 - Không merge toàn bộ mô hình thành một mesh làm mất khả năng chọn, ẩn và sửa từng cấu kiện.
 - Giữ kích thước thật; fit camera bằng bounding box thay vì scale mô hình về khối có cạnh 1.
 - Antialias, pixel ratio tối đa 2; ResizeObserver trên vùng canvas.
-- Dùng flat/toon shading rõ cấu trúc, không áp shader kính khúc xạ lên toàn bộ công trình.
+- Dùng vật liệu trắng/xám và đường cạnh rõ cấu trúc theo ảnh tham chiếu. Có chế độ bán trong suốt và bóng tiếp xúc nhẹ; không áp shader kính khúc xạ lên toàn bộ công trình.
 - Tác vụ parse nặng phía trình duyệt chạy trong Web Worker khi phù hợp.
 - Giải phóng geometry, material, texture, renderer và listener khi thay mô hình hoặc teardown.
 - Có thông báo khi WebGL không khả dụng; bản vẽ 2D vẫn xem được.
@@ -127,4 +142,5 @@ Không giữ yêu cầu “một HTML standalone, không backend” của hero c
 - File lỗi, file không hỗ trợ và tác vụ bị hủy có trạng thái rõ ràng.
 - Kết quả tác vụ cũ không thay thế bản vẽ mới; sửa tham số và hoàn tác cập nhật đúng mô hình.
 - UI hoạt động trên desktop/mobile, không cuộn ngang, canvas resize đúng.
+- Kết quả có phong cách mô hình kiến trúc trắng/xám, đường cạnh mảnh và chế độ bán trong suốt như ảnh tham chiếu; các chi tiết phải đối chiếu được với bản vẽ đầu vào.
 - Không dùng cube cố định hoặc công trình dựng sẵn làm kết quả nhận dạng.
