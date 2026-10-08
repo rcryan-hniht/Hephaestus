@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Design World — Explore New Ideas</title>
+<meta name="description" content="An interactive 3D architecture visualizer. Explore every angle of the building before it is built.">
+<title>Hephaestus — every angle of the building, before it's built</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -34,12 +35,12 @@ a:focus-visible,button:focus-visible{outline:2px solid #fff;outline-offset:6px}.
 <section class="hero" id="hero">
 <canvas id="scene" aria-label="Rotatable glass cube. Drag to rotate."></canvas>
 <div class="ui">
-<h1 class="sr-only">Explore New Ideas</h1>
-<header class="nav"><a href="#" class="logo"><i class="logo-mark" aria-hidden="true"></i><b>Design</b><span>World</span></a><ul class="nav-links"><li><a href="#">Home</a></li><li><a href="#">Portfolio</a></li><li><a href="#">Contact Us</a></li></ul></header>
+<h1 class="sr-only">Every angle of the building, before it's built.</h1>
+<header class="nav"><a href="#" class="logo"><i class="logo-mark" aria-hidden="true"></i><b>Hephaestus</b></a><ul class="nav-links"><li><a href="#hero" data-view="sketches">Sketches</a></li><li><a href="#hero" data-view="structure">Structure</a></li><li><a href="mailto:studio@hephaestus.dev">Contact</a></li></ul></header>
 <div class="arrows"><button class="arrow" id="prev" aria-label="Rotate cube left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button><button class="arrow" id="next" aria-label="Rotate cube right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
 <nav class="dots" aria-label="Select slide"><button class="dot" aria-label="Slide 1" aria-pressed="false"></button><button class="dot active" aria-label="Slide 2" aria-pressed="true"></button><button class="dot" aria-label="Slide 3" aria-pressed="false"></button></nav>
-<p class="tagline">Let's Build the<br>Future of <strong>Design.</strong></p>
-<div class="cta-row"><a href="#" class="cta">Explore Now</a><span class="cta-line"></span><span class="count" aria-hidden="true">07</span></div>
+<p class="tagline">Walk the site.<br>Not a render,<strong>a model.</strong></p>
+<div class="cta-row"><a href="#hero" class="cta" data-open-scene>Open the model</a><span class="cta-line"></span><span class="count" aria-hidden="true">07</span></div>
 <div class="loader" id="loader" role="status">Loading model</div>
 </div>
 </section>
@@ -90,7 +91,7 @@ color+=spec*(uBackside>0.5?0.35:1.0);float f=pow(1.0+dot(eye,n),uFresnelPower);c
 }`;
 function glass(back){return new THREE.ShaderMaterial({vertexShader,fragmentShader,side:back?THREE.BackSide:THREE.FrontSide,uniforms:{uTexture:{value:back?rtBack.texture:rtFront.texture},uResolution:{value:new THREE.Vector2(1,1)},uIorR:{value:1.15},uIorY:{value:1.16},uIorG:{value:1.18},uIorC:{value:1.22},uIorB:{value:1.22},uIorP:{value:1.22},uRefractPower:{value:back?.22:.30},uChromatic:{value:.5},uSaturation:{value:1.08},uShininess:{value:90},uDiffuseness:{value:.02},uFresnelPower:{value:5},uLight:{value:new THREE.Vector3(-1,1,1)},uBackside:{value:back?1:0}}});}
 const backMat=glass(true),frontMat=glass(false);let cube;
-function drawHeadline(W,H,dpr,mobile){headline.width=Math.round(W*dpr);headline.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);let fs=Math.min(H*.21,W*(mobile?.21:.118));const lines=['Explore','New','Ideas'];ctx.font=`800 ${fs}px Poppins`;const widest=Math.max(...lines.map(line=>ctx.measureText(line).width));fs*=Math.min(1,W*(mobile?.9:.5)/widest);ctx.font=`800 ${fs}px Poppins`;ctx.fillStyle='#e9e9e9';ctx.textAlign='center';ctx.textBaseline='alphabetic';const cx=W*(mobile?.5:.505),cy=H*(mobile?.45:.468);lines.forEach((line,i)=>ctx.fillText(line,cx,cy+fs*.7/2+(i-1)*fs*1.07));texture.needsUpdate=true;}
+function drawHeadline(W,H,dpr,mobile){headline.width=Math.round(W*dpr);headline.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);let fs=Math.min(H*.21,W*(mobile?.21:.118));const lines=['Every angle', 'of the building,', "before it’s built."];ctx.font=`800 ${fs}px Poppins`;const widest=Math.max(...lines.map(line=>ctx.measureText(line).width));fs*=Math.min(1,W*(mobile?.9:.72)/widest);ctx.font=`800 ${fs}px Poppins`;ctx.fillStyle='#e9e9e9';ctx.textAlign='center';ctx.textBaseline='alphabetic';const cx=W*(mobile?.5:.505),cy=H*(mobile?.45:.468);lines.forEach((line,i)=>ctx.fillText(line,cx,cy+fs*.7/2+(i-1)*fs*1.07));texture.needsUpdate=true;}
 function layout(){const W=hero.clientWidth,H=hero.clientHeight,dpr=Math.min(devicePixelRatio,2),mobile=W<768||W/H<1;renderer.setPixelRatio(dpr);renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();const size=renderer.getDrawingBufferSize(new THREE.Vector2());rtBack.setSize(size.x,size.y);rtFront.setSize(size.x,size.y);backMat.uniforms.uResolution.value.copy(size);frontMat.uniforms.uResolution.value.copy(size);const visH=2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*10,visW=visH*camera.aspect;pivot.position.set(((mobile?.5:.517)-.5)*visW,(.5-(mobile?.45:.488))*visH,0);pivot.scale.setScalar(Math.min(H*.44,W*(mobile?.45:.29))/H*visH);drawHeadline(W,H,dpr,mobile);}
 function installGeometry(g){g.computeBoundingBox();const size=g.boundingBox.getSize(new THREE.Vector3());g.center();g.scale(...Array(3).fill(1/Math.max(size.x,size.y,size.z)));cube=new THREE.Mesh(g,frontMat);spinner.add(cube);layout();loader.classList.add('done');loader.textContent='Model ready';}
 new GLTFLoader().load(MODEL_URL,gltf=>{const parts=[];try{gltf.scene.updateMatrixWorld(true);gltf.scene.traverse(mesh=>{if(!mesh.isMesh)return;let g=mesh.geometry.clone();for(const attr of ['uv','color','tangent'])g.deleteAttribute(attr);const merged=mergeVertices(g,1e-4);g.dispose();g=merged;g.computeVertexNormals();g.applyMatrix4(mesh.matrixWorld);parts.push(g);});const g=mergeGeometries(parts);if(!g)throw new Error('Model geometry could not be merged');installGeometry(g);}catch(error){console.warn(error);installGeometry(new RoundedBoxGeometry(1,1,1,8,.12));}finally{parts.forEach(g=>g.dispose());gltf.scene.traverse(mesh=>{if(mesh.isMesh){mesh.geometry.dispose();const materials=Array.isArray(mesh.material)?mesh.material:[mesh.material];materials.forEach(m=>{for(const value of Object.values(m))if(value?.isTexture)value.dispose();m.dispose();});}});}},undefined,()=>installGeometry(new RoundedBoxGeometry(1,1,1,8,.12)));
@@ -102,6 +103,8 @@ canvas.addEventListener('pointermove',e=>{if(!dragging||e.pointerId!==pointerId)
 function endDrag(e){if(e.pointerId!==pointerId)return;dragging=false;pointerId=null;release=performance.now();if(release-lastMove>100||reduced.matches)vx=vy=0;canvas.classList.remove('dragging');if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);}
 canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',endDrag);canvas.addEventListener('lostpointercapture',endDrag);
 function turn(direction){vx=vy=0;release=performance.now();remaining=direction*Math.PI/2;if(reduced.matches){rotate(remaining,0);remaining=0;}}
+document.querySelector('[data-open-scene]').addEventListener('click',e=>{e.preventDefault();turn(1);});
+document.querySelectorAll('[data-view]').forEach(link=>link.addEventListener('click',e=>{e.preventDefault();vx=vy=remaining=0;spinner.rotation.set(...(link.dataset.view==='sketches'?[-.42,.62,.18]:[0,Math.PI/4,0]));release=performance.now();}));
 document.querySelector('#prev').addEventListener('click',()=>turn(-1));document.querySelector('#next').addEventListener('click',()=>turn(1));
 const dots=[...document.querySelectorAll('.dot')];dots.forEach(dot=>dot.addEventListener('click',()=>dots.forEach(item=>{const active=item===dot;item.classList.toggle('active',active);item.setAttribute('aria-pressed',String(active));})));
 let frame=0,previous=0,disposed=false;
