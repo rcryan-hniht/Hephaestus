@@ -7,16 +7,14 @@ import * as THREE from "three";
  */
 
 const P = {
-  page: "#ffffff",
-  text: "#575279",
-  subtle: "#797593",
-  iris: "#907aa9",
-  irisSoft: "#c4a7e7",
-  pine: "#286983",
-  love: "#eb6f92",
-  gold: "#ea9d34",
-  overlay: "#f2e9e1",
-  base: "#191724",
+  stair: "#999999",
+  wing: "#eeeeee",
+  column: "#cccccc",
+  wall: "#bbbbbb",
+  window: "#555555",
+  marker: "#dddddd",
+  slab: "#dddddd",
+  roof: "#222222",
 };
 
 /** 3-step gradient map for MeshToonMaterial */
@@ -80,15 +78,16 @@ export class SceneView {
 
   _initScene() {
     this.scene = new THREE.Scene();
-    this.scene.background = null; // page grid shows through
+    this.scene.background = null;
 
-    const hemi = new THREE.HemisphereLight(0xffffff, 0xf2e9e1, 1.15);
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x888888, 1.15);
     this.scene.add(hemi);
     const key = new THREE.DirectionalLight(0xffffff, 1.6);
     key.position.set(4, 8, 5);
     this.scene.add(key);
 
     const g = gradientMap(3);
+    this.gradient = g;
     this._toon = (hex) => new THREE.MeshToonMaterial({ color: hex, gradientMap: g });
 
     this._buildArchitecture();
@@ -111,14 +110,14 @@ export class SceneView {
     this.details = details;
 
     const mat = {
-      slab: this._toon(P.overlay),
-      wedge: this._toon(P.pine),
-      wing: this._toon(P.iris),
-      roof: this._toon(P.base),
-      column: this._toon(P.irisSoft),
-      window: this._toon(P.love),
-      stair: this._toon(P.subtle),
-      gold: this._toon(P.gold),
+      slab: this._toon(P.slab),
+      wedge: this._toon(P.wall),
+      wing: this._toon(P.wing),
+      roof: this._toon(P.roof),
+      column: this._toon(P.column),
+      window: this._toon(P.window),
+      stair: this._toon(P.stair),
+      marker: this._toon(P.marker),
     };
 
     const box = (w, h, d, m) => new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
@@ -128,13 +127,13 @@ export class SceneView {
     slab.position.y = 0.25;
     masses.add(slab);
 
-    // main wedge body (pine)
+    // main wall volume
     const wedge = box(3.6, 2.4, 2.8, mat.wedge);
     wedge.position.set(-0.7, 1.7, 0);
     wedge.rotation.y = 0.06;
     masses.add(wedge);
 
-    // cantilevered wing (iris), overlapping the wedge
+    // cantilevered wing, overlapping the main volume
     const wing = box(3.4, 1.1, 2.2, mat.wing);
     wing.position.set(1.8, 2.2, 0.4);
     masses.add(wing);
@@ -172,7 +171,7 @@ export class SceneView {
       addDetail(col, { delay: 0.1 * i });
     }
 
-    // window band on the wedge (love accent)
+    // recessed window band
     const win = box(2.6, 0.6, 0.08, mat.window);
     win.position.set(-0.7, 1.8, 1.42);
     win.rotation.y = 0.06;
@@ -191,15 +190,15 @@ export class SceneView {
     }
     addDetail(stairGroup, { delay: 0.25 });
 
-    // gold marker on the roof — a tiny beacon
-    const beacon = box(0.18, 0.5, 0.18, mat.gold);
+    // roof marker
+    const beacon = box(0.18, 0.5, 0.18, mat.marker);
     beacon.position.set(0.9, 3.4, -0.6);
     addDetail(beacon, { delay: 0.45 });
 
     // ── edges: fade in with progress ─────────────────────────
     this._edges = [];
     const edgeMat = new THREE.LineBasicMaterial({
-      color: P.base,
+      color: P.roof,
       transparent: true,
       opacity: 0,
     });
@@ -233,7 +232,7 @@ export class SceneView {
     const cv = document.createElement("canvas");
     cv.width = cv.height = size;
     const ctx = cv.getContext("2d");
-    ctx.fillStyle = P.base;
+    ctx.fillStyle = P.roof;
     ctx.beginPath();
     ctx.ellipse(size / 2, size / 2, size * 0.44, size * 0.34, -0.15, 0, Math.PI * 2);
     ctx.fill();
@@ -256,7 +255,7 @@ export class SceneView {
       phi: 1.12,     // polar
       radius: 13,    // distance
     };
-    this._camTarget = { ...this._cam };
+    this._initialCamera = { ...this._cam };
     this._updateCamera();
   }
 
@@ -264,6 +263,7 @@ export class SceneView {
     // lightweight custom orbit: pointer drag + wheel zoom
     const c = this.canvas;
     this._onDown = (e) => {
+      if (this.target !== 1) return;
       c.setPointerCapture(e.pointerId);
       this._drag = { x: e.clientX, y: e.clientY, theta: this._cam.theta, phi: this._cam.phi };
       this.lastInteract = performance.now();
@@ -278,11 +278,28 @@ export class SceneView {
     };
     this._onUp = () => { this._drag = null; };
     this._onWheel = (e) => {
+      if (this.target !== 1) return;
       e.preventDefault();
       this._cam.radius = THREE.MathUtils.clamp(this._cam.radius + e.deltaY * 0.01, 8, 30);
       this.lastInteract = performance.now();
     };
 
+    this._onKey = (e) => {
+      const actions = {
+        ArrowLeft: () => this._cam.theta -= 0.1,
+        ArrowRight: () => this._cam.theta += 0.1,
+        ArrowUp: () => this._cam.phi = Math.max(0.35, this._cam.phi - 0.1),
+        ArrowDown: () => this._cam.phi = Math.min(1.45, this._cam.phi + 0.1),
+        "+": () => this._cam.radius = Math.max(8, this._cam.radius - 1),
+        "=": () => this._cam.radius = Math.max(8, this._cam.radius - 1),
+        "-": () => this._cam.radius = Math.min(30, this._cam.radius + 1),
+      };
+      if (!actions[e.key] || this.target !== 1) return;
+      e.preventDefault();
+      actions[e.key]();
+      this.lastInteract = performance.now();
+    };
+    c.addEventListener("keydown", this._onKey);
     c.addEventListener("pointerdown", this._onDown);
     c.addEventListener("pointermove", this._onMove);
     c.addEventListener("pointerup", this._onUp);
@@ -311,11 +328,17 @@ export class SceneView {
     }
   }
 
+  reset() {
+    Object.assign(this._cam, this._initialCamera);
+    this.lastInteract = performance.now();
+  }
+
   dispose() {
     this.disposed = true;
     cancelAnimationFrame(this._raf);
     this._ro.disconnect();
     const c = this.canvas;
+    c.removeEventListener("keydown", this._onKey);
     c.removeEventListener("pointerdown", this._onDown);
     c.removeEventListener("pointermove", this._onMove);
     c.removeEventListener("pointerup", this._onUp);
@@ -329,7 +352,7 @@ export class SceneView {
         o.material.dispose();
       }
     });
-    this.edgeMat.dispose();
+    this.gradient.dispose();
     this.renderer.dispose();
   }
 
@@ -370,8 +393,9 @@ export class SceneView {
     this.camera.aspect = aspect;
     this.camera.updateProjectionMatrix();
     // thumbnail: closer, higher; full: pulled back
-    const dist = radius * THREE.MathUtils.lerp(0.9, 1, p);
-    const y = radius * Math.cos(phi);
+    const fittedRadius = radius * Math.max(1, 1.35 / aspect);
+    const dist = fittedRadius * THREE.MathUtils.lerp(0.9, 1, p);
+    const y = fittedRadius * Math.cos(phi);
     const planar = Math.sqrt(Math.max(0, dist * dist - y * y));
     this.camera.position.set(
       Math.sin(theta) * planar,
@@ -382,7 +406,7 @@ export class SceneView {
   }
 
   _applyProgress() {
-    const p = this.progress;
+    const p = THREE.MathUtils.clamp(this.progress, 0, 1);
     const ease = (t) => t * t * (3 - 2 * t); // smoothstep for effects
 
     this._applyViewport();
@@ -447,24 +471,24 @@ export class SceneView {
       this._updateCamera();
     }
 
-    if (this.onProgress) this.onProgress(this.progress, this._vp);
+    if (this.onProgress) this.onProgress(this.progress, this._vp, dt);
 
-    // scissor: render only inside the animated viewport window
-    const pr = this.renderer.getPixelRatio();
-    this.renderer.setScissorTest(true);
-    this.renderer.setScissor(
-      this._vp.x * pr,
-      (this._size.h - this._vp.y - this._vp.h) * pr,
-      this._vp.w * pr,
-      this._vp.h * pr
-    );
-    this.renderer.setViewport(
-      this._vp.x * pr,
-      (this._size.h - this._vp.y - this._vp.h) * pr,
-      this._vp.w * pr,
-      this._vp.h * pr
-    );
-    this.renderer.render(this.scene, this.camera);
+    // Renderer viewport/scissor APIs use CSS pixels and apply DPR internally.
+    // Clear the full buffer first so a shrinking preview leaves no stale pixels.
+    this.renderer.setScissorTest(false);
+    this.renderer.clear();
+    if (this.progress > 0) {
+      this.renderer.setScissorTest(true);
+      this.renderer.setScissor(
+        this._vp.x, this._size.h - this._vp.y - this._vp.h,
+        this._vp.w, this._vp.h
+      );
+      this.renderer.setViewport(
+        this._vp.x, this._size.h - this._vp.y - this._vp.h,
+        this._vp.w, this._vp.h
+      );
+      this.renderer.render(this.scene, this.camera);
+    }
     this._raf = requestAnimationFrame(this._loop);
   }
 }
