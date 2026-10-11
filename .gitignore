@@ -6,3 +6,6 @@ node_modules
 *.env
 env/
 AGENTS.md
+# Playwright CLI output (may contain credentials)
+.playwright-cli/
+.claude/settings.local.json
