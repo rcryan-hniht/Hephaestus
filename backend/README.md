@@ -1,20 +1,24 @@
-# Deploy backend bằng Docker
+# Chạy frontend và backend
 
 Chạy từ thư mục gốc repo:
 
 ```sh
-docker build -t hephaestus-api ./backend
-docker run --rm -p 8000:8000 hephaestus-api
+./start.sh
 ```
 
-Kiểm tra API tại `http://localhost:8000/health`.
-Container nhận biến `PORT` (mặc định `8000`); khi đổi cổng, cập nhật
-mapping tương ứng, ví dụ `-e PORT=9000 -p 9000:9000`.
+Cần Bash, Bun và uv. Script cài dependency theo lockfile, build frontend,
+rồi chạy frontend tại `http://localhost:3000` và API tại
+`http://localhost:8000/health`. Backend dùng virtualenv qua `uv run`.
+Nhấn Ctrl+C để dừng cả hai.
 
-Trên Render, chọn runtime **Docker**, Root Directory **backend**,
-Dockerfile Path **./Dockerfile** và Health Check Path **/health**.
-Giữ Docker Command trống để dùng `start.sh` trong image.
-`render.yaml` hiện tại vẫn dùng runtime Python; hướng dẫn này áp dụng
-khi tạo hoặc cấu hình service Docker trên dashboard.
+```sh
+docker build -t hephaestus .
+docker run --rm -p 3000:3000 -p 8000:8000 hephaestus
+```
 
-Frontend tiếp tục deploy riêng trên Vercel.
+`PORT` đặt cổng frontend (mặc định `3000`); `BACKEND_PORT` đặt cổng API
+(mặc định `8000`). Khi đổi cổng, cập nhật Docker mapping tương ứng.
+
+Image chạy hai cổng riêng. Hosting chỉ công khai một cổng cần reverse proxy
+để truy cập cả frontend và API trên cùng domain.
+`render.yaml` vẫn giữ cấu hình backend Python riêng hiện có.
