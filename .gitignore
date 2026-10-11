@@ -5,7 +5,16 @@ node_modules
 .env.*
 *.env
 env/
+
+# Prohibited commit targets
 AGENTS.md
+SKILL.md
+**/SKILL.md
+docs/
+docs
+.agents/
+.claude/
+
 # Playwright CLI output (may contain credentials)
 .playwright-cli/
 .claude/settings.local.json
