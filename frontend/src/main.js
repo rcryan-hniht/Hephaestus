@@ -12,8 +12,8 @@ const error = document.getElementById('scene-error');
 const planButton = document.getElementById('toggle-plan');
 const steps = [...document.querySelectorAll('[data-story-step]')];
 const scenes = ['studio', 'desk', 'model'];
-const labels = ['BÊN TRONG MỘT Ý TƯỞNG', 'NƠI NHỮNG NÉT VẼ BẮT ĐẦU', 'TỪ Ý TƯỞNG ĐẾN HÌNH KHỐI'];
-const captions = ['Một buổi chiều. Một bản vẽ. Vô vàn khả năng.', 'Kéo sang phải. Để những nét vẽ trở thành không gian.', 'Mô hình minh họa. Kéo để xoay, cuộn để thu phóng.'];
+const labels = ['INSIDE AN IDEA', 'WHERE THE FIRST LINES BEGIN', 'FROM IDEA TO FORM'];
+const captions = ['One afternoon. One drawing. Endless possibilities.', 'Drag right. Let the drawing become a space.', 'Sample model. Drag to orbit, scroll to zoom.'];
 let current = 0, target = 0, progress = 0, velocity = 0;
 let drag = null, view = null, failed = false, frame = 0, previousTime = 0;
 const events = new AbortController();
@@ -33,7 +33,7 @@ function prepareModel() {
   try { view = new SceneView(canvas, { reducedMotion: motion.matches }); }
   catch (cause) {
     console.warn('WebGL preview unavailable:', cause.message);
-    showError('Thiết bị chưa hỗ trợ xem 3D. Bạn vẫn có thể khám phá studio và bản vẽ. Hãy bật tăng tốc đồ họa rồi tải lại trang.');
+    showError('3D viewing is unavailable on this device. You can still explore the studio and drawing. Enable hardware acceleration and reload to view the model.');
   }
 }
 
@@ -81,10 +81,10 @@ listen(document.getElementById('reset-view'), 'click', () => { view?.reset(); pl
 listen(planButton, 'click', () => planButton.setAttribute('aria-pressed', String(view?.togglePlan() || false)));
 listen(canvas, 'webglcontextlost', event => {
   event.preventDefault();
-  showError('Kết nối đồ họa bị gián đoạn. Studio và bản vẽ vẫn sẵn sàng; tải lại trang để xem mô hình 3D.');
+  showError('The graphics connection was interrupted. The studio and drawing are still available; reload to view the 3D model.');
 });
 listen(illustration, 'error', () => {
-  error.textContent = 'Ảnh studio chưa tải được. Bạn vẫn có thể dùng các bước bên dưới để mở mô hình mẫu.';
+  error.textContent = 'The studio illustration could not load. Use the scene navigation below to open the sample model.';
   error.hidden = false;
 });
 

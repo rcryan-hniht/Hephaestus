@@ -9,6 +9,11 @@ try {
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(url, { waitUntil: 'domcontentloaded' });
     await page.locator('.stage[data-scene="studio"]').waitFor({ timeout: 5000 });
+    assert.equal(await page.locator('html').getAttribute('lang'), 'en');
+    assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), 'light');
+    assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(248, 246, 240)');
+    assert.match(await page.locator('.hero__title').innerText(), /From sketch\.[\s\S]*To space\./);
+    assert.match(await page.locator('#caption-text').innerText(), /One afternoon/);
     await page.waitForFunction(() => {
       const image = document.querySelector('.stage__illustration');
       return image.complete && image.naturalWidth > 0;
@@ -27,6 +32,7 @@ try {
       assert.equal(await page.locator('.stage').getAttribute('data-scene'), distance < 0.1 ? 'desk' : 'model');
     }
     await page.locator('#reset-view').click();
+    assert.match(await page.locator('#caption-text').innerText(), /Sample model/);
     await page.locator('#toggle-plan').click();
     assert.equal(await page.locator('#toggle-plan').getAttribute('aria-pressed'), 'true');
     await page.locator('#toggle-plan').click();
@@ -72,6 +78,7 @@ try {
   await page.locator('#enter-studio').click();
   await page.locator('#reveal-model').click();
   await page.locator('#scene-error:not([hidden])').waitFor();
+  assert.match(await page.locator('#scene-error').innerText(), /3D viewing is unavailable/);
   assert.equal(await page.locator('.hero__title').isVisible(), true);
   assert.equal(await page.locator('.stage__illustration').isVisible(), true);
   await page.locator('[data-story-step="0"]').click();
