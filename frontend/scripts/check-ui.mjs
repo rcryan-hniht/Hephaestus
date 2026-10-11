@@ -11,7 +11,7 @@ try {
     await page.locator('.stage[data-scene="studio"]').waitFor({ timeout: 5000 });
     assert.equal(await page.locator('html').getAttribute('lang'), 'en');
     assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), 'light');
-    assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(248, 246, 240)');
+    assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(255, 255, 255)');
     assert.match(await page.locator('.hero__title').innerText(), /From sketch\.[\s\S]*To space\./);
     assert.match(await page.locator('#caption-text').innerText(), /One afternoon/);
     await page.waitForFunction(() => {

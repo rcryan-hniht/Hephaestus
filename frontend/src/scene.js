@@ -21,8 +21,8 @@ export class SceneView {
     this.controls.minPolarAngle = 0.02;
     this.controls.enabled = false;
     this.controls.enablePan = true;
-    this.scene.add(new THREE.HemisphereLight('#f6f1df', '#6385bb', 2.6));
-    const sun = new THREE.DirectionalLight('#fff8e8', 3.1);
+    this.scene.add(new THREE.HemisphereLight('#ffffff', '#6385bb', 2.6));
+    const sun = new THREE.DirectionalLight('#ffffff', 3.1);
     sun.position.set(-8, 14, 7);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
@@ -31,13 +31,13 @@ export class SceneView {
     sun.shadow.normalBias = 0.035;
     this.scene.add(sun);
     this.materials = {
-      paper: new THREE.MeshStandardMaterial({ color: '#e7e2d3', roughness: 1 }),
-      wall: new THREE.MeshStandardMaterial({ color: '#e6e9e4', roughness: .95 }),
-      slab: new THREE.MeshStandardMaterial({ color: '#d4dfdf', roughness: .95 }),
+      paper: new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 1 }),
+      wall: new THREE.MeshStandardMaterial({ color: '#f4f8ff', roughness: .95 }),
+      slab: new THREE.MeshStandardMaterial({ color: '#dce8ff', roughness: .95 }),
       blue: new THREE.MeshStandardMaterial({ color: '#426993', roughness: .8 }),
-      glass: new THREE.MeshStandardMaterial({ color: '#7d9eab', roughness: .4, metalness: .1, transparent: true, opacity: .7 }),
-      green: new THREE.MeshStandardMaterial({ color: '#496853', roughness: 1, flatShading: true }),
-      bark: new THREE.MeshStandardMaterial({ color: '#6e7161', roughness: 1 }),
+      glass: new THREE.MeshStandardMaterial({ color: '#8eb7ea', roughness: .4, metalness: .1, transparent: true, opacity: .7 }),
+      foliage: new THREE.MeshStandardMaterial({ color: '#315da7', roughness: 1, flatShading: true }),
+      bark: new THREE.MeshStandardMaterial({ color: '#315da7', roughness: 1 }),
       edge: new THREE.LineBasicMaterial({ color: '#30567d', transparent: true, opacity: .38 }),
     };
     this.build();
@@ -76,18 +76,18 @@ export class SceneView {
   }
 
   build() {
-    const { paper, wall, slab, blue, glass, green, bark } = this.materials;
+    const { paper, wall, slab, blue, glass, foliage, bark } = this.materials;
     this.box(this.scene, [80, .2, 80], [0, -.23, 0], new THREE.MeshBasicMaterial({ color: '#104ab2' }), false);
     const sheet = this.box(this.scene, [13.6, .025, 11.8], [0, -.085, 0], paper);
     sheet.rotation.y = -.12;
     const plan = document.createElement('canvas');
     plan.width = 1536; plan.height = 1280;
     const ctx = plan.getContext('2d');
-    ctx.fillStyle = '#e9e5d9'; ctx.fillRect(0, 0, plan.width, plan.height);
-    ctx.strokeStyle = '#6f889826'; ctx.lineWidth = 1;
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, plan.width, plan.height);
+    ctx.strokeStyle = '#315da726'; ctx.lineWidth = 1;
     for (let x = 40; x < 1536; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1280); ctx.stroke(); }
     for (let y = 40; y < 1280; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1536, y); ctx.stroke(); }
-    ctx.strokeStyle = '#52749280'; ctx.lineWidth = 2;
+    ctx.strokeStyle = '#315da780'; ctx.lineWidth = 2;
     ctx.strokeRect(80, 90, 1376, 1090);
     ctx.strokeRect(190, 220, 1156, 840);
     ctx.strokeRect(390, 330, 660, 625);
@@ -97,7 +97,7 @@ export class SceneView {
       ctx.beginPath(); ctx.moveTo(x, 280); ctx.lineTo(x, 320); ctx.stroke();
     }
     ctx.beginPath(); ctx.moveTo(370, 300); ctx.lineTo(1070, 300); ctx.stroke();
-    ctx.fillStyle = '#527492'; ctx.font = '14px monospace';
+    ctx.fillStyle = '#315da7'; ctx.font = '14px monospace';
     ctx.fillText('HEPHAESTUS / COURTYARD STUDY', 100, 125);
     ctx.fillText('CONCEPT 001 — NOT TO SCALE', 1050, 1140);
     this.planTexture = new THREE.CanvasTexture(plan);
@@ -157,7 +157,7 @@ export class SceneView {
       const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.05, .08, .95, 7), bark);
       trunk.position.y = .46; trunk.castShadow = true; group.add(trunk);
       for (const [px, py, pz, radius] of [[0, 1.25, 0, .62], [.32, 1.08, .15, .43], [-.33, 1.05, -.1, .45]]) {
-        const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(radius, 1), green);
+        const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(radius, 1), foliage);
         crown.position.set(px, py, pz); crown.scale.y = .8; crown.castShadow = true; group.add(crown);
       }
       this.scene.add(group);

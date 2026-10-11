@@ -11,7 +11,7 @@ This is a product specification for future implementation. A UI or Three.js alon
 ## Design language
 
 - Hephaestus branding and English interface copy, accessible descriptions, feedback, and prompts.
-- Use the light scheme and Poppins defined in `ui.md`: warm off-white surfaces, dark readable text, cobalt accents, and fine borders.
+- Use the light scheme and Poppins defined in `ui.md`: white surfaces, dark-blue readable text, cobalt accents, and fine borders.
 - Keep the architectural model central. Decorative effects must not obscure structural components.
 - Remove fixed glass cubes, refracted headlines, decorative slide numbers, and pagination from the workspace.
 - Before upload, show “From drawing to architectural 3D”, brief instructions, and “Upload drawing”.
