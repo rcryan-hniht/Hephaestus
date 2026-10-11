@@ -3,69 +3,66 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#000000" />
-    <title>Hephaestus | Từ bản vẽ đến không gian</title>
-    <meta name="description" content="Khám phá mô hình kiến trúc 3D cùng Hephaestus. Mở mô hình, xoay góc nhìn và quan sát từng chi tiết ngay trong trình duyệt." />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='18' width='24' height='10' fill='white'/%3E%3Crect x='10' y='10' width='12' height='8' fill='white'/%3E%3Crect x='13' y='4' width='6' height='6' fill='white'/%3E%3C/svg%3E" />
+    <meta name="theme-color" content="#08090b" />
+    <title>Hephaestus — Từ bản vẽ đến không gian</title>
+    <meta name="description" content="Bước vào studio Hephaestus. Từ nét phác trên bàn làm việc đến mô hình kiến trúc 3D tương tác." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M5 27V5h6v8h10V5h6v22h-6v-8H11v8z' fill='%230a4acb'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <a class="skip-link" href="#scene">Đến mô hình 3D</a>
+    <a class="skip-link" href="#enter-studio">Đến trải nghiệm studio</a>
     <div class="frame">
-      <div class="corner corner--tl" aria-hidden="true">x 128 / y 064</div>
-      <a class="corner corner--tr" href="mailto:studio@hephaestus.dev">studio@hephaestus.dev</a>
-
       <nav class="nav" aria-label="Điều hướng chính">
         <a class="nav__logo" href="#" aria-label="Hephaestus, trang chủ">
-          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-            <rect x="2" y="13" width="20" height="8" fill="currentColor"/>
-            <rect x="8" y="7" width="8" height="6" fill="currentColor"/>
-            <rect x="10" y="2" width="4" height="5" fill="currentColor"/>
-          </svg>
-          <span>Hephaestus</span>
+          <svg viewBox="0 0 32 32" width="27" height="27" aria-hidden="true"><path d="M3 27V5h6v9h14V5h6v22h-6v-8H9v8z" fill="currentColor"/><path d="M12 3h8v6h-8z" fill="currentColor"/></svg>
+          <span>hephaestus<span class="brand-dot">.</span></span>
         </a>
-        <div class="nav__links" id="nav-links">
-          <a href="#scene">Bản phác</a>
-          <a href="#scene" data-open-scene>Cấu trúc</a>
-          <a href="mailto:studio@hephaestus.dev">Liên hệ</a>
+        <div class="nav__links">
+          <a href="#scene" data-go-studio>Studio <span class="nav__dot" aria-hidden="true"></span></a>
+          <a href="#scene" data-go-model>Không gian 3D</a>
+          <a href="mailto:studio@hephaestus.dev">Liên hệ <span aria-hidden="true">↗</span></a>
         </div>
-        <button class="nav__cta" type="button" data-open-scene>Mở mô hình <span aria-hidden="true">↗</span></button>
-        <button class="nav__menu" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+        <button class="nav__cta" type="button" data-go-studio>Khám phá studio <span aria-hidden="true">↗</span></button>
       </nav>
 
       <header class="hero">
-        <h1 class="hero__title"><span>Từ bản vẽ.</span><span>Đến không gian.</span></h1>
-        <p class="hero__description">Một góc nhìn mới cho những ý tưởng kiến trúc.</p>
-        <span class="hero__note hero__note--a" aria-hidden="true">Ý tưởng có hình khối <span>↘</span></span>
-        <span class="hero__note hero__note--b" aria-hidden="true"><span>↙</span> Không gian có chiều sâu</span>
+        <div class="hero__annotation"><span class="cross" aria-hidden="true">+</span> MỘT Ý TƯỞNG.<br /><span class="hero__annotation-indent">MỘT KHỞI ĐẦU.</span></div>
+        <h1 class="hero__title"><span>Từ bản vẽ.</span><span>Đến <em>không gian.</em></span></h1>
+        <div class="hero__aside"><span class="hero__spark" aria-hidden="true">✳</span><p>Mọi công trình lớn<br />đều bắt đầu từ<br />một nét phác nhỏ.</p></div>
       </header>
 
-      <main id="scene" class="stage" aria-label="Khám phá mô hình kiến trúc">
-        <div class="stage__inner">
-          <canvas id="glass" aria-hidden="true"></canvas>
-          <canvas id="canvas" tabindex="-1" aria-label="Mô hình kiến trúc mẫu. Kéo để xoay, cuộn để thu phóng. Dùng phím mũi tên để xoay, cộng và trừ để thu phóng." role="img"></canvas>
-          <div class="stage__heading"><span id="view-label">Từ ý tưởng đến hình khối</span><span class="stage__material" aria-hidden="true">Kính / Không gian</span></div>
-          <button class="stage__thumb" type="button" data-open-scene aria-label="Mở mô hình kiến trúc mẫu">
-            <span class="stage__thumb-label">Khám phá mô hình <span aria-hidden="true">↗</span></span>
-          </button>
-          <div class="stage__intro"><p>Nhìn ý tưởng<br />từ <strong>mọi góc độ.</strong></p></div>
-          <div class="stage__tools" hidden aria-label="Điều khiển mô hình">
-            <button type="button" id="reset-view">Đặt lại góc nhìn</button>
-            <button type="button" id="toggle-orbit" aria-pressed="false">Tự xoay</button>
-            <button type="button" id="close-scene">Thu gọn <span aria-hidden="true">↙</span></button>
+      <main class="stage" id="scene" data-scene="studio" aria-label="Hành trình từ studio đến mô hình 3D">
+        <div class="stage__ruler" aria-hidden="true"><span>HEPHAESTUS — INTERACTIVE STUDIO</span><span>EST. 2026 / VOL. 001</span></div>
+        <div class="stage__viewport">
+          <img class="stage__illustration" src="/assets/studio-male.webp" alt="Kiến trúc sư nam đang phác thảo tại bàn làm việc, trong studio xanh cobalt và màu giấy kem." width="1672" height="941" fetchpriority="high" draggable="false" />
+          <canvas id="canvas" aria-label="Mô hình kiến trúc mẫu. Kéo để xoay; cuộn để thu phóng. Dùng phím mũi tên để xoay và dấu cộng, trừ để thu phóng." tabindex="-1" hidden></canvas>
+          <div class="scene-label"><span class="scene-label__dot" aria-hidden="true"></span><span id="scene-label">BÊN TRONG MỘT Ý TƯỞNG</span></div>
+          <div class="scene-coordinate" aria-hidden="true">21°01′ N<br />105°50′ E</div>
+          <button id="enter-studio" class="scene-enter" type="button"><span class="scene-enter__icon" aria-hidden="true">↗</span><span>Bước vào studio<small>BẤM ĐỂ KHÁM PHÁ</small></span></button>
+          <div class="desk-invitation" hidden><span class="desk-invitation__line" aria-hidden="true"></span><span>Một bản vẽ.<br /><strong>Chờ được đánh thức.</strong></span></div>
+          <button id="reveal-model" class="drag-hint" type="button" hidden><span class="drag-hint__handle" aria-hidden="true">→</span><span>Kéo sang phải để dựng không gian<small>HOẶC BẤM ĐỂ TIẾP TỤC</small></span><span class="drag-hint__arrows" aria-hidden="true">› › ›</span></button>
+          <div class="model-tools" hidden>
+            <button id="toggle-plan" type="button" aria-pressed="false">Mặt bằng</button>
+            <button id="reset-view" type="button" aria-label="Đặt lại góc nhìn">Đặt lại <span aria-hidden="true">↺</span></button>
           </div>
-          <div class="stage__caption"><span class="caption-line" aria-hidden="true"></span><span id="caption-text" role="status">Đang chuẩn bị không gian 3D…</span></div>
-          <p class="stage__error" id="scene-error" role="alert" hidden></p>
-          <noscript><p class="stage__error">Bật JavaScript để khám phá mô hình 3D.</p></noscript>
+          <div class="model-card" hidden><span class="model-card__eyebrow">NGHIÊN CỨU KHÔNG GIAN / 001</span><strong>Khoảng thở giữa phố.</strong><p>Mô hình mẫu · 5 tầng · Tỷ lệ minh họa</p><span class="model-card__hint">Kéo để xoay <span aria-hidden="true">/</span> Cuộn để đến gần</span></div>
+          <p id="scene-error" class="scene-error" role="alert" hidden></p>
+          <noscript><p class="scene-error">Bật JavaScript để trải nghiệm chuyển cảnh và mô hình 3D.</p></noscript>
         </div>
+        <div class="stage__caption"><span><span class="status-dot" aria-hidden="true"></span><span id="caption-text" role="status" aria-live="polite">Một buổi chiều. Một bản vẽ. Vô vàn khả năng.</span></span><span id="scene-count">01 — 03</span></div>
       </main>
 
-      <footer class="foot">
-        <span>Hephaestus <span class="foot__secondary">/ Kiến trúc trong tầm nhìn</span></span>
-        <a href="mailto:studio@hephaestus.dev">Trao đổi với chúng tôi <span aria-hidden="true">↗</span></a>
-      </footer>
+      <div class="story-bar">
+        <nav class="story-steps" aria-label="Các cảnh trong studio">
+          <button type="button" data-story-step="0" aria-current="step"><span>01</span> Studio<span class="story-step__line" aria-hidden="true"></span></button>
+          <button type="button" data-story-step="1"><span>02</span> Nét phác<span class="story-step__line" aria-hidden="true"></span></button>
+          <button type="button" data-story-step="2"><span>03</span> Không gian<span class="story-step__line" aria-hidden="true"></span></button>
+        </nav>
+        <p class="story-note">Tưởng tượng là khởi đầu.<br /><span>Hephaestus đưa bạn đến gần hơn.</span></p>
+      </div>
+      <footer class="foot"><span>THIẾT KẾ TỪ NHỮNG ĐIỀU CHƯA CÓ.</span><a href="mailto:studio@hephaestus.dev">Cùng tạo nên điều tiếp theo <span aria-hidden="true">↗</span></a><span>© HEPHAESTUS 2026</span></footer>
     </div>
     <script type="module" src="/main.js"></script>
   </body>

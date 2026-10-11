@@ -1,494 +1,217 @@
-import * as THREE from "three";
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-/**
- * One `progress` value (0 = thumbnail, 1 = full scene) drives every
- * reveal effect: edge opacity, detail-mesh scale/opacity, shadow
- * strength, camera distance. No independent animations.
- */
-
-const P = {
-  stair: "#999999",
-  wing: "#eeeeee",
-  column: "#cccccc",
-  wall: "#bbbbbb",
-  window: "#555555",
-  marker: "#dddddd",
-  slab: "#dddddd",
-  roof: "#222222",
-};
-
-/** 3-step gradient map for MeshToonMaterial */
-function gradientMap(steps = 3) {
-  const data = new Uint8Array(steps);
-  for (let i = 0; i < steps; i++) {
-    data[i] = Math.round((i / (steps - 1)) * 200 + 55);
-  }
-  const tex = new THREE.DataTexture(data, steps, 1, THREE.RedFormat);
-  tex.needsUpdate = true;
-  return tex;
-}
-
+// The building is a study model, not a reconstruction of an uploaded file.
 export class SceneView {
-  /**
-   * @param {HTMLCanvasElement} canvas
-   * @param {object} opts
-   * @param {boolean} opts.reducedMotion
-   */
   constructor(canvas, { reducedMotion = false } = {}) {
     this.canvas = canvas;
-    this.reducedMotion = reducedMotion;
-    this.progress = 0;          // spring position (0..1)
-    this.velocity = 0;          // spring velocity
-    this.target = 0;            // where the spring is heading
-    this.orbiting = false;      // auto-orbit flag
-    this.lastInteract = 0;      // ms of last user drag
-    this.disposed = false;
-    // animated render viewport (px, css units) — the 3D content unfolds
-    // together with the card frame instead of spilling behind it
-    this._vp = { x: 0, y: 0, w: 0, h: 0 };
-    this._size = { w: 0, h: 0 };
-
-    this._initRenderer();
-    this._initScene();
-    this._initCamera();
-    this._initControls();
-
-    this._ro = new ResizeObserver(() => this._resize());
-    this._ro.observe(canvas.parentElement);
-    this._resize();
-
-    this._clock = new THREE.Clock();
-    this._loop = this._loop.bind(this);
-    this._raf = requestAnimationFrame(this._loop);
-  }
-
-  /** called every frame with (progress, viewportRectInCssPx) */
-  onProgress = null;
-
-  /* ── setup ─────────────────────────────────────────────── */
-
-  _initRenderer() {
-    this.renderer = new THREE.WebGLRenderer({
-      canvas: this.canvas,
-      antialias: true,
-      alpha: true,
-    });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  }
-
-  _initScene() {
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.scene = new THREE.Scene();
-    this.scene.background = null;
-
-    const hemi = new THREE.HemisphereLight(0xffffff, 0x888888, 1.15);
-    this.scene.add(hemi);
-    const key = new THREE.DirectionalLight(0xffffff, 1.6);
-    key.position.set(4, 8, 5);
-    this.scene.add(key);
-
-    const g = gradientMap(3);
-    this.gradient = g;
-    this._toon = (hex) => new THREE.MeshToonMaterial({ color: hex, gradientMap: g });
-
-    this._buildArchitecture();
+    this.scene.background = new THREE.Color('#104ab2');
+    this.camera = new THREE.PerspectiveCamera(36, 1, 0.1, 120);
+    this.controls = new OrbitControls(this.camera, canvas);
+    this.controls.enableDamping = !reducedMotion;
+    this.controls.dampingFactor = 0.08;
+    this.controls.minDistance = 10;
+    this.controls.maxDistance = 32;
+    this.controls.maxPolarAngle = Math.PI * 0.46;
+    this.controls.minPolarAngle = 0.02;
+    this.controls.enabled = false;
+    this.controls.enablePan = true;
+    this.scene.add(new THREE.HemisphereLight('#f6f1df', '#6385bb', 2.6));
+    const sun = new THREE.DirectionalLight('#fff8e8', 3.1);
+    sun.position.set(-8, 14, 7);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    Object.assign(sun.shadow.camera, { left: -12, right: 12, top: 12, bottom: -12, near: 0.5, far: 45 });
+    sun.shadow.bias = -0.0005;
+    sun.shadow.normalBias = 0.035;
+    this.scene.add(sun);
+    this.materials = {
+      paper: new THREE.MeshStandardMaterial({ color: '#e7e2d3', roughness: 1 }),
+      wall: new THREE.MeshStandardMaterial({ color: '#e6e9e4', roughness: .95 }),
+      slab: new THREE.MeshStandardMaterial({ color: '#d4dfdf', roughness: .95 }),
+      blue: new THREE.MeshStandardMaterial({ color: '#426993', roughness: .8 }),
+      glass: new THREE.MeshStandardMaterial({ color: '#7d9eab', roughness: .4, metalness: .1, transparent: true, opacity: .7 }),
+      green: new THREE.MeshStandardMaterial({ color: '#496853', roughness: 1, flatShading: true }),
+      bark: new THREE.MeshStandardMaterial({ color: '#6e7161', roughness: 1 }),
+      edge: new THREE.LineBasicMaterial({ color: '#30567d', transparent: true, opacity: .38 }),
+    };
+    this.build();
+    this.reset();
+    this.resizeObserver = new ResizeObserver(() => this.resize());
+    this.resizeObserver.observe(canvas.parentElement);
+    this.resize();
+    this.onKey = event => {
+      if (!this.controls.enabled) return;
+      const offset = this.camera.position.clone().sub(this.controls.target);
+      const angle = { ArrowLeft: -.13, ArrowRight: .13 }[event.key];
+      if (angle !== undefined) offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
+      else if (['+', '='].includes(event.key)) offset.multiplyScalar(.9);
+      else if (event.key === '-') offset.multiplyScalar(1.1);
+      else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+        const spherical = new THREE.Spherical().setFromVector3(offset);
+        spherical.phi = THREE.MathUtils.clamp(spherical.phi + (event.key === 'ArrowUp' ? -.1 : .1), .02, Math.PI * .46);
+        offset.setFromSpherical(spherical);
+      } else return;
+      event.preventDefault();
+      offset.clampLength(this.controls.minDistance, this.controls.maxDistance);
+      this.camera.position.copy(this.controls.target).add(offset);
+      this.controls.update();
+    };
+    canvas.addEventListener('keydown', this.onKey);
   }
 
-  /** flat architectural volumes: slab -> wedge -> wing -> columns -> roof */
-  _buildArchitecture() {
-    const arch = new THREE.Group();
-    this.scene.add(arch);
-    this.arch = arch;
+  box(parent, size, position, material, edges = true) {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), material);
+    mesh.position.set(...position);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    parent.add(mesh);
+    if (edges) mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), this.materials.edge));
+    return mesh;
+  }
 
-    // massing meshes — always present (thumbnail state shows silhouettes)
-    const masses = new THREE.Group();
-    arch.add(masses);
-    this.masses = masses;
+  build() {
+    const { paper, wall, slab, blue, glass, green, bark } = this.materials;
+    this.box(this.scene, [80, .2, 80], [0, -.23, 0], new THREE.MeshBasicMaterial({ color: '#104ab2' }), false);
+    const sheet = this.box(this.scene, [13.6, .025, 11.8], [0, -.085, 0], paper);
+    sheet.rotation.y = -.12;
+    const plan = document.createElement('canvas');
+    plan.width = 1536; plan.height = 1280;
+    const ctx = plan.getContext('2d');
+    ctx.fillStyle = '#e9e5d9'; ctx.fillRect(0, 0, plan.width, plan.height);
+    ctx.strokeStyle = '#6f889826'; ctx.lineWidth = 1;
+    for (let x = 40; x < 1536; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1280); ctx.stroke(); }
+    for (let y = 40; y < 1280; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1536, y); ctx.stroke(); }
+    ctx.strokeStyle = '#52749280'; ctx.lineWidth = 2;
+    ctx.strokeRect(80, 90, 1376, 1090);
+    ctx.strokeRect(190, 220, 1156, 840);
+    ctx.strokeRect(390, 330, 660, 625);
+    ctx.strokeRect(550, 480, 340, 320);
+    ctx.setLineDash([8, 7]); ctx.strokeRect(300, 250, 840, 790); ctx.setLineDash([]);
+    for (let x = 390; x <= 1050; x += 110) {
+      ctx.beginPath(); ctx.moveTo(x, 280); ctx.lineTo(x, 320); ctx.stroke();
+    }
+    ctx.beginPath(); ctx.moveTo(370, 300); ctx.lineTo(1070, 300); ctx.stroke();
+    ctx.fillStyle = '#527492'; ctx.font = '14px monospace';
+    ctx.fillText('HEPHAESTUS / COURTYARD STUDY', 100, 125);
+    ctx.fillText('CONCEPT 001 — NOT TO SCALE', 1050, 1140);
+    this.planTexture = new THREE.CanvasTexture(plan);
+    this.planTexture.colorSpace = THREE.SRGBColorSpace;
+    const planMesh = new THREE.Mesh(new THREE.PlaneGeometry(13.5, 11.7), new THREE.MeshStandardMaterial({ map: this.planTexture, roughness: 1 }));
+    planMesh.rotation.x = -Math.PI / 2;
+    planMesh.rotation.z = .12;
+    planMesh.position.y = -.064;
+    planMesh.receiveShadow = true;
+    this.scene.add(planMesh);
 
-    // detail meshes — hidden at thumbnail, revealed by progress
-    const details = new THREE.Group();
-    arch.add(details);
-    this.details = details;
-
-    const mat = {
-      slab: this._toon(P.slab),
-      wedge: this._toon(P.wall),
-      wing: this._toon(P.wing),
-      roof: this._toon(P.roof),
-      column: this._toon(P.column),
-      window: this._toon(P.window),
-      stair: this._toon(P.stair),
-      marker: this._toon(P.marker),
+    this.arch = new THREE.Group();
+    this.scene.add(this.arch);
+    const ring = (y, height, material) => {
+      this.box(this.arch, [1.35, height, 5.6], [-2.18, y, 0], material);
+      this.box(this.arch, [1.35, height, 5.6], [2.18, y, 0], material);
+      this.box(this.arch, [3, height, 1.2], [0, y, -2.2], material);
+      this.box(this.arch, [3, height, 1.2], [0, y, 2.2], material);
     };
-
-    const box = (w, h, d, m) => new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
-
-    // base slab
-    const slab = box(6.4, 0.5, 5, mat.slab);
-    slab.position.y = 0.25;
-    masses.add(slab);
-
-    // main wall volume
-    const wedge = box(3.6, 2.4, 2.8, mat.wedge);
-    wedge.position.set(-0.7, 1.7, 0);
-    wedge.rotation.y = 0.06;
-    masses.add(wedge);
-
-    // cantilevered wing, overlapping the main volume
-    const wing = box(3.4, 1.1, 2.2, mat.wing);
-    wing.position.set(1.8, 2.2, 0.4);
-    masses.add(wing);
-
-    // roof plane (dark)
-    const roof = box(4.2, 0.22, 3.0, mat.roof);
-    roof.position.set(-0.7, 3.05, 0);
-    roof.rotation.y = 0.06;
-    masses.add(roof);
-
-    // ── detail layer: columns, windows, stair, chimney ──────
-    this._detailParts = [];
-
-    const addDetail = (obj, { delay = 0 } = {}) => {
-      obj.userData.delay = delay;
-      obj.scale.setScalar(0.001);
-      // collect every material in the subtree so groups work too
-      const mats = [];
-      obj.traverse((o) => {
-        if (o.material) {
-          o.material.transparent = true;
-          o.material.opacity = 0;
-          mats.push(o.material);
+    ring(.06, .12, slab);
+    // Five floors around an open courtyard, with separate structural pieces.
+    for (let floor = 0; floor < 5; floor++) {
+      const base = floor * 1.15;
+      ring(base + 1.15, .14, slab);
+      for (const x of [-2.72, -1.5, 1.5, 2.72]) {
+        for (const z of [-2.63, 2.63]) this.box(this.arch, [.14, 1.02, .14], [x, base + .58, z], wall);
+      }
+      for (const x of [-2.78, 2.78]) {
+        for (let panel = 0; panel < 5; panel++) {
+          const z = -2.12 + panel * 1.05;
+          const solid = (floor + panel) % 3 === 0;
+          this.box(this.arch, [.1, .98, 1.01], [x, base + .62, z], solid ? wall : glass);
+          this.box(this.arch, [.12, 1.03, .045], [x, base + .62, z + .51], blue, false);
         }
-      });
-      obj.userData.mats = mats;
-      details.add(obj);
-      this._detailParts.push(obj);
-    };
-
-    // piloti columns under the wing
-    for (let i = 0; i < 3; i++) {
-      const col = box(0.22, 1.7, 0.22, mat.column);
-      col.position.set(2.6, 0.9, -0.7 + i * 0.85);
-      addDetail(col, { delay: 0.1 * i });
+      }
+      for (const z of [-2.73, 2.73]) {
+        for (let panel = 0; panel < 5; panel++) {
+          const x = -2.22 + panel * 1.11;
+          this.box(this.arch, [1.04, floor === 0 ? .8 : .58, .08], [x, base + .65, z], glass);
+          if (floor > 0) this.box(this.arch, [1.07, .28, .1], [x, base + .26, z], wall);
+        }
+      }
+      for (const x of [-1.51, 1.51]) this.box(this.arch, [.08, .42, 3.1], [x, base + .89, 0], wall);
+      for (const z of [-1.6, 1.6]) this.box(this.arch, [3, .42, .08], [0, base + .89, z], wall);
+      if (floor > 0) {
+        this.box(this.arch, [6.15, .12, .6], [0, base + .08, 2.99], slab);
+        this.box(this.arch, [6.12, .045, .045], [0, base + .64, 3.24], blue);
+        for (let x = -3; x <= 3; x += .4) this.box(this.arch, [.025, .53, .025], [x, base + .36, 3.24], blue, false);
+      }
     }
-
-    // recessed window band
-    const win = box(2.6, 0.6, 0.08, mat.window);
-    win.position.set(-0.7, 1.8, 1.42);
-    win.rotation.y = 0.06;
-    addDetail(win, { delay: 0.15 });
-
-    const win2 = box(0.08, 1.4, 1.6, mat.window);
-    win2.position.set(-2.56, 1.8, 0);
-    addDetail(win2, { delay: 0.3 });
-
-    // outdoor stair stepping down off the slab's front edge
-    const stairGroup = new THREE.Group();
-    for (let i = 0; i < 3; i++) {
-      const step = box(1.4, 0.16, 0.34, mat.stair);
-      step.position.set(1.6, 0.4 - i * 0.14, 2.7 + i * 0.36);
-      stairGroup.add(step);
+    ring(5.91, .32, wall);
+    this.box(this.arch, [1.2, .65, 1.25], [-2, 6.08, -1.85], wall);
+    this.box(this.arch, [2.8, .08, 2.9], [0, .12, 0], paper);
+    for (const [x, z, scale] of [[-4.2, 2.8, 1], [4.4, 2.4, .85], [-3.9, -3.7, .8], [4.5, -3.4, 1.05], [.2, .1, .7]]) {
+      const group = new THREE.Group();
+      group.position.set(x, 0, z); group.scale.setScalar(scale);
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.05, .08, .95, 7), bark);
+      trunk.position.y = .46; trunk.castShadow = true; group.add(trunk);
+      for (const [px, py, pz, radius] of [[0, 1.25, 0, .62], [.32, 1.08, .15, .43], [-.33, 1.05, -.1, .45]]) {
+        const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(radius, 1), green);
+        crown.position.set(px, py, pz); crown.scale.y = .8; crown.castShadow = true; group.add(crown);
+      }
+      this.scene.add(group);
     }
-    addDetail(stairGroup, { delay: 0.25 });
-
-    // roof marker
-    const beacon = box(0.18, 0.5, 0.18, mat.marker);
-    beacon.position.set(0.9, 3.4, -0.6);
-    addDetail(beacon, { delay: 0.45 });
-
-    // ── edges: fade in with progress ─────────────────────────
-    this._edges = [];
-    const edgeMat = new THREE.LineBasicMaterial({
-      color: P.roof,
-      transparent: true,
-      opacity: 0,
-    });
-    this.edgeMat = edgeMat;
-    for (const m of [...masses.children]) {
-      const eg = new THREE.EdgesGeometry(m.geometry, 20);
-      const ls = new THREE.LineSegments(eg, edgeMat);
-      ls.position.copy(m.position);
-      ls.rotation.copy(m.rotation);
-      // parent to masses so edges follow the massing's scale settle
-      masses.add(ls);
-      this._edges.push(ls);
-    }
-
-    // ── ground shadow (flat blob) ────────────────────────────
-    const shadowTex = this._blobTexture();
-    this.shadowMat = new THREE.MeshBasicMaterial({
-      map: shadowTex,
-      transparent: true,
-      opacity: 0.16,
-      depthWrite: false,
-    });
-    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(8, 6.2), this.shadowMat);
-    shadow.rotation.x = -Math.PI / 2;
-    shadow.position.set(0.2, 0.01, 0.3);
-    arch.add(shadow);
-  }
-
-  _blobTexture() {
-    const size = 128;
-    const cv = document.createElement("canvas");
-    cv.width = cv.height = size;
-    const ctx = cv.getContext("2d");
-    ctx.fillStyle = P.roof;
-    ctx.beginPath();
-    ctx.ellipse(size / 2, size / 2, size * 0.44, size * 0.34, -0.15, 0, Math.PI * 2);
-    ctx.fill();
-    // feather edge by drawing scaled-down ellipses at lower alpha
-    for (let i = 0; i < 3; i++) {
-      ctx.globalAlpha = 0.22;
-      ctx.beginPath();
-      ctx.ellipse(size / 2, size / 2, size * (0.48 + i * 0.03), size * (0.37 + i * 0.03), -0.15, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    const tex = new THREE.CanvasTexture(cv);
-    return tex;
-  }
-
-  _initCamera() {
-    this.camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-    // spherical orbit params, animated by progress
-    this._cam = {
-      theta: -0.55,  // azimuth
-      phi: 1.12,     // polar
-      radius: 13,    // distance
-    };
-    this._initialCamera = { ...this._cam };
-    this._updateCamera();
-  }
-
-  _initControls() {
-    // lightweight custom orbit: pointer drag + wheel zoom
-    const c = this.canvas;
-    this._onDown = (e) => {
-      if (this.target !== 1) return;
-      c.setPointerCapture(e.pointerId);
-      this._drag = { x: e.clientX, y: e.clientY, theta: this._cam.theta, phi: this._cam.phi };
-      this.lastInteract = performance.now();
-    };
-    this._onMove = (e) => {
-      if (!this._drag) return;
-      const dx = e.clientX - this._drag.x;
-      const dy = e.clientY - this._drag.y;
-      this._cam.theta = this._drag.theta - dx * 0.006;
-      this._cam.phi = THREE.MathUtils.clamp(this._drag.phi - dy * 0.005, 0.35, 1.45);
-      this.lastInteract = performance.now();
-    };
-    this._onUp = () => { this._drag = null; };
-    this._onWheel = (e) => {
-      if (this.target !== 1) return;
-      e.preventDefault();
-      this._cam.radius = THREE.MathUtils.clamp(this._cam.radius + e.deltaY * 0.01, 8, 30);
-      this.lastInteract = performance.now();
-    };
-
-    this._onKey = (e) => {
-      const actions = {
-        ArrowLeft: () => this._cam.theta -= 0.1,
-        ArrowRight: () => this._cam.theta += 0.1,
-        ArrowUp: () => this._cam.phi = Math.max(0.35, this._cam.phi - 0.1),
-        ArrowDown: () => this._cam.phi = Math.min(1.45, this._cam.phi + 0.1),
-        "+": () => this._cam.radius = Math.max(8, this._cam.radius - 1),
-        "=": () => this._cam.radius = Math.max(8, this._cam.radius - 1),
-        "-": () => this._cam.radius = Math.min(30, this._cam.radius + 1),
-      };
-      if (!actions[e.key] || this.target !== 1) return;
-      e.preventDefault();
-      actions[e.key]();
-      this.lastInteract = performance.now();
-    };
-    c.addEventListener("keydown", this._onKey);
-    c.addEventListener("pointerdown", this._onDown);
-    c.addEventListener("pointermove", this._onMove);
-    c.addEventListener("pointerup", this._onUp);
-    c.addEventListener("pointercancel", this._onUp);
-    c.addEventListener("wheel", this._onWheel, { passive: false });
-  }
-
-  /* ── public API ────────────────────────────────────────── */
-
-  /** start the spring toward 1 (open) or 0 (closed) */
-  open() {
-    this.target = 1;
-    if (this.reducedMotion) {
-      this.progress = 1;
-      this.velocity = 0;
-      this._applyProgress();
-    }
-  }
-
-  close() {
-    this.target = 0;
-    if (this.reducedMotion) {
-      this.progress = 0;
-      this.velocity = 0;
-      this._applyProgress();
-    }
+    // Small drawing tools retain the tabletop setting when the camera moves in.
+    this.box(this.scene, [.07, .07, 4.8], [6.35, -.015, -.8], blue);
+    const notes = this.box(this.scene, [2.2, .03, 1.55], [-5.2, -.02, -4.8], paper);
+    notes.rotation.y = -.24;
   }
 
   reset() {
-    Object.assign(this._cam, this._initialCamera);
-    this.lastInteract = performance.now();
+    this.planView = false;
+    this.camera.up.set(0, 1, 0);
+    this.camera.position.set(12.6, 11.8, 15.5);
+    this.controls.target.set(0, 2.25, 0);
+    this.controls.update();
+  }
+
+  togglePlan() {
+    if (this.planView) { this.reset(); return false; }
+    this.planView = true;
+    this.camera.position.set(0, 23, .1);
+    this.controls.target.set(0, 0, 0);
+    this.controls.update();
+    return true;
+  }
+
+  resize() {
+    const { width, height } = this.canvas.parentElement.getBoundingClientRect();
+    this.renderer.setSize(width, height, false);
+    this.camera.aspect = width / Math.max(height, 1);
+    this.camera.updateProjectionMatrix();
+  }
+
+  render(progress, active) {
+    this.arch.scale.y = .02 + .98 * progress;
+    this.controls.enabled = active;
+    this.controls.update();
+    this.renderer.render(this.scene, this.camera);
   }
 
   dispose() {
-    this.disposed = true;
-    cancelAnimationFrame(this._raf);
-    this._ro.disconnect();
-    const c = this.canvas;
-    c.removeEventListener("keydown", this._onKey);
-    c.removeEventListener("pointerdown", this._onDown);
-    c.removeEventListener("pointermove", this._onMove);
-    c.removeEventListener("pointerup", this._onUp);
-    c.removeEventListener("pointercancel", this._onUp);
-    c.removeEventListener("wheel", this._onWheel);
-
-    this.scene.traverse((o) => {
-      if (o.geometry) o.geometry.dispose();
-      if (o.material) {
-        if (o.material.map) o.material.map.dispose();
-        o.material.dispose();
-      }
+    this.resizeObserver.disconnect();
+    this.controls.dispose();
+    this.canvas.removeEventListener('keydown', this.onKey);
+    const geometries = new Set(), materials = new Set();
+    this.scene.traverse(object => {
+      if (object.geometry) geometries.add(object.geometry);
+      if (object.material) materials.add(object.material);
+      object.shadow?.map?.dispose();
     });
-    this.gradient.dispose();
+    geometries.forEach(geometry => geometry.dispose());
+    materials.forEach(material => material.dispose());
+    this.planTexture.dispose();
     this.renderer.dispose();
-  }
-
-  /* ── internals ─────────────────────────────────────────── */
-
-  _resize() {
-    const parent = this.canvas.parentElement;
-    const w = parent.clientWidth;
-    const h = parent.clientHeight;
-    if (w === 0 || h === 0) return;
-    this._size = { w, h };
-    this.renderer.setSize(w, h, false);
-    this._applyViewport();
-    this._updateCamera();
-  }
-
-  /**
-   * The render viewport grows from a centered 300×225 card to the full
-   * canvas, driven by the same spring progress as every other reveal.
-   */
-  _applyViewport() {
-    const { w, h } = this._size;
-    if (!w || !h) return;
-    const p = THREE.MathUtils.clamp(this.progress, 0, 1);
-    const e = p * p * (3 - 2 * p);
-    const tw = Math.min(300, w - 24);
-    const th = tw * 0.75;
-    const vw = THREE.MathUtils.lerp(tw, w, e);
-    const vh = THREE.MathUtils.lerp(th, h, e);
-    this._vp = { x: (w - vw) / 2, y: (h - vh) / 2, w: vw, h: vh };
-  }
-
-  _updateCamera() {
-    const { theta, phi, radius } = this._cam;
-    const p = THREE.MathUtils.clamp(this.progress, 0, 1);
-    // camera framing follows the render viewport, not the canvas
-    const aspect = this._vp.w ? this._vp.w / this._vp.h : 1;
-    this.camera.aspect = aspect;
-    this.camera.updateProjectionMatrix();
-    // thumbnail: closer, higher; full: pulled back
-    const fittedRadius = radius * Math.max(1, 1.35 / aspect);
-    const dist = fittedRadius * THREE.MathUtils.lerp(0.9, 1, p);
-    const y = fittedRadius * Math.cos(phi);
-    const planar = Math.sqrt(Math.max(0, dist * dist - y * y));
-    this.camera.position.set(
-      Math.sin(theta) * planar,
-      y,
-      Math.cos(theta) * planar
-    );
-    this.camera.lookAt(0, THREE.MathUtils.lerp(1.2, 1.6, p), 0);
-  }
-
-  _applyProgress() {
-    const p = THREE.MathUtils.clamp(this.progress, 0, 1);
-    const ease = (t) => t * t * (3 - 2 * t); // smoothstep for effects
-
-    this._applyViewport();
-
-    // edges fade in
-    this.edgeMat.opacity = 0.75 * ease(p);
-
-    // details pop in staggered by their delay
-    for (const mesh of this._detailParts) {
-      const d = mesh.userData.delay ?? 0;
-      const local = THREE.MathUtils.clamp((p - d) / (1 - d), 0, 1);
-      const s = ease(local);
-      mesh.scale.setScalar(Math.max(0.001, s));
-      for (const m of mesh.userData.mats) m.opacity = s;
-    }
-
-    // shadow deepens
-    this.shadowMat.opacity = THREE.MathUtils.lerp(0.16, 0.42, ease(p));
-
-    // masses subtly settle: slight scale-down from thumbnail to full
-    const ms = THREE.MathUtils.lerp(1.06, 1, ease(p));
-    this.masses.scale.setScalar(ms);
-
-    this._updateCamera();
-  }
-
-  _stepSpring(dt) {
-    if (this.reducedMotion) return;
-    // damped spring with mild overshoot
-    const k = 90;
-    const damping = 13;
-    const force = (this.target - this.progress) * k - this.velocity * damping;
-    this.velocity += force * dt;
-    this.progress += this.velocity * dt;
-    this.progress = THREE.MathUtils.clamp(this.progress, -0.2, 1.2);
-    if (Math.abs(this.velocity) < 0.0005 && Math.abs(this.target - this.progress) < 0.0005) {
-      this.progress = this.target;
-      this.velocity = 0;
-    }
-  }
-
-  _stepOrbit(dt, now) {
-    if (this.reducedMotion || !this.orbiting) return;
-    if (this.progress < 0.95) return; // orbit only after the reveal completes
-    if (this._drag || now - this.lastInteract < 2000) return;
-    this._cam.theta += 0.05 * dt; // very slow
-  }
-
-  _loop() {
-    if (this.disposed) return;
-    const dt = Math.min(this._clock.getDelta(), 0.05);
-    const now = performance.now();
-
-    this._stepSpring(dt);
-    this._stepOrbit(dt, now);
-
-    // only re-apply when moving
-    if (this.progress !== this._lastApplied) {
-      this._applyProgress();
-      this._lastApplied = this.progress;
-    } else {
-      this._updateCamera();
-    }
-
-    if (this.onProgress) this.onProgress(this.progress, this._vp, dt);
-
-    // Renderer viewport/scissor APIs use CSS pixels and apply DPR internally.
-    // Clear the full buffer first so a shrinking preview leaves no stale pixels.
-    this.renderer.setScissorTest(false);
-    this.renderer.clear();
-    if (this.progress > 0) {
-      this.renderer.setScissorTest(true);
-      this.renderer.setScissor(
-        this._vp.x, this._size.h - this._vp.y - this._vp.h,
-        this._vp.w, this._vp.h
-      );
-      this.renderer.setViewport(
-        this._vp.x, this._size.h - this._vp.y - this._vp.h,
-        this._vp.w, this._vp.h
-      );
-      this.renderer.render(this.scene, this.camera);
-    }
-    this._raf = requestAnimationFrame(this._loop);
   }
 }
