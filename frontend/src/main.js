@@ -46,11 +46,11 @@ projectModels.forEach((model, index) => {
   model.components.filter(c => c.floor === 0 && c.type !== 'window').forEach(c => {
     const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon'); polygon.setAttribute('points', c.polygon.map(p => p.join(',')).join(' ')); svg.append(polygon);
   });
-  const preview = document.createElement('button'); preview.type = 'button'; preview.setAttribute('aria-label', `Xem trước ${model.name}`);
+  const preview = document.createElement('button'); preview.type = 'button'; preview.setAttribute('aria-label', `Preview ${model.name}`);
   const title = document.createElement('strong'); title.textContent = model.name;
   const detail = document.createElement('small'); detail.textContent = projects[index].note;
-  const source = document.createElement('small'); source.textContent = 'Mặt bằng mẫu → mô hình 3D'; preview.append(title, detail, source);
-  const open = document.createElement('button'); open.type = 'button'; open.className = 'work-open'; open.textContent = '↗'; open.setAttribute('aria-label', `Khám phá mẫu ${model.name}`);
+  const source = document.createElement('small'); source.textContent = 'Sample plan → 3D model'; preview.append(title, detail, source);
+  const open = document.createElement('button'); open.type = 'button'; open.className = 'work-open'; open.textContent = '↗'; open.setAttribute('aria-label', `Explore ${model.name}`);
   listen(preview, 'click', () => setProject(index)); listen(open, 'click', () => openWorkspace(index));
   item.append(svg, preview, open); $('work-list').append(item);
 });
@@ -60,7 +60,7 @@ function setProject(index) {
 }
 function showFallback() {
   scene?.dispose(); scene = null;
-  $('landing-error').textContent = 'Không thể mở 3D trên thiết bị này. Bạn vẫn có thể nạp và xem bản vẽ 2D.';
+  $('landing-error').textContent = '3D viewing is unavailable on this device. You can still upload and preview 2D drawings.';
   $('landing-error').hidden = false; canvas.hidden = true;
 }
 try { scene = new SceneView(canvas, { reducedMotion: motion.matches }); scene.setModel(projectModels[0]); }
@@ -143,13 +143,13 @@ function layout() {
   if (short) actionPositions.forEach(p => { p.y = height * .78; });
   const actionProgress = Math.max(0, Math.min(1, (mix - .12) / .88));
   action.style.transform = `translate(${lerp(actionPositions[from].x, actionPositions[next].x, actionProgress)}px,${lerp(actionPositions[from].y, actionPositions[next].y, actionProgress)}px)`;
-  $('action-note').textContent = ['Từ mặt bằng đến một góc nhìn mới.', 'Nạp bản vẽ. Xác nhận thông số. Khám phá.', 'Cuộn tiếp để trở về nơi ý tưởng bắt đầu.'][chapter];
-  $('chapter-caption').textContent = ['Khởi đầu một không gian', 'Từ đường nét đến chiều sâu', 'Trở về khởi đầu'][chapter];
-  $('annotation-text').textContent = ['BẢN VẼ / KHÔNG GIAN', 'ĐƯỜNG NÉT / CHIỀU SÂU', 'MẶT BẰNG / MÔ HÌNH'][chapter];
+  $('action-note').textContent = ['From floor plan to a new perspective.', 'Upload drawing. Confirm scale. Explore.', 'Scroll further to return where ideas begin.'][chapter];
+  $('chapter-caption').textContent = ['Beginning a space', 'From line to depth', 'Return to beginning'][chapter];
+  $('annotation-text').textContent = ['DRAWING / SPACE', 'LINE / DEPTH', 'PLAN / MODEL'][chapter];
   const annotation = document.querySelector('.scene-annotation');
   annotation.style.opacity = String((from === 0 ? 1 - mix : next === 0 ? mix : 0) * .85);
   annotation.style.top = `${heroY + heroH * .45}px`;
-  $('visual-label').textContent = chapter === 1 ? 'MINH HỌA QUÁ TRÌNH HÌNH THÀNH' : `MÔ HÌNH MẪU / ${projects[currentProject].name.toUpperCase()}`;
+  $('visual-label').textContent = chapter === 1 ? 'CONSTRUCTION PROCESS DEMO' : `DEMO MODEL / ${projects[currentProject].name.toUpperCase()}`;
   const interactive = chapter !== 1 && (expanded || chapter === 2) && mix === 0;
   $('expand-preview').hidden = expanded || chapter !== 0 || !scene;
   $('open-preview').hidden = !interactive || !scene;

@@ -43,7 +43,7 @@ export class SceneView {
       this.raycaster.setFromCamera(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), this.camera);
       const hit = this.raycaster.intersectObjects(this.meshes.filter(m => m.visible), false).find(h => !this.section || this.clip.distanceToPoint(h.point) >= 0);
       if (this.measuring && hit) {
-        if (!this.measureStart) { this.measureStart = hit.point.clone(); this.onMeasure('Chọn điểm thứ hai trên mô hình.'); }
+        if (!this.measureStart) { this.measureStart = hit.point.clone(); this.onMeasure('Select second point on model.'); }
         else { this.onMeasure(`${this.measureStart.distanceTo(hit.point).toFixed(2)} m`); this.measureStart = null; }
       } else this.select(hit?.object.userData.id || null);
     });

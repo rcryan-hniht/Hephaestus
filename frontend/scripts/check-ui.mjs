@@ -10,7 +10,7 @@ try {
     const page = await browser.newPage({ viewport: { width, height }, reducedMotion: 'reduce' });
     const errors = []; page.on('pageerror', e => errors.push(e.message));
     await page.goto(url, { waitUntil: 'networkidle' });
-    assert.equal(await page.locator('html').getAttribute('lang'), 'vi');
+    assert.equal(await page.locator('html').getAttribute('lang'), 'en');
     assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(250, 250, 250)');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     assert.equal(await page.locator('#landing-error').isVisible(), false);
@@ -23,12 +23,12 @@ try {
     await scroll(page, height * 2);
     assert.equal(await page.locator('body').getAttribute('data-chapter'), '2');
     await page.screenshot({ path: `/tmp/hephaestus-works-${width}.png` });
-    await page.getByRole('button', { name: 'Khám phá mẫu Một nếp nhà', exact: true }).click();
+    await page.getByRole('button', { name: 'Explore A Modest Home', exact: true }).click();
     assert.equal(await page.locator('#workspace').isVisible(), true);
-    assert.equal(await page.locator('#project-name').innerText(), 'Một nếp nhà');
+    assert.equal(await page.locator('#project-name').innerText(), 'A Modest Home');
     assert.equal(await page.locator('#export-model').isEnabled(), true);
     assert.equal(await page.locator('#floor-select option').count(), 3);
-    await page.getByRole('button', { name: 'Mặt bằng', exact: true }).click();
+    await page.getByRole('button', { name: 'Plan', exact: true }).click();
     assert.equal(await page.locator('[data-view="plan"]').getAttribute('aria-pressed'), 'true');
     await page.screenshot({ path: `/tmp/hephaestus-workspace-${width}.png` });
     if (width < 801) {
@@ -100,7 +100,7 @@ try {
   const gltf = JSON.parse(binary.subarray(20, 20 + jsonSize).toString());
   assert.ok(gltf.nodes.some(n => n.extras?.source?.includes('WALL')));
   await page.locator('#file-input').setInputFiles({ name: 'bad.dxf', mimeType: 'application/dxf', buffer: Buffer.from('invalid') });
-  await page.waitForFunction(() => document.querySelector('#processing-status').textContent.includes('Không thể'));
+  await page.waitForFunction(() => document.querySelector('#processing-status').textContent.includes('Could not'));
   assert.equal(await page.locator('#project-name').innerText(), 'wall.dxf');
   assert.equal(await page.locator('#export-model').isEnabled(), true);
   await page.locator('#file-input').setInputFiles({ name: 'new.dxf', mimeType: 'application/dxf', buffer: Buffer.from(dxf) });

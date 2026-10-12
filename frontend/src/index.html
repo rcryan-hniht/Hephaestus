@@ -1,82 +1,82 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#FAFAFA" />
-  <meta name="description" content="Từ nét vẽ đến không gian. Khám phá kiến trúc và dựng mô hình 3D sơ bộ từ đường bao DXF cùng Hephaestus." />
-  <title>Hephaestus — Từ nét vẽ đến không gian</title>
+  <meta name="description" content="From drawing to space. Explore architectural spaces and generate preliminary 3D models from DXF boundaries with Hephaestus." />
+  <title>Hephaestus — From drawing to space</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23C45C3D'/%3E%3Cpath d='M8 6v20m16-20v20M8 16h16' stroke='white' stroke-width='4'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <a class="skip-link" href="#landing-action">Đến thao tác chính</a>
+  <a class="skip-link" href="#landing-action">Skip to main action</a>
   <div id="landing">
     <div id="glow-cursor" class="glow-cursor" aria-hidden="true"></div>
-    <nav class="nav" aria-label="Điều hướng chính">
-      <a class="brand" href="#hero" data-chapter="0" aria-label="Hephaestus, trang đầu"><svg viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><path d="M5 27V5h6v8h10V5h6v22h-6v-8H11v8z" fill="currentColor"/></svg><span>hephaestus.</span></a>
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="#hero" data-chapter="0" aria-label="Hephaestus, home"><svg viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><path d="M5 27V5h6v8h10V5h6v22h-6v-8H11v8z" fill="currentColor"/></svg><span>hephaestus.</span></a>
       <button id="menu-toggle" class="menu-toggle" aria-expanded="false" aria-controls="nav-links">Menu</button>
-      <div id="nav-links" class="nav-links"><a href="#manifesto" data-chapter="1">Ý tưởng</a><a href="#works" data-chapter="2">Công trình</a><button data-workspace>Cách hoạt động</button></div>
-      <button class="button button--white button--primary nav-upload" data-upload>Nạp bản vẽ <span aria-hidden="true">↗</span></button>
+      <div id="nav-links" class="nav-links"><a href="#manifesto" data-chapter="1">Idea</a><a href="#works" data-chapter="2">Works</a><button data-workspace>How it works</button></div>
+      <button class="button button--white button--primary nav-upload" data-upload>Upload drawing <span aria-hidden="true">↗</span></button>
     </nav>
-    <main id="story" class="story" aria-label="Khám phá Hephaestus">
+    <main id="story" class="story" aria-label="Explore Hephaestus">
       <div class="chapter-anchor" id="hero"></div><div class="chapter-anchor" id="manifesto"></div><div class="chapter-anchor" id="works"></div>
       <div class="story-sticky">
         <div class="intro-word" aria-hidden="true"><span>HEPHAESTUS</span><span>HEPHAESTUS</span><span>HEPHAESTUS</span><span>HEPHAESTUS</span><span>HEPHAESTUS</span></div>
-        <div class="chapter-copy" data-copy="0"><h1>Từ nét vẽ.<br /><span>Đến không gian.</span></h1></div>
-        <div class="chapter-copy" data-copy="1" inert aria-hidden="true"><p class="eyebrow">MỌI KHÔNG GIAN ĐỀU CÓ KHỞI ĐẦU</p><h2>Bản vẽ là<br />khởi đầu.</h2><p class="chapter-description">Một đường nét. Một ý tưởng.<br />Một không gian có thể bước vào.</p><ol class="process"><li>Nạp bản vẽ</li><li>Phân tích</li><li>Dựng mô hình</li><li>Tương tác 3D</li></ol></div>
-        <div class="chapter-copy" data-copy="2" inert aria-hidden="true"><p class="eyebrow">NGHIÊN CỨU KHÔNG GIAN</p><h2>Những ý tưởng<br />thành hình.</h2></div>
+        <div class="chapter-copy" data-copy="0"><h1>From drawing.<br /><span>To space.</span></h1></div>
+        <div class="chapter-copy" data-copy="1" inert aria-hidden="true"><p class="eyebrow">EVERY SPACE HAS A BEGINNING</p><h2>The drawing is<br />the beginning.</h2><p class="chapter-description">A single line. An idea.<br />A space you can step inside.</p><ol class="process"><li>Upload plan</li><li>Analyze</li><li>Construct model</li><li>3D interaction</li></ol></div>
+        <div class="chapter-copy" data-copy="2" inert aria-hidden="true"><p class="eyebrow">SPATIAL EXPLORATIONS</p><h2>Ideas taking<br />tangible form.</h2></div>
         <div id="visual-frame" class="visual-frame">
-          <div class="visual-topline"><span id="visual-label">MÔ HÌNH MẪU / KHOẢNG SÂN Ở GIỮA</span><span aria-hidden="true">＋</span></div>
-          <div class="visual-viewport"><canvas id="landing-canvas" aria-label="Mô hình kiến trúc minh họa. Kéo để xoay, phím mũi tên đổi góc nhìn." tabindex="-1"></canvas><p id="landing-error" class="canvas-error" role="status" hidden></p></div>
-          <button id="expand-preview" aria-label="Mở rộng mô hình minh họa" aria-expanded="false"><span class="sr-only">Khám phá không gian</span><span aria-hidden="true">↗</span></button>
-          <button id="open-preview" class="open-preview" hidden>Mở mô hình <span aria-hidden="true">↗</span></button>
+          <div class="visual-topline"><span id="visual-label">DEMO MODEL / COURTYARD RESIDENCE</span><span aria-hidden="true">＋</span></div>
+          <div class="visual-viewport"><canvas id="landing-canvas" aria-label="Demonstration architectural model. Drag to orbit, arrow keys to change view." tabindex="-1"></canvas><p id="landing-error" class="canvas-error" role="status" hidden></p></div>
+          <button id="expand-preview" aria-label="Expand demo model" aria-expanded="false"><span class="sr-only">Explore space</span><span aria-hidden="true">↗</span></button>
+          <button id="open-preview" class="open-preview" hidden>Open model <span aria-hidden="true">↗</span></button>
         </div>
         <div id="work-list" class="work-list" inert aria-hidden="true"></div>
-        <div id="landing-action" class="landing-action"><button class="button button--white button--hero-action" data-upload>Nạp bản vẽ của bạn <span aria-hidden="true">↗</span></button><span id="action-note">Từ mặt bằng đến một góc nhìn mới.</span><p class="slogan">Imagination is beginning,<br /><em>hephaestus</em> brings it closer.</p></div>
-        <div class="scene-annotation" aria-hidden="true"><span>＋</span><span id="annotation-text">BẢN VẼ / KHÔNG GIAN</span></div>
-        <footer class="landing-footer"><a href="mailto:studio@hephaestus.dev">studio@hephaestus.dev ↗</a><button id="next-chapter" aria-label="Đến chương tiếp theo"><span id="chapter-caption">Khởi đầu một không gian</span><span aria-hidden="true">↓</span></button></footer>
+        <div id="landing-action" class="landing-action"><button class="button button--white button--hero-action" data-upload>Upload your drawing <span aria-hidden="true">↗</span></button><span id="action-note">From floor plan to a new perspective.</span><p class="slogan">Imagination is beginning,<br /><em>hephaestus</em> brings it closer.</p></div>
+        <div class="scene-annotation" aria-hidden="true"><span>＋</span><span id="annotation-text">DRAWING / SPACE</span></div>
+        <footer class="landing-footer"><a href="mailto:studio@hephaestus.dev">studio@hephaestus.dev ↗</a><button id="next-chapter" aria-label="Go to next chapter"><span id="chapter-caption">Beginning a space</span><span aria-hidden="true">↓</span></button></footer>
       </div>
     </main>
   </div>
 
-  <section id="workspace" class="workspace" aria-label="Không gian làm việc kiến trúc" hidden>
-    <header class="workspace-top"><button id="back-home" class="brand" aria-label="Trở về landing">h.<span>hephaestus</span></button><div class="project-heading"><strong id="project-name">Bản vẽ mới</strong><span id="processing-status" role="status" aria-live="polite">Sẵn sàng nhận bản vẽ</span></div><div class="top-actions"><button class="button" data-upload>Nạp bản vẽ</button><button id="export-model" class="button button--white" disabled>Xuất GLB ↗</button></div></header>
+  <section id="workspace" class="workspace" aria-label="Architectural workspace" hidden>
+    <header class="workspace-top"><button id="back-home" class="brand" aria-label="Back to landing">h.<span>hephaestus</span></button><div class="project-heading"><strong id="project-name">New drawing</strong><span id="processing-status" role="status" aria-live="polite">Ready for drawing</span></div><div class="top-actions"><button class="button" data-upload>Upload drawing</button><button id="export-model" class="button button--white" disabled>Export GLB ↗</button></div></header>
     <div class="workspace-body">
-      <aside id="drawing-panel" class="panel drawing-panel" aria-label="Bản vẽ nguồn"><div class="panel-heading"><h2>Bản vẽ nguồn</h2><button class="drawer-close" data-close-drawer aria-label="Đóng bản vẽ">×</button></div>
-        <div id="drop-zone" class="drop-zone"><span aria-hidden="true">＋</span><p>Kéo bản vẽ vào đây</p><button class="button" data-upload>Chọn tập tin</button><small>DXF ASCII · PNG · JPG · tối đa 5 MB</small></div>
-        <p class="panel-note">DXF: đường bao thẳng khép kín trên layer WALL, TUONG, COLUMN, COT, SLAB hoặc SAN. Ảnh chỉ hỗ trợ xem trước.</p>
-        <p id="file-name" class="file-name">Chưa có bản vẽ</p>
-        <div id="drawing-preview" class="drawing-preview" tabindex="0" aria-label="Bản vẽ 2D. Dùng các nút bên dưới để thu phóng."><svg id="plan-svg" role="img" aria-label="Mặt bằng nguồn" hidden></svg><img id="drawing-image" alt="Bản vẽ vừa nạp" hidden /><span id="preview-empty">Mặt bằng sẽ xuất hiện ở đây.</span></div>
-        <div class="preview-tools"><button id="plan-out" aria-label="Thu nhỏ bản vẽ">−</button><button id="plan-fit">Vừa khung</button><button id="plan-in" aria-label="Phóng to bản vẽ">＋</button></div>
-        <form id="drawing-settings"><label>Đơn vị bản vẽ<select id="drawing-unit"><option value="">Cần xác nhận</option><option value="mm">Milimét (mm)</option><option value="cm">Centimét (cm)</option><option value="m">Mét (m)</option><option value="in">Inch (in)</option><option value="ft">Feet (ft)</option></select></label><label>Chiều cao tầng (m)<input id="floor-height" type="number" min="0.1" max="100" step="0.1" value="3.2" required /></label><small id="settings-note">Chiều cao là giả định cần xác nhận. DXF hiện hỗ trợ một mặt bằng.</small><button id="continue-build" class="button button--white" type="submit" disabled>Xác nhận thông số</button></form>
-        <div class="job-actions"><button id="cancel-job" class="button" hidden>Hủy xử lý</button><button id="retry-job" class="button" hidden>Thử lại</button></div>
-        <p id="drawing-message" class="panel-note" aria-live="polite">Chọn một công trình mẫu để khám phá ngay.</p>
-        <button id="load-sample" class="text-button">Mở mô hình minh họa ↗</button>
+      <aside id="drawing-panel" class="panel drawing-panel" aria-label="Source drawing"><div class="panel-heading"><h2>Source drawing</h2><button class="drawer-close" data-close-drawer aria-label="Close drawing panel">×</button></div>
+        <div id="drop-zone" class="drop-zone"><span aria-hidden="true">＋</span><p>Drag drawing here</p><button class="button" data-upload>Select file</button><small>ASCII DXF · PNG · JPG · max 5 MB</small></div>
+        <p class="panel-note">DXF: closed straight boundaries on WALL, TUONG, COLUMN, COT, SLAB or SAN layers. Images are preview-only.</p>
+        <p id="file-name" class="file-name">No drawing selected</p>
+        <div id="drawing-preview" class="drawing-preview" tabindex="0" aria-label="2D drawing. Use buttons below to zoom."><svg id="plan-svg" role="img" aria-label="Source floor plan" hidden></svg><img id="drawing-image" alt="Uploaded drawing" hidden /><span id="preview-empty">Floor plan will appear here.</span></div>
+        <div class="preview-tools"><button id="plan-out" aria-label="Zoom out">−</button><button id="plan-fit">Fit</button><button id="plan-in" aria-label="Zoom in">＋</button></div>
+        <form id="drawing-settings"><label>Drawing unit<select id="drawing-unit"><option value="">Needs confirmation</option><option value="mm">Millimeters (mm)</option><option value="cm">Centimeters (cm)</option><option value="m">Meters (m)</option><option value="in">Inches (in)</option><option value="ft">Feet (ft)</option></select></label><label>Floor height (m)<input id="floor-height" type="number" min="0.1" max="100" step="0.1" value="3.2" required /></label><small id="settings-note">Height is an editable assumption. DXF currently supports single-level plans.</small><button id="continue-build" class="button button--white" type="submit" disabled>Confirm parameters</button></form>
+        <div class="job-actions"><button id="cancel-job" class="button" hidden>Cancel processing</button><button id="retry-job" class="button" hidden>Retry</button></div>
+        <p id="drawing-message" class="panel-note" aria-live="polite">Select a sample project to explore immediately.</p>
+        <button id="load-sample" class="text-button">Open demo model ↗</button>
       </aside>
       <div class="model-region">
-        <div class="view-toolbar" role="group" aria-label="Góc nhìn"><button data-view="perspective" aria-pressed="true">Phối cảnh</button><button data-view="plan" aria-pressed="false">Mặt bằng</button><button data-view="elevation" aria-pressed="false">Mặt đứng</button><button id="fit-model" aria-label="Căn mô hình vừa khung">Vừa khung</button></div>
-        <div class="model-viewport"><canvas id="workspace-canvas" tabindex="0" aria-label="Mô hình 3D: kéo để xoay, hai ngón để di chuyển và thu phóng. Dùng mũi tên để xoay, cộng trừ để thu phóng."></canvas><div id="model-empty" class="model-empty"><span class="empty-mark" aria-hidden="true">h.</span><h2>Không gian đang chờ<br />nét vẽ của bạn.</h2><p>Nạp bản vẽ DXF hoặc khám phá một mô hình mẫu.</p><button class="button button--dark" id="empty-sample">Khám phá mẫu ↗</button></div><p id="workspace-error" class="canvas-error" role="alert" hidden></p><span id="model-label" class="model-label" hidden>MÔ HÌNH MINH HỌA</span></div>
-        <div class="model-bottom"><div class="display-modes" role="group" aria-label="Hiển thị mô hình"><button data-mode="solid" aria-pressed="true">Đặc</button><button data-mode="edges" aria-pressed="false">Nét</button><button data-mode="transparent" aria-pressed="false">Trong suốt</button></div><button id="measure" aria-pressed="false">Đo khoảng cách</button><span id="measurement" aria-live="polite">Đơn vị: m</span></div>
-        <div class="mobile-drawers"><button data-drawer="drawing-panel" aria-expanded="false" aria-controls="drawing-panel">Bản vẽ</button><button data-drawer="properties-panel" aria-expanded="false" aria-controls="properties-panel">Thuộc tính</button></div>
+        <div class="view-toolbar" role="group" aria-label="Camera view"><button data-view="perspective" aria-pressed="true">Perspective</button><button data-view="plan" aria-pressed="false">Plan</button><button data-view="elevation" aria-pressed="false">Elevation</button><button id="fit-model" aria-label="Fit model to frame">Fit</button></div>
+        <div class="model-viewport"><canvas id="workspace-canvas" tabindex="0" aria-label="3D model: drag to orbit, two fingers to pan and pinch zoom. Use arrow keys to orbit, plus or minus to zoom."></canvas><div id="model-empty" class="model-empty"><span class="empty-mark" aria-hidden="true">h.</span><h2>A space waiting for<br />your lines.</h2><p>Upload a DXF drawing or explore a demo model.</p><button class="button button--dark" id="empty-sample">Explore sample ↗</button></div><p id="workspace-error" class="canvas-error" role="alert" hidden></p><span id="model-label" class="model-label" hidden>DEMO MODEL</span></div>
+        <div class="model-bottom"><div class="display-modes" role="group" aria-label="Model display"><button data-mode="solid" aria-pressed="true">Solid</button><button data-mode="edges" aria-pressed="false">Wireframe</button><button data-mode="transparent" aria-pressed="false">Transparent</button></div><button id="measure" aria-pressed="false">Measure distance</button><span id="measurement" aria-live="polite">Unit: m</span></div>
+        <div class="mobile-drawers"><button data-drawer="drawing-panel" aria-expanded="false" aria-controls="drawing-panel">Drawing</button><button data-drawer="properties-panel" aria-expanded="false" aria-controls="properties-panel">Properties</button></div>
       </div>
-      <aside id="properties-panel" class="panel properties-panel" aria-label="Thuộc tính mô hình"><div class="panel-heading"><h2>Thuộc tính</h2><button class="drawer-close" data-close-drawer aria-label="Đóng thuộc tính">×</button></div>
-        <label>Tầng đang xem<select id="floor-select"><option value="all">Tất cả các tầng</option></select></label>
-        <details open><summary>Thành phần hiển thị</summary><div class="visibility-options"><label><input type="checkbox" data-type="wall" checked />Tường</label><label><input type="checkbox" data-type="slab" checked />Sàn</label><label><input type="checkbox" data-type="column" checked />Cột</label><label><input type="checkbox" data-type="window" checked />Kính</label><label><input type="checkbox" data-type="roof" checked />Mái</label></div></details>
-        <label>Mặt cắt ngang <output id="section-value">100%</output><input id="section" type="range" min="0" max="100" value="100" /></label>
-        <div class="selection-heading"><h3>Cấu kiện đang chọn</h3><span id="selection-count">—</span></div>
-        <label class="sr-only" for="component-select">Chọn cấu kiện</label><select id="component-select"><option value="">Chọn trên mô hình hoặc bản vẽ</option></select>
-        <p id="selection-info" class="panel-note">Chọn một cấu kiện để xem kích thước và nguồn.</p>
-        <form id="properties-form" hidden><label>Chiều cao / độ dày (m)<input id="component-height" type="number" min="0.01" max="100" step="0.01" required /></label><label>Cao độ (m)<input id="component-elevation" type="number" min="-100" max="1000" step="0.01" required /></label><label>Dịch theo X (m)<input id="component-x" type="number" min="-10000" max="10000" step="0.01" value="0" required /></label><label>Dịch theo Y mặt bằng (m)<input id="component-z" type="number" min="-10000" max="10000" step="0.01" value="0" required /></label><button class="button" type="submit">Áp dụng thay đổi</button></form>
-        <div class="history-actions"><button id="undo" disabled>Hoàn tác</button><button id="redo" disabled>Làm lại</button></div>
+      <aside id="properties-panel" class="panel properties-panel" aria-label="Model properties"><div class="panel-heading"><h2>Properties</h2><button class="drawer-close" data-close-drawer aria-label="Close properties panel">×</button></div>
+        <label>Active floor<select id="floor-select"><option value="all">All floors</option></select></label>
+        <details open><summary>Component visibility</summary><div class="visibility-options"><label><input type="checkbox" data-type="wall" checked />Walls</label><label><input type="checkbox" data-type="slab" checked />Slabs</label><label><input type="checkbox" data-type="column" checked />Columns</label><label><input type="checkbox" data-type="window" checked />Glass</label><label><input type="checkbox" data-type="roof" checked />Roofs</label></div></details>
+        <label>Horizontal section <output id="section-value">100%</output><input id="section" type="range" min="0" max="100" value="100" /></label>
+        <div class="selection-heading"><h3>Selected component</h3><span id="selection-count">—</span></div>
+        <label class="sr-only" for="component-select">Select component</label><select id="component-select"><option value="">Select on model or drawing</option></select>
+        <p id="selection-info" class="panel-note">Select a component to inspect dimensions and source.</p>
+        <form id="properties-form" hidden><label>Height / thickness (m)<input id="component-height" type="number" min="0.01" max="100" step="0.01" required /></label><label>Elevation (m)<input id="component-elevation" type="number" min="-100" max="1000" step="0.01" required /></label><label>Offset X (m)<input id="component-x" type="number" min="-10000" max="10000" step="0.01" value="0" required /></label><label>Offset Y plan (m)<input id="component-z" type="number" min="-10000" max="10000" step="0.01" value="0" required /></label><button class="button" type="submit">Apply changes</button></form>
+        <div class="history-actions"><button id="undo" disabled>Undo</button><button id="redo" disabled>Redo</button></div>
         <p id="model-notes" class="panel-note"></p>
       </aside>
     </div>
   </section>
-  <input id="file-input" class="sr-only" type="file" accept=".dxf,.png,.jpg,.jpeg" tabindex="-1" aria-label="Chọn bản vẽ" />
-  <noscript><p class="noscript">Bật JavaScript để khám phá mô hình và nạp bản vẽ. Liên hệ studio@hephaestus.dev nếu cần hỗ trợ.</p></noscript>
+  <input id="file-input" class="sr-only" type="file" accept=".dxf,.png,.jpg,.jpeg" tabindex="-1" aria-label="Select drawing" />
+  <noscript><p class="noscript">Please enable JavaScript to explore 3D models and upload drawings. Contact studio@hephaestus.dev for support.</p></noscript>
   <script type="module" src="/main.js"></script>
 </body>
 </html>

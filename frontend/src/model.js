@@ -1,8 +1,8 @@
-export const typeNames = { wall: 'Tường', slab: 'Sàn', column: 'Cột', window: 'Kính', roof: 'Mái' };
+export const typeNames = { wall: 'Wall', slab: 'Slab', column: 'Column', window: 'Glass', roof: 'Roof' };
 export const projects = [
-  { name: 'Khoảng sân ở giữa', note: 'Nhà ở · 5 tầng · Sân trong', floors: 5, width: 12, depth: 10 },
-  { name: 'Một nếp nhà', note: 'Nhà ở · 2 tầng · Hiên mở', floors: 2, width: 14, depth: 7 },
-  { name: 'Những tầng ánh sáng', note: 'Không gian làm việc · 3 tầng', floors: 3, width: 9, depth: 12 },
+  { name: 'Courtyard Residence', note: 'Residential · 5 floors · Inner courtyard', floors: 5, width: 12, depth: 10 },
+  { name: 'A Modest Home', note: 'Residential · 2 floors · Open porch', floors: 2, width: 14, depth: 7 },
+  { name: 'Layers of Light', note: 'Workspace · 3 floors · Daylight atrium', floors: 3, width: 9, depth: 12 },
 ];
 const rectangle = (x, z, w, d) => [[x, z], [x + w, z], [x + w, z + d], [x, z + d]];
 export function sampleModel(index = 0) {
@@ -10,7 +10,7 @@ export function sampleModel(index = 0) {
   const components = [], { width: w, depth: d, floors } = project;
   const add = (type, floor, polygon, height, elevation) => components.push({
     id: `sample-${index}-${components.length}`, type, floor, polygon, height, elevation,
-    source: `${project.name} / mặt bằng tầng ${floor + 1}`, assumed: false,
+    source: `${project.name} / floor ${floor + 1} plan`, assumed: false,
   });
   const ring = (floor, y, type = 'slab') => {
     for (const r of [[-w / 2, -d / 2, w, 2.5], [-w / 2, d / 2 - 2.5, w, 2.5], [-w / 2, -d / 2 + 2.5, 2.5, d - 5], [w / 2 - 2.5, -d / 2 + 2.5, 2.5, d - 5]]) add(type, floor, rectangle(...r), .22, y);
@@ -31,7 +31,7 @@ export function sampleModel(index = 0) {
     for (const z of [-d / 2 + 2.5, d / 2 - 2.6]) add('wall', floor, rectangle(-w / 2 + 2.5, z, w - 5, .1), .8, y + .22);
   }
   ring(floors - 1, floors * 3.2, 'roof');
-  return { name: project.name, sample: true, unit: 'm', floors, components, warnings: ['Mô hình minh họa có kích thước thiết kế; không phải kết quả nhận diện bản vẽ.'] };
+  return { name: project.name, sample: true, unit: 'm', floors, components, warnings: ['Demonstration model with design dimensions; not reconstructed from drawing.'] };
 }
 
 export function phaseAt(offset, step, reduced = false) {
@@ -43,12 +43,12 @@ export function phaseAt(offset, step, reduced = false) {
 }
 
 export function parseDXF(text) {
-  if (text.length > 5 * 1024 * 1024 || text.includes('\0')) throw new Error('Chỉ hỗ trợ DXF ASCII tối đa 5 MB.');
+  if (text.length > 5 * 1024 * 1024 || text.includes('\0')) throw new Error('Only ASCII DXF up to 5 MB is supported.');
   const lines = text.trim().split(/\r?\n/);
-  if (lines.length % 2 || !text.includes('ENTITIES')) throw new Error('File không phải DXF ASCII hợp lệ.');
+  if (lines.length % 2 || !text.includes('ENTITIES')) throw new Error('File is not a valid ASCII DXF.');
   const pairs = [];
   for (let i = 0; i < lines.length; i += 2) {
-    if (!/^\s*\d+\s*$/.test(lines[i])) throw new Error('Mã nhóm DXF không hợp lệ.');
+    if (!/^\s*\d+\s*$/.test(lines[i])) throw new Error('Invalid DXF group code.');
     pairs.push([Number(lines[i]), lines[i + 1].trim()]);
   }
   const unitIndex = pairs.findIndex(([code, value]) => code === 9 && value === '$INSUNITS');
@@ -73,7 +73,7 @@ export function parseDXF(text) {
     const polygon = [];
     for (let j = 0; j < fields.length; j++) {
       if (fields[j][0] === 10) {
-        if (fields[j + 1]?.[0] !== 20) throw new Error('Đường bao DXF thiếu tọa độ Y.');
+        if (fields[j + 1]?.[0] !== 20) throw new Error('DXF boundary missing Y coordinate.');
         polygon.push([Number(fields[j][1]), Number(fields[j + 1][1])]);
       }
     }
@@ -81,19 +81,19 @@ export function parseDXF(text) {
     const area = polygon.reduce((sum, [x, y], j) => {
       const next = polygon[(j + 1) % polygon.length]; return sum + x * next[1] - next[0] * y;
     }, 0);
-    if (polygon.length < 3 || polygon.length > 200 || polygon.some(p => p.some(n => !Number.isFinite(n) || Math.abs(n) > 1e9)) || !Number.isFinite(area) || Math.abs(area) < 1e-8) throw new Error('Đường bao không hợp lệ hoặc vượt giới hạn hình học.');
+    if (polygon.length < 3 || polygon.length > 200 || polygon.some(p => p.some(n => !Number.isFinite(n) || Math.abs(n) > 1e9)) || !Number.isFinite(area) || Math.abs(area) < 1e-8) throw new Error('Invalid boundary or geometric bounds exceeded.');
     // shortcut: only simple straight closed outlines; add topology repair when broader CAD support is introduced.
     for (let a = 0; a < polygon.length; a++) for (let b = a + 2; b < polygon.length; b++) {
       if (a === 0 && b === polygon.length - 1) continue;
       const p = polygon[a], q = polygon[(a + 1) % polygon.length], r = polygon[b], s = polygon[(b + 1) % polygon.length];
       const cross = (u, v, w) => (v[0] - u[0]) * (w[1] - u[1]) - (v[1] - u[1]) * (w[0] - u[0]);
-      if (cross(p, q, r) * cross(p, q, s) <= 0 && cross(r, s, p) * cross(r, s, q) <= 0 && Math.max(Math.min(p[0], q[0]), Math.min(r[0], s[0])) <= Math.min(Math.max(p[0], q[0]), Math.max(r[0], s[0])) && Math.max(Math.min(p[1], q[1]), Math.min(r[1], s[1])) <= Math.min(Math.max(p[1], q[1]), Math.max(r[1], s[1]))) throw new Error('Đường bao tự giao nhau; hãy sửa trong CAD và thử lại.');
+      if (cross(p, q, r) * cross(p, q, s) <= 0 && cross(r, s, p) * cross(r, s, q) <= 0 && Math.max(Math.min(p[0], q[0]), Math.min(r[0], s[0])) <= Math.min(Math.max(p[0], q[0]), Math.max(r[0], s[0])) && Math.max(Math.min(p[1], q[1]), Math.min(r[1], s[1])) <= Math.min(Math.max(p[1], q[1]), Math.max(r[1], s[1]))) throw new Error('Boundary self-intersects; please fix in CAD and retry.');
     }
     outlines.push({ id: fields.find(([code]) => code === 5)?.[1] || `outline-${outlines.length}`, polygon, type, layer });
-    if (outlines.length > 1000) throw new Error('Bản vẽ vượt giới hạn 1.000 đường bao.');
+    if (outlines.length > 1000) throw new Error('Drawing exceeds limit of 1,000 boundaries.');
     i = end - 1;
   }
-  if (!outlines.length) throw new Error('Không tìm thấy đường bao thẳng LWPOLYLINE khép kín trên layer WALL/TUONG, COLUMN/COT hoặc SLAB/SAN.');
+  if (!outlines.length) throw new Error('No closed straight LWPOLYLINE boundaries found on WALL, COLUMN, or SLAB layers.');
   return { unit, outlines, ignored };
 }
 
@@ -106,11 +106,11 @@ export function drawingBounds(components) {
   return { minX, minZ, width: maxX - minX, depth: maxZ - minZ };
 }
 
-export function reconstructDrawing(parsed, { unit, height, name = 'Bản vẽ DXF' }) {
+export function reconstructDrawing(parsed, { unit, height, name = 'DXF Drawing' }) {
   const scale = { mm: .001, cm: .01, m: 1, in: .0254, ft: .3048 }[unit];
-  if (!scale || !Number.isFinite(height) || height < .1 || height > 100) throw new Error('Hãy xác nhận đơn vị và chiều cao từ 0,1 đến 100 m.');
+  if (!scale || !Number.isFinite(height) || height < .1 || height > 100) throw new Error('Please confirm unit and height between 0.1 and 100 m.');
   const components = parsed.outlines.map((o, i) => ({ id: `dxf-${i}-${o.id}`, type: o.type, floor: 0, polygon: o.polygon.map(p => p.map(n => n * scale)), height: o.type === 'slab' ? .2 : height, elevation: 0, source: `${name} / ${o.layer} / ${o.id}`, assumed: true }));
   const bounds = drawingBounds(components);
-  if (bounds.width > 10000 || bounds.depth > 10000) throw new Error('Kích thước vượt 10 km. Kiểm tra lại đơn vị bản vẽ.');
-  return { name, sample: false, unit: 'm', floors: 1, components, warnings: [`${parsed.ignored} đối tượng không được dựng. Chỉ đùn đường bao; chưa nhận diện cửa, mái, cầu thang hay nhiều tầng.`, 'Chiều cao do bạn xác nhận; sàn dày 0,2 m là giả định có thể sửa.'] };
+  if (bounds.width > 10000 || bounds.depth > 10000) throw new Error('Dimensions exceed 10 km. Please verify drawing unit.');
+  return { name, sample: false, unit: 'm', floors: 1, components, warnings: [`${parsed.ignored} entities were not reconstructed. Only outlines are extruded; doors, roofs, stairs, or multiple floors not recognized.`, 'Height is confirmed by you; slab thickness 0.2 m is an editable assumption.'] };
 }
