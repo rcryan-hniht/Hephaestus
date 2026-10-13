@@ -6,7 +6,7 @@ const url = process.env.UI_URL || 'http://127.0.0.1:5173';
 const dxf = `0\nSECTION\n2\nHEADER\n9\n$INSUNITS\n70\n4\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n0\nLWPOLYLINE\n8\nWALL\n70\n1\n90\n4\n10\n0\n20\n0\n10\n4000\n20\n0\n10\n4000\n20\n200\n10\n0\n20\n200\n0\nENDSEC\n0\nEOF\n`;
 const scroll = async (page, value) => { await page.evaluate(v => window.scrollTo(0, v), value); await page.waitForTimeout(180); };
 try {
-  for (const [width, height] of [[1440, 900], [1366, 768], [390, 844], [375, 667], [844, 390]]) {
+  for (const [width, height] of [[1920, 900], [1440, 900], [1366, 768], [390, 844], [375, 667], [320, 568], [844, 390]]) {
     const page = await browser.newPage({ viewport: { width, height }, reducedMotion: 'reduce' });
     const errors = []; page.on('pageerror', e => errors.push(e.message));
     await page.goto(url, { waitUntil: 'networkidle' });
@@ -14,14 +14,28 @@ try {
     assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(250, 250, 250)');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     assert.equal(await page.locator('#landing-error').isVisible(), false);
-    const action = await page.locator('#landing-action button').boundingBox();
+    const navFits = await page.locator('.nav').evaluate(el => [...el.querySelectorAll('a,button')].filter(c => c.getBoundingClientRect().width).every(c => { const r = c.getBoundingClientRect(); return r.x >= 0 && r.right <= innerWidth; }));
+    assert.ok(navFits, 'navigation controls stay inside the viewport');
+    const action = await page.locator('#landing-action [data-upload]').boundingBox();
     assert.ok(action.y >= 0 && action.y + action.height <= height, 'upload fits viewport');
+    const heading = await page.locator('h1').boundingBox();
+    const visual = await page.locator('#visual-frame').boundingBox();
+    const separated = heading.x + heading.width <= visual.x || heading.y + heading.height <= visual.y;
+    assert.ok(separated, 'headline and reference image never overlap');
+    assert.ok(heading.y + heading.height + 10 <= action.y, 'headline stays clear of upload');
+    assert.equal(await page.locator('#hero-photograph').evaluate(img => img.naturalWidth), 1126);
+    assert.equal(await page.locator('#open-preview').isVisible(), false);
+    const animations = await page.locator('.morph-word').evaluate(el => el.getAnimations({subtree:true}).length);
+    assert.equal(animations, 0, 'reduced motion disables intro');
     await page.screenshot({ path: `/tmp/hephaestus-hero-${width}.png` });
     await scroll(page, height);
     assert.equal(await page.locator('body').getAttribute('data-chapter'), '1');
     await page.screenshot({ path: `/tmp/hephaestus-manifesto-${width}.png` });
     await scroll(page, height * 2);
     assert.equal(await page.locator('body').getAttribute('data-chapter'), '2');
+    const worksAction = await page.locator('#landing-action').boundingBox();
+    const footer = await page.locator('.landing-footer').boundingBox();
+    assert.ok(worksAction.y + worksAction.height <= footer.y, 'works action clears footer');
     await page.screenshot({ path: `/tmp/hephaestus-works-${width}.png` });
     await page.getByRole('button', { name: 'Explore A Modest Home', exact: true }).click();
     assert.equal(await page.locator('#workspace').isVisible(), true);
@@ -41,9 +55,11 @@ try {
       await page.keyboard.press('Escape');
     }
     await page.locator('#back-home').click();
+    await page.getByRole('button', { name: 'Preview Courtyard Residence', exact: true }).focus();
     await scroll(page, height * 3);
     await page.waitForFunction(() => scrollY < 5);
     assert.equal(await page.locator('body').getAttribute('data-chapter'), '0');
+    assert.equal(await page.locator('#work-list').isVisible(), false, 'inactive Works never overlays Hero');
     assert.equal(await page.locator('canvas').count(), 2);
     assert.deepEqual(errors, []);
     console.log(`PASS ${width}×${height}: chapters, wrap, sample, views, responsive drawers`);
@@ -53,10 +69,22 @@ try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.goto(url, { waitUntil: 'networkidle' });
-  await page.locator('#expand-preview').focus();
-  await page.waitForTimeout(1100);
+  await page.locator('.morph-word').evaluate(el => el.getAnimations({subtree:true}).forEach(a => { a.pause(); a.currentTime = 0; }));
+  const row = await page.locator('.morph-word').evaluate(el => {
+    const box = el.getBoundingClientRect();
+    return [...el.children].map(w => { const r = w.getBoundingClientRect(); return { x: r.x, y: r.y, right: r.right, fits: r.x >= box.x - 1 && r.right <= box.right + 1 }; });
+  });
+  assert.ok(row.every(w => w.fits), 'all five introductory words fit the left column');
+  assert.ok(row.every(w => Math.abs(w.y - row[0].y) < 1), 'introductory words form one horizontal row');
+  await page.screenshot({ path: '/tmp/hephaestus-intro-row.png' });
+  await page.locator('.morph-word').evaluate(el => el.getAnimations({subtree:true}).forEach(a => a.play()));
+  await page.locator('.morph-word').evaluate(el => Promise.all(el.getAnimations({subtree:true}).map(a => a.finished)));
+  const intro = await page.locator('.morph-word span').evaluateAll(words => words.map(w => ({ matrix: getComputedStyle(w).transform, opacity: getComputedStyle(w).opacity })));
+  assert.equal(intro[0].opacity, '1');
+  assert.ok(intro.slice(1).every(w => w.opacity === '0'), 'five words resolve into one');
+  await page.screenshot({ path: '/tmp/hephaestus-animated-hero.png' });
   const hero = await page.locator('#visual-frame').boundingBox();
-  assert.ok(hero.width > 600);
+  assert.ok(hero.x > 720, 'reference remains in right column');
   await scroll(page, 2400);
   const before = await page.locator('#visual-frame').boundingBox();
   await scroll(page, 2550);
@@ -68,7 +96,8 @@ try {
   await scroll(page, 2700);
   const wrapped = await page.locator('#visual-frame').boundingBox();
   assert.ok(Math.abs(hero.width - wrapped.width) < 2);
-  console.log('PASS spring expansion, scroll morph reverse, seam, canvas reuse');
+  assert.equal(await page.locator('.morph-word').evaluate(el => el.getAnimations({subtree:true}).every(a => a.playState === 'finished')), true);
+  console.log('PASS single-row intro, directional blend reverse, loop seam, canvas reuse');
   await page.locator('[data-workspace]').click();
   await page.locator('#empty-sample').click();
   await page.locator('#component-select').selectOption({ index: 2 });
@@ -124,12 +153,24 @@ try {
     HTMLCanvasElement.prototype.getContext = function(type, ...args) { return type.includes('webgl') ? null : original.call(this, type, ...args); };
   });
   await fallback.goto(url);
+  await scroll(fallback, 1100);
   await fallback.locator('#landing-error:not([hidden])').waitFor();
+  await scroll(fallback, 0);
   assert.equal(await fallback.locator('h1').isVisible(), true);
+  assert.equal(await fallback.locator('#hero-photograph').isVisible(), true);
   await fallback.locator('[data-workspace]').click();
   await fallback.locator('#empty-sample').click();
   assert.equal(await fallback.locator('#workspace-error').isVisible(), true);
   assert.equal(await fallback.locator('#plan-svg').isVisible(), true);
   assert.equal(await fallback.locator('#export-model').isEnabled(), false);
   console.log('PASS WebGL fallback retains source plan and upload');
+  const missingReference = await browser.newPage();
+  await missingReference.route('**/reference/hero.webp', route => route.abort());
+  await missingReference.goto(url);
+  await missingReference.locator('#reference-fallback:not([hidden])').waitFor();
+  assert.equal(await missingReference.locator('h1').isVisible(), true);
+  await missingReference.locator('#explore-demo').click();
+  assert.equal(await missingReference.locator('#workspace').isVisible(), true);
+  assert.equal(await missingReference.locator('#export-model').isEnabled(), true);
+  console.log('PASS missing reference image retains content and demo workflow');
 } finally { await browser.close(); }

@@ -10,13 +10,15 @@ const listen = (element, name, fn) => element.addEventListener(name, fn, { signa
 const frame = $('visual-frame'), canvas = $('landing-canvas'), copies = [...document.querySelectorAll('[data-copy]')];
 const glow = $('glow-cursor');
 let pointerX = -300, pointerY = -300, glowX = -300, glowY = -300;
-if (glow && !motion.matches) {
+if (glow) {
   listen(window, 'pointermove', e => { pointerX = e.clientX; pointerY = e.clientY; });
   listen(document, 'pointerleave', () => { pointerX = -300; pointerY = -300; });
 }
-let scene, raf, previous = 0, expanded = false, expansion = 0, velocity = 0, currentProject = 0;
+let scene, sceneFailed = false, raf, previous = 0, currentProject = 0;
 let workspaceOpen = false, returnFocus, savedScroll = 0, chapter = 0, height = innerHeight, dirty = true;
-let lastWidth = 0, lastHeight = 0;
+let lastWidth = 0, lastHeight = 0, lastOffset = scrollY;
+const photo = $('hero-photograph');
+const glowEnabled = matchMedia('(pointer: fine)').matches && (navigator.hardwareConcurrency || 8) > 4;
 const workspace = createWorkspace({ reducedMotion: motion, onClose() {
   workspaceOpen = false; $('landing').hidden = false; document.body.style.overflow = '';
   window.scrollTo(0, savedScroll); returnFocus?.focus({ preventScroll: true }); dirty = true;
@@ -35,6 +37,7 @@ function goChapter(index) {
 }
 document.querySelectorAll('[data-chapter]').forEach(a => listen(a, 'click', e => { e.preventDefault(); goChapter(Number(a.dataset.chapter)); }));
 listen($('next-chapter'), 'click', () => goChapter(chapter === 2 ? 3 : chapter + 1));
+listen($('explore-demo'), 'click', () => openWorkspace(0));
 listen($('menu-toggle'), 'click', () => {
   const open = !$('nav-links').classList.contains('is-open'); $('nav-links').classList.toggle('is-open', open); $('menu-toggle').setAttribute('aria-expanded', String(open));
 });
@@ -59,129 +62,157 @@ function setProject(index) {
   document.querySelectorAll('.work-item').forEach((item, i) => item.dataset.active = String(i === index)); dirty = true;
 }
 function showFallback() {
-  scene?.dispose(); scene = null;
+  scene?.dispose(); scene = null; sceneFailed = true;
   $('landing-error').textContent = '3D viewing is unavailable on this device. You can still upload and preview 2D drawings.';
-  $('landing-error').hidden = false; canvas.hidden = true;
+  canvas.hidden = true;
 }
-try { scene = new SceneView(canvas, { reducedMotion: motion.matches }); scene.setModel(projectModels[0]); }
-catch { showFallback(); }
-listen(canvas, 'webglcontextlost', e => { e.preventDefault(); showFallback(); });
-function expand() { if (!expanded && scene) { expanded = true; $('expand-preview').setAttribute('aria-expanded', 'true'); dirty = true; } }
-listen($('expand-preview'), 'pointerenter', expand);
-listen($('expand-preview'), 'focus', expand);
-listen($('expand-preview'), 'click', () => { expand(); canvas.focus({ preventScroll: true }); });
+function prepareScene() {
+  if (scene || sceneFailed) return;
+  try { scene = new SceneView(canvas, { reducedMotion: motion.matches }); scene.setModel(projectModels[currentProject]);
+    scene.controls.enableZoom = false; scene.controls.enablePan = false; canvas.style.touchAction = 'pan-y'; }
+  catch { showFallback(); }
+}
+listen(canvas, 'webglcontextlost', e => { e.preventDefault(); showFallback(); dirty = true; });
+listen(photo, 'error', () => { photo.hidden = true; $('reference-fallback').hidden = false; });
+if (photo.complete && !photo.naturalWidth) { photo.hidden = true; $('reference-fallback').hidden = false; }
 listen($('open-preview'), 'click', () => openWorkspace(currentProject));
 listen(window, 'scroll', () => { dirty = true; });
+function fitIntro() {
+  const marker = document.querySelector('.morph-word'), word = marker.firstElementChild;
+  const fontSize = parseFloat(getComputedStyle(word).fontSize);
+  const safeWidth = word.offsetWidth + fontSize * .18 * word.textContent.length;
+  const scale = Math.min(.28, marker.clientWidth / (safeWidth * 1.35 * 5.25));
+  marker.style.setProperty('--start-scale', String(scale));
+  marker.style.setProperty('--word-step', `${(marker.clientWidth - safeWidth * scale * 1.35) / 4}px`);
+}
+fitIntro();
 listen(window, 'resize', () => {
+  fitIntro();
   const progress = scrollY / height; height = innerHeight;
   $('story').style.height = `${height * 4}px`; document.querySelector('.story-sticky').style.height = `${height}px`;
   if (!workspaceOpen) window.scrollTo(0, progress * height);
   dirty = true;
 });
 listen(motion, 'change', () => {
-  expansion = motion.matches ? 1 : expanded ? 1 : 0; velocity = 0;
   if (scene) scene.controls.enableDamping = !motion.matches;
   workspace.motionChanged(); dirty = true;
 });
 $('story').style.height = `${height * 4}px`; document.querySelector('.story-sticky').style.height = `${height}px`;
-if (motion.matches) { expanded = true; expansion = 1; }
 const lerp = (a, b, t) => a + (b - a) * t;
 function layout() {
-  const width = innerWidth, short = height < 620, mobile = width <= 800 && !short;
+  const width = innerWidth, compact = height < 620, mobile = width <= 800 && (!compact || width < height);
   let offset = scrollY;
   if (offset >= height * 3 - .5) { offset = Math.max(0, offset - height * 3); window.scrollTo(0, offset); }
-  const state = phaseAt(offset, height, motion.matches);
-  chapter = state.mix >= .5 ? state.next : state.chapter;
-  const { mix, next } = state, from = state.chapter;
+  const { chapter: from, next, mix } = phaseAt(offset, height, motion.matches);
+  chapter = mix >= .5 ? next : from;
   document.body.dataset.chapter = String(chapter);
-  const e = Math.max(0, Math.min(1.04, expansion));
-  const heroW = lerp(Math.min(300, width * .72), mobile ? width * .88 : Math.min(720, width * .48), e);
-  const heroH = lerp(Math.min(190, height * .28), Math.min(height * (short ? .28 : .32), mobile ? 260 : 320), e);
-  const heroY = mobile ? height * .43 : height * (short ? .38 : .39);
-  const positions = mobile ? [
-    { x: (width - heroW) / 2, y: heroY, w: heroW, h: heroH, r: 5 },
-    { x: width * .06, y: height * .49, w: width * .88, h: height * .30, r: 3 },
-    { x: width * .06, y: height * .34, w: width * .88, h: height * .28, r: 2 },
-  ] : [
-    { x: (width - heroW) / 2, y: heroY, w: heroW, h: heroH, r: 5 },
-    { x: width * .44, y: height * (short ? .25 : .23), w: width * .51, h: height * (short ? .46 : .54), r: 2 },
-    { x: width * .05, y: height * .42, w: width * .59, h: height * (short ? .29 : .38), r: 2 },
+  if (Math.abs(offset - lastOffset) > .5) document.body.dataset.scrollDirection = offset > lastOffset ? 'forward' : 'backward';
+  lastOffset = offset;
+  const margin = width * (mobile ? .06 : .075);
+  const navBottom = document.querySelector('.nav').getBoundingClientRect().bottom;
+  const top = navBottom + (mobile || compact ? 20 : 38), bottom = height - (compact ? 42 : mobile ? 48 : 72);
+  const action = $('landing-action');
+  const slogan = action.querySelector('.slogan');
+  slogan.style.visibility = chapter === 0 ? 'visible' : 'hidden';
+  slogan.setAttribute('aria-hidden', String(chapter !== 0));
+  // Measure the actual text and actions instead of positioning a visual over them.
+  const copyHeights = copies.map(c => c.offsetHeight), actionHeight = action.offsetHeight;
+  const heroActionHeight = actionHeight + slogan.offsetHeight + 16;
+  const heroCopyY = mobile ? top : Math.max(top, (top + bottom - copyHeights[0] - heroActionHeight - (compact ? 14 : 28)) / 2);
+  const manifestoCopyY = mobile ? top : Math.max(top, (top + bottom - copyHeights[1] - actionHeight - (compact ? 14 : 28)) / 2);
+  const copyPositions = [
+    { x: margin, y: heroCopyY },
+    { x: margin, y: manifestoCopyY },
+    { x: margin, y: top },
   ];
-  const a = positions[from], b = positions[next];
-  const visualProgress = motion.matches ? 0 : Math.min(1, mix * 1.2);
-  const x = lerp(a.x, b.x, visualProgress), y = lerp(a.y, b.y, visualProgress), w = lerp(a.w, b.w, visualProgress), h = lerp(a.h, b.h, visualProgress);
-  frame.style.transform = `translate(${x}px,${y}px)`; frame.style.width = `${w}px`; frame.style.height = `${h}px`; frame.style.borderRadius = `${lerp(a.r, b.r, visualProgress)}px`;
+  const heroActionY = heroCopyY + copyHeights[0] + (compact ? 14 : mobile ? 16 : 28);
+  const manifestoActionY = manifestoCopyY + copyHeights[1] + (compact ? 14 : mobile ? 16 : 26);
+  const photoY = mobile ? heroActionY + heroActionHeight + 20 : top;
+  const photoH = Math.max(100, bottom - photoY);
+  const worksY = top + copyHeights[2] + (mobile ? 16 : 24);
+  const worksListH = $('work-list').offsetHeight;
+  const worksFrameH = mobile ? Math.max(100, bottom - worksY - worksListH - actionHeight - 34) : Math.max(compact ? 70 : 110, bottom - worksY - actionHeight - 20);
+  const visualPositions = mobile ? [
+    { x: margin, y: photoY, w: width * .88, h: photoH },
+    { x: margin, y: manifestoActionY + actionHeight + 18, w: width * .88, h: Math.max(100, bottom - manifestoActionY - actionHeight - 18) },
+    { x: margin, y: worksY, w: width * .88, h: worksFrameH },
+  ] : [
+    { x: width * .55, y: top, w: width * .375, h: bottom - top },
+    { x: width * .48, y: Math.max(top, height * .22), w: width * .445, h: Math.max(120, Math.min(height * .54, bottom - Math.max(top, height * .22))) },
+    { x: margin, y: worksY, w: width * .525, h: worksFrameH },
+  ];
+  const a = visualPositions[from], b = visualPositions[next];
+  const w = lerp(a.w, b.w, mix), h = lerp(a.h, b.h, mix);
+  frame.style.transform = `translate(${lerp(a.x, b.x, mix)}px,${lerp(a.y, b.y, mix)}px)`;
+  frame.style.width = `${w}px`; frame.style.height = `${h}px`;
+  frame.style.borderRadius = `${lerp(from === 0 ? 2 : 6, next === 0 ? 2 : 6, mix)}px`;
   if (Math.abs(w - lastWidth) > .5 || Math.abs(h - lastHeight) > .5) { scene?.resize(); lastWidth = w; lastHeight = h; }
-  const copyPositions = mobile ? [{ x: 0, y: height * .17 }, { x: width * .06, y: height * .17 }, { x: width * .06, y: height * .16 }] : [{ x: 0, y: height * .16 }, { x: width * .065, y: height * .28 }, { x: width * .05, y: height * .17 }];
-  const forward = next > from || (from === 2 && next === 0);
   copies.forEach((copy, i) => {
     const visible = i === chapter;
     copy.inert = !visible; copy.setAttribute('aria-hidden', String(!visible));
     const weight = i === from ? 1 - mix : i === next ? mix : 0;
-    const shift = motion.matches ? 0 : (i === from ? -mix : 1 - mix) * 45;
-    copy.style.opacity = String(motion.matches ? Number(i === from) : Math.max(0, (weight - .25) / .75));
+    copy.style.visibility = weight > 0 ? 'visible' : 'hidden';
+    copy.style.opacity = '1';
+    const shift = motion.matches ? 0 : i === from ? -mix * 42 : (1 - mix) * 42;
     copy.style.transform = `translate(${copyPositions[i].x}px,${copyPositions[i].y + (weight ? shift : 0)}px)`;
-    copy.style.clipPath = weight > 0 ? (forward ? `inset(${Math.max(0, (1 - weight) * 35)}% 0 0 0)` : `inset(0 0 ${Math.max(0, (1 - weight) * 35)}% 0)`) : 'inset(100% 0 0 0)';
+    copy.style.clipPath = motion.matches ? 'none' : i === from ? `inset(0 0 ${mix * 100}% 0)` : `inset(${(1 - mix) * 100}% 0 0 0)`;
+    copy.style.mixBlendMode = mix > 0 ? 'multiply' : 'normal';
   });
+  const heroWeight = from === 0 ? 1 - mix : next === 0 ? mix : 0;
+  const modelWeight = 1 - heroWeight;
+  const photoMask = from === 0 ? `inset(0 0 ${mix * 100}% 0)` : next === 0 ? `inset(${(1 - mix) * 100}% 0 0 0)` : 'inset(100% 0 0 0)';
+  photo.style.clipPath = motion.matches ? heroWeight ? 'none' : 'inset(100% 0 0 0)' : photoMask;
+  frame.dataset.photo = String(heroWeight >= .5);
+  if (modelWeight > 0) { canvas.hidden = false; prepareScene(); }
+  canvas.hidden = !scene || modelWeight <= 0;
+  $('landing-error').hidden = !sceneFailed || modelWeight <= 0;
+  $('reference-fallback').style.opacity = String(heroWeight);
+  $('visual-label').textContent = heroWeight >= .5 ? 'ARCHITECTURE / A NEW PERSPECTIVE' : chapter === 1 ? 'CONSTRUCTION PROCESS DEMO' : `DEMO MODEL / ${projects[currentProject].name.toUpperCase()}`;
+  const interactive = chapter === 2 && mix === 0 && !!scene;
+  $('open-preview').hidden = !interactive;
+  canvas.tabIndex = interactive ? 0 : -1; canvas.classList.toggle('is-interactive', interactive);
   const worksWeight = from === 2 ? 1 - mix : next === 2 ? mix : 0;
   const works = $('work-list');
-  works.style.opacity = String(works.contains(document.activeElement) ? 1 : Math.max(0, worksWeight * 2 - 1));
-  works.style.pointerEvents = chapter === 2 ? '' : 'none';
-  works.inert = chapter !== 2 && !works.contains(document.activeElement); works.setAttribute('aria-hidden', String(works.inert));
-  works.style.top = mobile ? `${height * .64}px` : `${height * .43}px`;
-  works.style.transform = `translateY(${motion.matches ? 0 : (1 - worksWeight) * 30}px)`;
-  const action = $('landing-action'), actionW = action.offsetWidth;
-  const actionPositions = mobile ? [
-    { x: (width - actionW) / 2, y: heroY + heroH + 16 },
-    { x: (width - actionW) / 2, y: height * .83 },
-    { x: (width - actionW) / 2, y: height * .85 }
-  ] : [
-    { x: (width - actionW) / 2, y: Math.min(height * .84, heroY + heroH + (short ? 16 : 24)) },
-    { x: width * .065, y: height * .80 },
-    { x: width * .05, y: height * .85 }
+  if (chapter !== 2 && works.contains(document.activeElement)) {
+    (width <= 800 ? $('menu-toggle') : document.querySelector('[data-chapter="2"]')).focus({ preventScroll: true });
+  }
+  works.style.visibility = worksWeight > 0 ? 'visible' : 'hidden';
+  works.style.opacity = String(worksWeight);
+  works.inert = chapter !== 2; works.setAttribute('aria-hidden', String(works.inert));
+  works.style.top = `${mobile ? worksY + worksFrameH + 12 : compact ? top + Math.max(0, (bottom - top - worksListH) / 2) : worksY + Math.max(0, (worksFrameH - worksListH) / 2)}px`;
+  works.style.transform = `translateY(${motion.matches ? 0 : (1 - worksWeight) * 24}px)`;
+  const actionPositions = [
+    { x: margin, y: heroActionY },
+    { x: margin, y: manifestoActionY },
+    { x: margin, y: mobile ? worksY + worksFrameH + worksListH + 22 : worksY + worksFrameH + 20 },
   ];
-  if (short) actionPositions.forEach(p => { p.y = height * .78; });
-  const actionProgress = Math.max(0, Math.min(1, (mix - .12) / .88));
-  action.style.transform = `translate(${lerp(actionPositions[from].x, actionPositions[next].x, actionProgress)}px,${lerp(actionPositions[from].y, actionPositions[next].y, actionProgress)}px)`;
+  action.style.transform = `translate(${lerp(actionPositions[from].x, actionPositions[next].x, mix)}px,${lerp(actionPositions[from].y, actionPositions[next].y, mix)}px)`;
   $('action-note').textContent = ['From floor plan to a new perspective.', 'Upload drawing. Confirm scale. Explore.', 'Scroll further to return where ideas begin.'][chapter];
   $('chapter-caption').textContent = ['Beginning a space', 'From line to depth', 'Return to beginning'][chapter];
-  $('annotation-text').textContent = ['DRAWING / SPACE', 'LINE / DEPTH', 'PLAN / MODEL'][chapter];
   const annotation = document.querySelector('.scene-annotation');
-  annotation.style.opacity = String((from === 0 ? 1 - mix : next === 0 ? mix : 0) * .85);
-  annotation.style.top = `${heroY + heroH * .45}px`;
-  $('visual-label').textContent = chapter === 1 ? 'CONSTRUCTION PROCESS DEMO' : `DEMO MODEL / ${projects[currentProject].name.toUpperCase()}`;
-  const interactive = chapter !== 1 && (expanded || chapter === 2) && mix === 0;
-  $('expand-preview').hidden = expanded || chapter !== 0 || !scene;
-  $('open-preview').hidden = !interactive || !scene;
-  canvas.tabIndex = interactive && scene ? 0 : -1;
-  canvas.classList.toggle('is-interactive', interactive);
+  annotation.style.opacity = String(heroWeight); annotation.style.top = `${Math.max(top, heroCopyY - 42)}px`;
   if (from === 2 && mix > 0) scene?.morphHome(mix);
   else if (scene?.returnPose) { scene.morphHome(from === 2 ? 0 : 1); scene.returnPose = null; }
   const local = offset / height;
-  const growth = from === 1 ? Math.min(1, .03 + (local - 1) / .4) : next === 1 ? 1 - mix * .97 : 1;
-  return { progress: motion.matches ? 1 : growth, active: interactive, orbit: !motion.matches && chapter === 0 && !scene?.interacted };
+  const growth = from === 1 ? Math.min(1, .03 + (local - 1) / .4) : next === 1 ? Math.max(.03, 1 - mix) : 1;
+  return { progress: motion.matches ? 1 : growth, active: interactive, orbit: !motion.matches && interactive && !scene?.interacted, visible: modelWeight > 0 };
 }
 let renderState = { progress: 1, active: false };
 function animate(time) {
   const delta = Math.min((time - (previous || time)) / 1000, .05); previous = time;
   if (!workspaceOpen) {
-    if (glow && !motion.matches) {
-      glowX += (pointerX - glowX) * .12;
-      glowY += (pointerY - glowY) * .12;
+    if (glow && glowEnabled && !motion.matches) {
+      glowX += (pointerX - glowX) * (1 - Math.exp(-12 * delta));
+      glowY += (pointerY - glowY) * (1 - Math.exp(-12 * delta));
       glow.style.transform = `translate(${glowX}px,${glowY}px)`;
-    }
-    const target = expanded ? 1 : 0;
-    if (motion.matches) expansion = target;
-    else if (Math.abs(expansion - target) > .0001 || Math.abs(velocity) > .001) {
-      velocity += ((target - expansion) * 140 - velocity * 22) * delta; expansion += velocity * delta;
-      if (Math.abs(target - expansion) < .001 && Math.abs(velocity) < .01) { expansion = target; velocity = 0; }
-      dirty = true;
+      glow.style.opacity = pointerX < 0 ? '0' : '1';
     }
     if (dirty) { renderState = layout(); dirty = false; }
-    if (!document.hidden) scene?.render({ ...renderState, delta });
-  } else workspace.render(delta);
+    if (!document.hidden && renderState.visible) scene?.render({ ...renderState, delta });
+  } else { if (glow) glow.style.opacity = '0'; workspace.render(delta); }
   raf = requestAnimationFrame(animate);
 }
+document.fonts.ready.then(() => { fitIntro(); dirty = true; });
 raf = requestAnimationFrame(animate);
 function dispose() { cancelAnimationFrame(raf); events.abort(); scene?.dispose(); workspace.dispose(); }
 if (import.meta.hot) import.meta.hot.dispose(dispose);

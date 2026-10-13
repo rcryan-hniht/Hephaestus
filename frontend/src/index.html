@@ -24,18 +24,20 @@
     <main id="story" class="story" aria-label="Explore Hephaestus">
       <div class="chapter-anchor" id="hero"></div><div class="chapter-anchor" id="manifesto"></div><div class="chapter-anchor" id="works"></div>
       <div class="story-sticky">
-        <div class="intro-word" aria-hidden="true"><span>HEPHAESTUS</span><span>HEPHAESTUS</span><span>HEPHAESTUS</span><span>HEPHAESTUS</span><span>HEPHAESTUS</span></div>
-        <div class="chapter-copy" data-copy="0"><h1>From drawing.<br /><span>To space.</span></h1></div>
+        <div class="chapter-copy" data-copy="0">
+          <div class="morph-word" aria-hidden="true"><span style="--word:0">HEPHAESTUS</span><span style="--word:1">HEPHAESTUS</span><span style="--word:2">HEPHAESTUS</span><span style="--word:3">HEPHAESTUS</span><span style="--word:4">HEPHAESTUS</span></div>
+          <h1><span>From drawing.</span><span>To space.</span></h1>
+          <p class="chapter-description">Your floor plan. A new dimension.<br />Explore the space before it is built.</p>
+        </div>
         <div class="chapter-copy" data-copy="1" inert aria-hidden="true"><p class="eyebrow">EVERY SPACE HAS A BEGINNING</p><h2>The drawing is<br />the beginning.</h2><p class="chapter-description">A single line. An idea.<br />A space you can step inside.</p><ol class="process"><li>Upload plan</li><li>Analyze</li><li>Construct model</li><li>3D interaction</li></ol></div>
         <div class="chapter-copy" data-copy="2" inert aria-hidden="true"><p class="eyebrow">SPATIAL EXPLORATIONS</p><h2>Ideas taking<br />tangible form.</h2></div>
         <div id="visual-frame" class="visual-frame">
-          <div class="visual-topline"><span id="visual-label">DEMO MODEL / COURTYARD RESIDENCE</span><span aria-hidden="true">＋</span></div>
-          <div class="visual-viewport"><canvas id="landing-canvas" aria-label="Demonstration architectural model. Drag to orbit, arrow keys to change view." tabindex="-1"></canvas><p id="landing-error" class="canvas-error" role="status" hidden></p></div>
-          <button id="expand-preview" aria-label="Expand demo model" aria-expanded="false"><span class="sr-only">Explore space</span><span aria-hidden="true">↗</span></button>
+          <div class="visual-topline"><span id="visual-label">ARCHITECTURE / A NEW PERSPECTIVE</span><span aria-hidden="true">＋</span></div>
+          <div class="visual-viewport"><img id="hero-photograph" src="/reference/hero.webp" alt="Looking upward at the sharp stone façades and recessed windows of a contemporary building." width="1126" height="2000" fetchpriority="high" /><p id="reference-fallback" class="canvas-error" hidden>The architectural reference image is unavailable. You can still upload your drawing or explore a demo.</p><canvas id="landing-canvas" aria-label="Demonstration architectural model. Drag to orbit, arrow keys to change view." tabindex="-1"></canvas><p id="landing-error" class="canvas-error" role="status" hidden></p></div>
           <button id="open-preview" class="open-preview" hidden>Open model <span aria-hidden="true">↗</span></button>
         </div>
         <div id="work-list" class="work-list" inert aria-hidden="true"></div>
-        <div id="landing-action" class="landing-action"><button class="button button--white button--hero-action" data-upload>Upload your drawing <span aria-hidden="true">↗</span></button><span id="action-note">From floor plan to a new perspective.</span><p class="slogan">Imagination is beginning,<br /><em>hephaestus</em> brings it closer.</p></div>
+        <div id="landing-action" class="landing-action"><div class="hero-actions"><button class="button button--primary" data-upload>Upload your drawing <span aria-hidden="true">↗</span></button><button id="explore-demo" class="demo-link">Explore a demo <span aria-hidden="true">↗</span></button></div><span id="action-note">From floor plan to a new perspective.</span><p class="slogan">Imagination is beginning,<br /><em>hephaestus</em> brings it closer.</p></div>
         <div class="scene-annotation" aria-hidden="true"><span>＋</span><span id="annotation-text">DRAWING / SPACE</span></div>
         <footer class="landing-footer"><a href="mailto:studio@hephaestus.dev">studio@hephaestus.dev ↗</a><button id="next-chapter" aria-label="Go to next chapter"><span id="chapter-caption">Beginning a space</span><span aria-hidden="true">↓</span></button></footer>
       </div>
