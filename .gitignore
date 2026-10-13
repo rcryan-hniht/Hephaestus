@@ -1,6 +1,7 @@
 dist
 .mcp.json
 node_modules
+/cubicasa5k/
 .env
 .env.*
 *.env

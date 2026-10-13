@@ -1,13 +1,22 @@
 services:
   - type: web
     name: hephaestus-api
-    runtime: python
+    runtime: docker
     region: singapore
     plan: free
-    rootDir: backend
-    buildCommand: uv sync --frozen
-    startCommand: uv run uvicorn main:app --host 0.0.0.0 --port $PORT
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
     healthCheckPath: /health
     buildFilter:
       paths:
-        - backend
+        - backend/**
+        - render.yaml
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_BASE_URL
+        value: https://openrouter.ai/api/v1
+      - key: HEPHAESTUS_CORS_ORIGINS
+        sync: false
+    # Free Render filesystems are ephemeral. Use local Docker's named volume
+    # for persistent experiments; add a persistent disk before hosted persistence.
