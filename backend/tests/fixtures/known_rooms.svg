@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 400">
+  <g class="Space Room" id="room-left"><rect x="20" y="20" width="280" height="360"/></g>
+  <g class="Space Room" id="room-right"><rect x="320" y="20" width="280" height="360"/></g>
+  <g class="Wall" id="north"><rect width="620" height="20"/></g>
+  <g class="Wall" id="south"><rect y="380" width="620" height="20"/></g>
+  <g class="Wall" id="west"><rect y="20" width="20" height="360"/></g>
+  <g class="Wall" id="east"><rect x="600" y="20" width="20" height="360"/></g>
+  <g class="Wall" id="partition"><rect x="300" y="20" width="20" height="360"/></g>
+  <g class="Door" id="interior-door"><rect x="300" y="100" width="20" height="90"/></g>
+  <g class="Door" id="entry"><rect x="50" y="380" width="90" height="20"/></g>
+  <g class="Window" id="west-window"><rect y="120" width="20" height="100"/></g>
+  <g class="Window" id="east-window"><rect x="600" y="100" width="20" height="120"/></g>
+  <text x="0" y="399">6.20 m</text>
+</svg>
