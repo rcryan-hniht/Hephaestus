@@ -1,6 +1,7 @@
 """Versioned evidence contract. AI confidence is separate from geometric validation."""
 
 import math
+import re
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -10,6 +11,13 @@ SCHEMA_VERSION = "hephaestus.scene.v1"
 PROMPT_VERSION = "architectural-evidence.v1"
 MAX_COMPONENTS = 2000
 MAX_VERTICES = 20000
+
+
+def dimension_values(text: str) -> list[tuple[float, str]]:
+    return [
+        (float(value.replace(",", ".")), unit)
+        for value, unit in re.findall(r"([-+]?(?:\d*[.,]\d+|\d+))\s*(mm|cm|m|ft|in)\b", text)
+    ]
 
 
 class StrictModel(BaseModel):
@@ -66,6 +74,17 @@ class Dimension(StrictModel):
     value: float | None = Field(default=None, gt=0)
     unit: Literal["m", "cm", "mm", "ft", "in"] | None = None
     reference: tuple[tuple[float, float], tuple[float, float]] | None = None
+
+    @model_validator(mode="after")
+    def validate_text_evidence(self):
+        if (self.value is None) != (self.unit is None):
+            raise ValueError("Dimension value and unit must be present together")
+        if self.value is not None and not any(
+            unit == self.unit and math.isclose(value, self.value, rel_tol=1e-6)
+            for value, unit in dimension_values(self.text)
+        ):
+            raise ValueError("Dimension value contradicts its source text")
+        return self
 
 
 class Proposal(StrictModel):
@@ -145,3 +164,39 @@ def required_parameters(p: Proposal) -> list[str]:
     if p.source_kind == "png":
         keys.append("review_confirmed")
     return keys
+
+
+def validate_component_parameters(p: Proposal, values: dict) -> dict:
+    ids = {c.id for c in p.components}
+    if len(values) > MAX_COMPONENTS or any(key not in ids for key in values):
+        raise ValueError("Component corrections must identify existing components")
+    for component_values in values.values():
+        for key, value in component_values.items():
+            if (
+                key not in {"height", "elevation"}
+                or type(value) not in {int, float}
+                or not math.isfinite(value)
+            ):
+                raise ValueError("Component correction requires a finite height or elevation")
+            if not (0.01 if key == "height" else 0) <= value <= 20:
+                raise ValueError("Component height/elevation is outside supported limits")
+    return values
+
+
+def missing_parameters(p: Proposal, values: dict, component_values: dict) -> list[str]:
+    overrides = {
+        "door_height": ("door", "height"),
+        "window_height": ("window", "height"),
+        "window_sill": ("window", "elevation"),
+        "slab_thickness": ("room", "height"),
+    }
+    missing = []
+    for key in required_parameters(p):
+        if key in values and (key != "review_confirmed" or values[key] is True):
+            continue
+        if key in overrides:
+            kind, field = overrides[key]
+            if all(field in component_values.get(c.id, {}) for c in p.components if c.type == kind):
+                continue
+        missing.append(key)
+    return missing

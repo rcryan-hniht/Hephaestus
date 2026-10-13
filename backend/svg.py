@@ -5,7 +5,7 @@ import re
 
 from defusedxml import ElementTree
 
-from contracts import Component, CoordinateFrame, Dimension, Proposal, SourceRef
+from contracts import Component, CoordinateFrame, Dimension, Proposal, SourceRef, dimension_values
 
 NUMBER = r"[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?"
 IDENTITY = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
@@ -78,15 +78,18 @@ def footprint(node, t):
         points = [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]
     elif tag == "path":
         data = node.get("d", "")
-        if re.search(
-            r"[A-DF-GI-KN-UW-Y a-df-gi-kn-uw-y]", re.sub(NUMBER, "", data).replace(" ", "")
-        ):
+        token_pattern = r"[MmLlHhVvZz]|" + NUMBER
+        if re.sub(token_pattern, "", data).strip(" ,\t\r\n"):
             raise ValueError("Only closed linear SVG paths are supported")
-        tokens = re.findall(r"[MmLlHhVvZz]|" + NUMBER, data)
+        tokens = re.findall(token_pattern, data)
+        if not tokens or tokens[0] not in {"M", "m"}:
+            raise ValueError("SVG path must begin with move-to")
         points, command, cursor, i = [], None, (0, 0), 0
         while i < len(tokens):
             if tokens[i].isalpha():
                 command = tokens[i]
+                if command in {"M", "m"} and points:
+                    raise ValueError("Multiple SVG path contours are unsupported")
                 i += 1
                 if command.lower() == "z":
                     if i != len(tokens):
@@ -120,7 +123,7 @@ def footprint(node, t):
     return [point(x, y, t) for x, y in points]
 
 
-def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
+def validate_svg(data: bytes):
     if len(data) > 10 * 1024 * 1024:
         raise ValueError("SVG exceeds 10 MiB limit")
     try:
@@ -148,7 +151,10 @@ def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
         if any(
             k.split("}")[-1].lower().startswith("on")
             or k.split("}")[-1] in {"href", "src"}
-            or "url(" in v.lower()
+            or "url("
+            in re.sub(
+                r"""url\(\s*["']?#[A-Za-z0-9_.:-]+["']?\s*\)""", "", v, flags=re.IGNORECASE
+            ).lower()
             for k, v in node.attrib.items()
         ):
             raise ValueError("SVG contains active or externally referenced attributes")
@@ -157,6 +163,11 @@ def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
         vb = [0, 0, float(root.get("width", 1000)), float(root.get("height", 1000))]
     if len(vb) != 4 or vb[2] <= 0 or vb[3] <= 0:
         raise ValueError("Invalid SVG viewBox")
+    return root, vb
+
+
+def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
+    root, vb = validate_svg(data)
     components, dimensions, floors = [], [], set()
     kinds = {
         "Wall": "wall",
@@ -166,7 +177,7 @@ def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
         "Window": "window",
     }
 
-    def walk(node, parent, visible, owner=None, depth=0):
+    def walk(node, parent, visible, owner=None, depth=0, geometry_context=True):
         if depth > 64:
             raise ValueError("SVG nesting exceeds limit")
         t = multiply(parent, transform(node.get("transform", "")))
@@ -181,7 +192,10 @@ def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
         kind = next((kinds[c] for c in classes if c in kinds), None)
         if kind:
             owner = {"type": kind, "node": node, "seen": False}
+            geometry_context = True
         tag = node.tag.split("}")[-1]
+        if tag == "g" and classes and not kind and owner:
+            geometry_context = False
         if tag == "text":
             text = "".join(node.itertext()).strip()
             if text:
@@ -189,17 +203,20 @@ def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
                 # SVG text y may be em; text position is approximate when font-relative.
                 y_text = node.get("y", "0")
                 y = 0 if y_text.endswith("em") else numbers(y_text)[0]
-                dimensions.append(
-                    Dimension(
-                        text=text,
-                        position=point(x, y, t),
-                        visible=visible,
-                        source_element_id=node.get("id"),
+                for value, unit in dimension_values(text) or [(None, None)]:
+                    dimensions.append(
+                        Dimension(
+                            text=text,
+                            position=point(x, y, t),
+                            visible=visible,
+                            source_element_id=node.get("id"),
+                            value=value,
+                            unit=unit,
+                        )
                     )
-                )
         if (
             owner
-            and not owner["seen"]
+            and geometry_context
             and tag in {"polygon", "rect", "path", "circle", "ellipse", "polyline"}
         ):
             pts = footprint(node, t)
@@ -216,7 +233,7 @@ def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
             )
             owner["seen"] = True
         for child in node:
-            walk(child, t, visible, owner, depth + 1)
+            walk(child, t, visible, owner, depth + 1, geometry_context)
         if kind and not owner["seen"]:
             raise ValueError(f"No supported footprint for {kind}")
 

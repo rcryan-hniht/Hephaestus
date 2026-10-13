@@ -7,11 +7,17 @@ import time
 import uuid
 
 from config import Settings
-from contracts import Proposal, required_parameters, validate_parameters
+from contracts import (
+    Proposal,
+    missing_parameters,
+    required_parameters,
+    validate_component_parameters,
+    validate_parameters,
+)
 from geometry import build_scene
 from inference import InferenceError, OpenRouter, validate_png
 from store import Store
-from svg import extract_svg
+from svg import extract_svg, validate_svg
 
 ACTIVE = {"queued", "extracting", "awaiting_ai_result", "validating", "building"}
 SUGGESTIONS = {
@@ -93,10 +99,9 @@ class Jobs:
                 dimensions = await asyncio.to_thread(validate_png, data, self.settings)
                 proposal = None
             else:
-                proposal = await asyncio.wait_for(
-                    asyncio.to_thread(extract_svg, data, job_id, source_hash), timeout=10
-                )
-                dimensions = [proposal.coordinate_frame.width, proposal.coordinate_frame.height]
+                _, frame = await asyncio.wait_for(asyncio.to_thread(validate_svg, data), timeout=10)
+                dimensions = frame[2:4]
+                proposal = None
         except (ValueError, TimeoutError, RecursionError) as e:
             raise JobError(422, str(e) or "Drawing validation timed out") from e
         self.capacity(new=True)
@@ -111,6 +116,7 @@ class Jobs:
             "created_at": time.time(),
             "updated_at": time.time(),
             "parameters": {},
+            "component_parameters": {},
             "proposal": proposal.model_dump(mode="json") if proposal else None,
             "questions": [],
             "suggestions": {},
@@ -207,31 +213,39 @@ class Jobs:
         if job is None:
             return
         if job["proposal"] is None:
-            self.update(job_id, generation, state="awaiting_ai_result")
-            result = await self.inference.extract(
-                self.store.read_source(job), job_id, job["source_hash"]
-            )
-            job = self.update(
-                job_id,
-                generation,
-                proposal=result.proposal.model_dump(mode="json"),
-                attempts=result.attempts,
-            )
+            if job["source_kind"] == "svg":
+                p = await asyncio.to_thread(
+                    extract_svg, self.store.read_source(job), job_id, job["source_hash"]
+                )
+                job = self.update(job_id, generation, proposal=p.model_dump(mode="json"))
+            else:
+                self.update(job_id, generation, state="awaiting_ai_result")
+                result = await self.inference.extract(
+                    self.store.read_source(job), job_id, job["source_hash"]
+                )
+                job = self.update(
+                    job_id,
+                    generation,
+                    proposal=result.proposal.model_dump(mode="json"),
+                    attempts=result.attempts,
+                )
+                self.save_attempts(job_id, generation, result.attempts)
             if job is None:
                 return
-            self.save_attempts(job_id, generation, result.attempts)
         job = self.update(job_id, generation, state="validating")
         if job is None:
             return
         proposal = Proposal.model_validate(job["proposal"])
         self.validate_binding(job, proposal)
-        questions = self.questions(proposal, job["parameters"])
+        questions = self.questions(proposal, job["parameters"], job.get("component_parameters", {}))
         if questions:
             self.update(job_id, generation, state="needs_information", questions=questions)
             return
         self.update(job_id, generation, state="building", questions=[])
         version = job["next_revision"]
-        scene = await asyncio.to_thread(build_scene, proposal, job["parameters"], version)
+        scene = await asyncio.to_thread(
+            build_scene, proposal, job["parameters"], version, job.get("component_parameters", {})
+        )
         job = self.current(job_id, generation)
         if job is None:
             return
@@ -261,7 +275,13 @@ class Jobs:
         )
         job["events"] = (job["events"] + [{"state": "ready", "time": time.time()}])[-200:]
         self.store.publish(
-            job, {"scene": scene, "proposal": job["proposal"], "parameters": job["parameters"]}
+            job,
+            {
+                "scene": scene,
+                "proposal": job["proposal"],
+                "parameters": job["parameters"],
+                "component_parameters": job.get("component_parameters", {}),
+            },
         )
 
     def validate_binding(self, job, proposal):
@@ -278,11 +298,9 @@ class Jobs:
         if job["source_kind"] == "png" and proposal.coordinate_frame.unit != "pixel":
             raise JobError(422, "PNG proposal coordinates must be original-image pixels")
 
-    def questions(self, proposal, parameters):
+    def questions(self, proposal, parameters, component_parameters):
         result = []
-        for key in required_parameters(proposal):
-            if key in parameters and (key != "review_confirmed" or parameters[key] is True):
-                continue
+        for key in missing_parameters(proposal, parameters, component_parameters):
             kinds = {
                 "door_height": {"door"},
                 "window_height": {"window"},
@@ -320,7 +338,7 @@ class Jobs:
         self.store.save(job)
         return job
 
-    def answers(self, job_id, generation, values, unknown):
+    def answers(self, job_id, generation, values, unknown, component_values=None):
         job = self.check(job_id, generation)
         if (
             job["state"] in {"cancelled", "queued", "extracting", "awaiting_ai_result"}
@@ -331,6 +349,9 @@ class Jobs:
             raise JobError(429, "Correction history limit reached for this experiment")
         try:
             validate_parameters(values)
+            validate_component_parameters(
+                Proposal.model_validate(job["proposal"]), component_values or {}
+            )
         except ValueError as e:
             raise JobError(422, str(e)) from e
         if any(
@@ -352,13 +373,21 @@ class Jobs:
                 "provenance": "suggested",
                 "requires_confirmation": True,
             }
-        if not values:
+        if not values and not component_values:
             self.store.save(job)
             return job
         self.capacity()
         job["parameters"].update(values)
+        saved = job.setdefault("component_parameters", {})
+        for component_id, overrides in (component_values or {}).items():
+            saved.setdefault(component_id, {}).update(overrides)
         job["corrections"].append(
-            {"generation": generation + 1, "values": values, "time": time.time()}
+            {
+                "generation": generation + 1,
+                "values": values,
+                "component_values": component_values or {},
+                "time": time.time(),
+            }
         )
         self.schedule(self.mutate(job))
         return self.get(job_id)
@@ -372,7 +401,14 @@ class Jobs:
         if len(job["corrections"]) >= 100:
             raise JobError(429, "Correction history limit reached for this experiment")
         job["parameters"].pop("review_confirmed", None)
+        old_types = {c["id"]: c["type"] for c in (job["proposal"] or {}).get("components", [])}
+        new_types = {c.id: c.type for c in proposal.components}
         job["proposal"] = proposal.model_dump(mode="json")
+        job["component_parameters"] = {
+            k: v
+            for k, v in job.get("component_parameters", {}).items()
+            if k in new_types and old_types.get(k) == new_types[k]
+        }
         job["corrections"].append(
             {"generation": generation + 1, "kind": "proposal_import", "time": time.time()}
         )
@@ -408,6 +444,7 @@ class Jobs:
         job.update(
             proposal=revision["proposal"],
             parameters=revision["parameters"],
+            component_parameters=revision.get("component_parameters", {}),
             history_cursor=cursor,
             active_revision=job["history"][cursor],
             questions=[],

@@ -207,3 +207,54 @@ def test_pending_limit_and_private_artifacts(tmp_path):
         wait(c, job_id)
         assert c.post("/api/jobs", files={"file": ("drawing.svg", SVG)}).status_code == 429
     assert (tmp_path / job_id / "source.svg").stat().st_mode & 0o077 == 0
+
+
+def test_component_correction_is_saved_and_rebuilt(client):
+    job_id = submit(client)
+    job = wait(client, job_id)
+    proposal = client.get(f"/api/jobs/{job_id}/proposal").json()["proposal"]
+    component_id = proposal["components"][0]["id"]
+    r = client.post(
+        f"/api/jobs/{job_id}/answers",
+        json={
+            "generation": job["generation"],
+            "values": PARAMS,
+            "component_values": {component_id: {"height": 2.6}},
+        },
+    )
+    assert r.status_code == 202
+    assert wait(client, job_id)["state"] == "ready"
+    assert client.get(f"/api/jobs/{job_id}/scene").json()["components"][0]["height"] == 2.6
+
+
+def test_semantic_svg_failure_retains_the_original_drawing(client):
+    drawing = b'<svg viewBox="0 0 10 10"><g class="Wall"><polygon points="0,0 10,10 0,10 10,0"/></g></svg>'
+    job_id = submit(client, drawing)
+    job = wait(client, job_id)
+    assert job["state"] == "failed"
+    assert job["error"]["code"] == "validation_failed"
+    assert client.get(f"/api/jobs/{job_id}/source").content == drawing
+
+
+def test_retyped_component_does_not_inherit_prior_overrides(client):
+    job_id = submit(client)
+    j = wait(client, job_id)
+    p = client.get(f"/api/jobs/{job_id}/proposal").json()["proposal"]
+    cid = p["components"][0]["id"]
+    client.post(
+        f"/api/jobs/{job_id}/answers",
+        json={
+            "generation": j["generation"],
+            "values": PARAMS,
+            "component_values": {cid: {"elevation": 1}},
+        },
+    )
+    wait(client, job_id)
+    p["components"][0]["type"] = "column"
+    j = client.get(f"/api/jobs/{job_id}").json()
+    r = client.post(
+        f"/api/jobs/{job_id}/proposal", json={"generation": j["generation"], "proposal": p}
+    )
+    assert r.status_code == 202
+    assert wait(client, job_id)["state"] == "ready"
+    assert client.get(f"/api/jobs/{job_id}/scene").json()["components"][0]["elevation"] == 0

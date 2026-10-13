@@ -20,6 +20,7 @@ class Generation(StrictModel):
 class Answers(Generation):
     values: dict[str, float | bool] = Field(default_factory=dict, max_length=7)
     unknown: list[str] = Field(default_factory=list, max_length=7)
+    component_values: dict[str, dict[str, float]] = Field(default_factory=dict, max_length=2000)
 
 
 class ImportProposal(Generation):
@@ -168,7 +169,9 @@ def create_app(settings: Settings | None = None, inference=None):
     @app.post("/api/jobs/{job_id}/answers", status_code=202)
     async def answers(job_id: str, body: Answers, request: Request):
         jobs = request.app.state.jobs
-        return jobs.public(jobs.answers(job_id, body.generation, body.values, body.unknown))
+        return jobs.public(
+            jobs.answers(job_id, body.generation, body.values, body.unknown, body.component_values)
+        )
 
     @app.post("/api/jobs/{job_id}/cancel")
     async def cancel(job_id: str, body: Generation, request: Request):

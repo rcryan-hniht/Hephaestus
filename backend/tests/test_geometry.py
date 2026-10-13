@@ -1,4 +1,5 @@
 import hashlib
+import math
 
 import pytest
 from shapely.geometry import Polygon
@@ -102,3 +103,131 @@ def test_room_floor_area_is_preserved():
     )
     assert Polygon(scene["components"][0]["polygon"]).area == 12
     assert scene["components"][0]["elevation"] == -0.2
+
+
+def test_multiple_direct_footprints_are_preserved():
+    p = proposal(
+        b'<svg viewBox="0 0 100 100"><g class="Wall" id="w"><rect width="10" height="2"/><rect x="20" width="10" height="2"/></g></svg>'
+    )
+    assert len(p.components) == 2
+    assert p.components[1].polygon[0] == (20, 0)
+
+
+def test_nested_footprints_are_preserved_without_annotation_geometry():
+    p = proposal(
+        b'<svg viewBox="0 0 100 100"><g class="Wall"><g transform="translate(5 0)"><rect width="10" height="2"/><rect x="20" width="10" height="2"/></g><g class="Dimension"><polygon points="0,0 1,0 0,1"/></g></g></svg>'
+    )
+    assert len(p.components) == 2
+    assert p.components[1].polygon[0] == (25, 0)
+
+
+@pytest.mark.parametrize("path", ["M0 0 L10 0 M10 10 L0 10 Z", "M0 0 L10 0 @ L10 10 L0 10 Z"])
+def test_malformed_path_never_invents_geometry(path):
+    with pytest.raises(ValueError):
+        proposal(f'<svg viewBox="0 0 10 10"><g class="Wall"><path d="{path}"/></g></svg>'.encode())
+
+
+def test_opening_exports_distinct_picking_volume():
+    scene = build_scene(
+        proposal(), {"meters_per_unit": 0.1, "floor_height": 3, "door_height": 2.1}, 1
+    )
+    door = next(c for c in scene["components"] if c["type"] == "door")
+    assert door["mesh"]["positions"] == []
+    assert len(door["selection_mesh"]["positions"]) > 0
+    assert max(door["selection_mesh"]["positions"][1::3]) == 2.1
+
+
+def test_rotated_dimensions_label_the_measurement_basis():
+    p = proposal(
+        b'<svg viewBox="0 0 100 100"><g class="Wall" transform="rotate(45)"><rect width="10" height="1"/></g></svg>'
+    )
+    c = build_scene(p, {"meters_per_unit": 1, "floor_height": 3}, 1)["components"][0]
+    assert c["dimensions"]["basis"] == "axis_aligned_bounds"
+    assert sorted(c["dimensions"]["footprint_edge_lengths"]) == pytest.approx([1, 1, 10, 10])
+
+
+def test_opening_height_can_be_confirmed_per_component():
+    p = proposal()
+    door = next(c for c in p.components if c.type == "door")
+    scene = build_scene(
+        p,
+        {"meters_per_unit": 0.1, "floor_height": 3},
+        1,
+        component_parameters={door.id: {"height": 1.9}},
+    )
+    actual = next(c for c in scene["components"] if c["id"] == door.id)
+    assert actual["height"] == 1.9
+    assert actual["parameters"]["height"]["provenance"] == "user_confirmed"
+    with pytest.raises(ValueError):
+        build_scene(
+            p,
+            {"meters_per_unit": 0.1, "floor_height": 3},
+            2,
+            component_parameters={"nonexistent": {"height": 2}},
+        )
+
+
+def test_visible_dimension_text_is_extracted_with_units():
+    p = proposal(
+        b'<svg viewBox="0 0 100 100"><g class="Wall"><rect width="40" height="4"/></g><text x="2" y="8">3.20 m</text></svg>'
+    )
+    assert p.dimensions[0].value == 3.2
+    assert p.dimensions[0].unit == "m"
+    assert p.meters_per_unit is None
+
+
+def test_dimension_value_cannot_contradict_its_source_text():
+    base = proposal().model_dump()
+    base["meters_per_unit"] = 0.5
+    base["dimensions"] = [
+        {
+            "text": "3 m",
+            "position": [0, 0],
+            "visible": True,
+            "value": 5,
+            "unit": "m",
+            "reference": [[0, 0], [10, 0]],
+        }
+    ]
+    with pytest.raises(ValueError):
+        Proposal.model_validate(base)
+
+
+def test_local_marker_reference_does_not_require_external_resources():
+    p = proposal(
+        b'<svg viewBox="0 0 100 100"><defs><marker id="arrow"/></defs><g class="Wall"><rect width="40" height="4"/></g><path d="M0 0 L1 1" style="marker-end:url(#arrow)"/></svg>'
+    )
+    assert len(p.components) == 1
+
+
+def test_tiny_scaled_geometry_cannot_publish_empty_wall_meshes():
+    with pytest.raises(ValueError):
+        p = proposal(
+            b'<svg viewBox="0 0 100 100"><g class="Wall"><rect width="40" height="4"/></g></svg>'
+        )
+        build_scene(p, {"meters_per_unit": 1e-8, "floor_height": 3}, 1)
+
+
+def test_opening_wall_contains_only_exposed_surface_faces():
+    scene = build_scene(
+        proposal(), {"meters_per_unit": 0.1, "floor_height": 3, "door_height": 2.1}, 1
+    )
+    mesh = scene["components"][0]["mesh"]
+    area = 0
+    for i in range(0, len(mesh["indices"]), 3):
+        a, b, c = [mesh["positions"][j * 3 : j * 3 + 3] for j in mesh["indices"][i : i + 3]]
+        u, v = [b[k] - a[k] for k in range(3)], [c[k] - a[k] for k in range(3)]
+        area += (
+            math.sqrt(
+                sum(
+                    n * n
+                    for n in [
+                        u[1] * v[2] - u[2] * v[1],
+                        u[2] * v[0] - u[0] * v[2],
+                        u[0] * v[1] - u[1] * v[0],
+                    ]
+                )
+            )
+            / 2
+        )
+    assert area == pytest.approx(27.08)
