@@ -1,0 +1,209 @@
+import asyncio
+import hashlib
+import io
+import time
+
+import pytest
+from fastapi.testclient import TestClient
+from PIL import Image
+
+from config import Settings
+from main import create_app
+
+SVG = b'<svg viewBox="0 0 100 100"><g class="Wall" id="Wall"><rect x="0" y="0" width="40" height="4"/></g></svg>'
+PARAMS = {"meters_per_unit": 0.1, "floor_height": 3}
+
+
+@pytest.fixture
+def client(tmp_path):
+    with TestClient(create_app(Settings(data_dir=tmp_path))) as client:
+        yield client
+
+
+def submit(client, data=SVG, name="drawing.svg"):
+    r = client.post("/api/jobs", files={"file": (name, data)})
+    assert r.status_code == 202, r.text
+    return r.json()["id"]
+
+
+def wait(client, job_id, states=("needs_information", "ready", "failed", "cancelled")):
+    for _ in range(200):
+        r = client.get(f"/api/jobs/{job_id}")
+        assert r.status_code == 200
+        job = r.json()
+        if job["state"] in states:
+            return job
+        time.sleep(0.01)
+    pytest.fail("Job did not reach expected state")
+
+
+def answer(client, job_id, values):
+    job = client.get(f"/api/jobs/{job_id}").json()
+    return client.post(
+        f"/api/jobs/{job_id}/answers", json={"generation": job["generation"], "values": values}
+    )
+
+
+def test_upload_questions_confirm_build_export(client):
+    assert client.get("/health").json() == {"status": "ok"}
+    job_id = submit(client)
+    job = wait(client, job_id)
+    assert job["state"] == "needs_information"
+    assert {q["key"] for q in job["questions"]} == {"meters_per_unit", "floor_height"}
+    assert client.get(f"/api/jobs/{job_id}/source").content == SVG
+    assert client.get(f"/api/jobs/{job_id}/scene").status_code == 409
+    assert answer(client, job_id, PARAMS).status_code == 202
+    assert wait(client, job_id)["state"] == "ready"
+    scene = client.get(f"/api/jobs/{job_id}/scene").json()
+    assert scene["components"][0]["dimensions"]["width"] == 4
+    assert scene["provenance"]["source_hash"] == hashlib.sha256(SVG).hexdigest()
+    exported = client.get(f"/api/jobs/{job_id}/export")
+    assert exported.json() == scene
+    assert "attachment" in exported.headers["content-disposition"]
+
+
+def test_unknown_values_only_offer_suggestions(client):
+    job_id = submit(client)
+    job = wait(client, job_id)
+    r = client.post(
+        f"/api/jobs/{job_id}/answers",
+        json={"generation": job["generation"], "unknown": ["floor_height"]},
+    )
+    assert r.status_code == 202
+    job = wait(client, job_id)
+    assert job["state"] == "needs_information"
+    assert job["suggestions"]["floor_height"]["provenance"] == "suggested"
+    assert "floor_height" not in job["parameters"]
+    assert answer(client, job_id, {"meters_per_unit": 0.1}).status_code == 202
+    job = wait(client, job_id)
+    assert [q["key"] for q in job["questions"]] == ["floor_height"]
+
+
+def test_invalid_edit_preserves_valid_model_and_undo_redo(client):
+    job_id = submit(client)
+    wait(client, job_id)
+    answer(client, job_id, PARAMS)
+    wait(client, job_id)
+    scene1 = client.get(f"/api/jobs/{job_id}/scene").json()
+    assert answer(client, job_id, {"floor_height": -2}).status_code == 422
+    assert client.get(f"/api/jobs/{job_id}/scene").json() == scene1
+    answer(client, job_id, {"floor_height": 4})
+    assert wait(client, job_id)["state"] == "ready"
+    assert client.get(f"/api/jobs/{job_id}/scene").json()["components"][0]["height"] == 4
+    for action, expected in [("undo", 3), ("redo", 4)]:
+        j = client.get(f"/api/jobs/{job_id}").json()
+        r = client.post(f"/api/jobs/{job_id}/{action}", json={"generation": j["generation"]})
+        assert r.status_code == 200
+        assert client.get(f"/api/jobs/{job_id}/scene").json()["components"][0]["height"] == expected
+
+
+def test_cancel_retry_and_stale_answers(client):
+    job_id = submit(client)
+    j = wait(client, job_id)
+    assert (
+        client.post(f"/api/jobs/{job_id}/cancel", json={"generation": j["generation"]}).status_code
+        == 200
+    )
+    assert answer(client, job_id, PARAMS).status_code == 409
+    assert client.get(f"/api/jobs/{job_id}/source").content == SVG
+    cancelled = client.get(f"/api/jobs/{job_id}").json()
+    assert (
+        client.post(
+            f"/api/jobs/{job_id}/retry", json={"generation": cancelled["generation"]}
+        ).status_code
+        == 202
+    )
+    wait(client, job_id)
+    assert (
+        client.post(
+            f"/api/jobs/{job_id}/answers", json={"generation": j["generation"], "values": PARAMS}
+        ).status_code
+        == 409
+    )
+
+
+@pytest.mark.parametrize(
+    "name,data", [("bad.png", b"not png"), ("bad.jpg", b"no"), ("bad.svg", b"<svg><script/></svg>")]
+)
+def test_invalid_inputs_are_rejected(client, name, data):
+    assert client.post("/api/jobs", files={"file": (name, data)}).status_code == 422
+
+
+def test_png_offline_import_requires_binding_and_review(client):
+    out = io.BytesIO()
+    Image.new("RGB", (30, 20)).save(out, format="PNG")
+    data = out.getvalue()
+    job_id = submit(client, data, "plan.png")
+    j = wait(client, job_id)
+    assert j["state"] == "failed"
+    assert j["error"]["code"] == "missing_credentials"
+    p = {
+        "job_id": job_id,
+        "source_hash": hashlib.sha256(data).hexdigest(),
+        "source_kind": "png",
+        "coordinate_frame": {"width": 30, "height": 20, "unit": "pixel"},
+        "components": [
+            {"id": "wall", "type": "wall", "polygon": [[0, 0], [20, 0], [20, 2], [0, 2]]}
+        ],
+    }
+    path = f"/api/jobs/{job_id}/proposal"
+    wrong = {**p, "source_hash": "b" * 64}
+    assert (
+        client.post(path, json={"generation": j["generation"], "proposal": wrong}).status_code
+        == 422
+    )
+    assert client.post(path, json={"generation": j["generation"], "proposal": p}).status_code == 202
+    j = wait(client, job_id)
+    assert "review_confirmed" in [q["key"] for q in j["questions"]]
+    answer(client, job_id, PARAMS)
+    assert wait(client, job_id)["state"] == "needs_information"
+    answer(client, job_id, {"review_confirmed": True})
+    assert wait(client, job_id)["state"] == "ready"
+
+
+def test_jobs_survive_restart(tmp_path):
+    settings = Settings(data_dir=tmp_path)
+    with TestClient(create_app(settings)) as c:
+        job_id = submit(c)
+        wait(c, job_id)
+        answer(c, job_id, PARAMS)
+        assert wait(c, job_id)["state"] == "ready"
+    with TestClient(create_app(settings)) as c:
+        assert c.get(f"/api/jobs/{job_id}").json()["state"] == "ready"
+        assert c.get(f"/api/jobs/{job_id}/scene").json()["components"][0]["height"] == 3
+
+
+def test_late_inference_cannot_replace_cancelled_job(tmp_path):
+    class SlowInference:
+        async def extract(self, *args):
+            await asyncio.sleep(0.15)
+            raise ValueError("Late failure")
+
+    with TestClient(create_app(Settings(data_dir=tmp_path), inference=SlowInference())) as c:
+        out = io.BytesIO()
+        Image.new("RGB", (20, 20)).save(out, format="PNG")
+        job_id = submit(c, out.getvalue(), "p.png")
+        j = wait(c, job_id, states=("awaiting_ai_result",))
+        c.post(f"/api/jobs/{job_id}/cancel", json={"generation": j["generation"]})
+        time.sleep(0.2)
+        assert c.get(f"/api/jobs/{job_id}").json()["state"] == "cancelled"
+
+
+def test_request_limit_applies_before_upload_parser(tmp_path):
+    with TestClient(create_app(Settings(data_dir=tmp_path, max_upload_bytes=64))) as c:
+        assert (
+            c.post(
+                "/api/jobs",
+                content=b"x" * 200,
+                headers={"content-type": "application/octet-stream"},
+            ).status_code
+            == 413
+        )
+
+
+def test_pending_limit_and_private_artifacts(tmp_path):
+    with TestClient(create_app(Settings(data_dir=tmp_path, max_jobs=1))) as c:
+        job_id = submit(c)
+        wait(c, job_id)
+        assert c.post("/api/jobs", files={"file": ("drawing.svg", SVG)}).status_code == 429
+    assert (tmp_path / job_id / "source.svg").stat().st_mode & 0o077 == 0
