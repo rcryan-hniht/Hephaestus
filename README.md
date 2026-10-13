@@ -4,8 +4,6 @@
 
 Hephaestus is an early-stage educational technology project exploring how AI-assisted architectural drawing interpretation can bridge the gap between 2D architectural drawings and 3D spatial understanding.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Explore%20Hephaestus-C45C3D?style=for-the-badge)](https://hephaestus-studio.vercel.app/)
-![Project Stage](https://img.shields.io/badge/Project%20Stage-Early%20Prototype-686868?style=for-the-badge)
 
 ---
 
