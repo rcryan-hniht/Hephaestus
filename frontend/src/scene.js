@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { backendGeometry } from './backend-model.js';
 
 export class SceneView {
   constructor(canvas, { reducedMotion = false, onSelect = () => {}, onMeasure = () => {} } = {}) {
@@ -28,7 +29,7 @@ export class SceneView {
     const light = new THREE.DirectionalLight(0xffffff, 3.2);
     light.position.set(-15, 28, 18); light.castShadow = true;
     light.shadow.mapSize.set(1024, 1024);
-    light.shadow.normalBias = .06;
+    light.shadow.normalBias = .015; light.shadow.bias = -.00015;
     this.scene.add(light); this.light = light;
     this.group = new THREE.Group(); this.scene.add(this.group);
     this.clip = new THREE.Plane(new THREE.Vector3(0, -1, 0), 100);
@@ -41,7 +42,7 @@ export class SceneView {
       if (!this.controls.enabled || !this.down || Math.hypot(e.clientX - this.down.x, e.clientY - this.down.y) > 5) return;
       const rect = canvas.getBoundingClientRect();
       this.raycaster.setFromCamera(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), this.camera);
-      const hit = this.raycaster.intersectObjects(this.meshes.filter(m => m.visible), false).find(h => !this.section || this.clip.distanceToPoint(h.point) >= 0);
+      const hit = this.raycaster.intersectObjects(this.meshes.filter(m => m.visible && (!this.measuring || !m.userData.selectionOnly)), false).find(h => !this.section || this.clip.distanceToPoint(h.point) >= 0);
       if (this.measuring && hit) {
         if (!this.measureStart) { this.measureStart = hit.point.clone(); this.onMeasure('Select second point on model.'); }
         else { this.onMeasure(`${this.measureStart.distanceTo(hit.point).toFixed(2)} m`); this.measureStart = null; }
@@ -78,18 +79,26 @@ export class SceneView {
     const origin = !fit && this.origin ? this.origin : box.getCenter(new THREE.Vector3());
     this.origin = origin;
     for (const c of model.components) {
-      const shape = new THREE.Shape(c.polygon.map(([x, z]) => new THREE.Vector2(x - origin.x, -(z - origin.z))));
-      const geometry = new THREE.ExtrudeGeometry(shape, { depth: c.height, bevelEnabled: false, steps: 1 });
-      geometry.rotateX(-Math.PI / 2);
-      const color = { wall: '#dfdfd8', slab: '#c6c6bf', roof: '#e6e6df', column: '#f7f7f2', window: '#85928f' }[c.type];
-      const material = new THREE.MeshStandardMaterial({ color, roughness: .85, side: THREE.DoubleSide, transparent: c.type === 'window', opacity: c.type === 'window' ? .5 : 1 });
+      let geometry, proxy = false;
+      if (c.backendGeometry) ({ geometry, proxy } = backendGeometry(c, origin));
+      else {
+        const shape = new THREE.Shape(c.polygon.map(([x, z]) => new THREE.Vector2(x - origin.x, -(z - origin.z))));
+        geometry = new THREE.ExtrudeGeometry(shape, { depth: c.height, bevelEnabled: false, steps: 1 });
+        geometry.rotateX(-Math.PI / 2);
+      }
+      const color = { wall: '#dfdfd8', slab: '#c6c6bf', roof: '#e6e6df', column: '#f7f7f2', window: '#85928f', door: '#c45c3d' }[c.type];
+      const material = new THREE.MeshStandardMaterial({ color, roughness: .85, side: THREE.DoubleSide,
+        transparent: proxy || c.type === 'window', opacity: proxy ? 0 : c.type === 'window' ? .5 : 1,
+        colorWrite: !proxy, depthWrite: !proxy });
       const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.y = c.elevation;
-      mesh.castShadow = true; mesh.receiveShadow = true;
-      mesh.userData = { ...c, baseColor: color, sourceUnit: 'm' };
+      mesh.position.y = c.backendGeometry ? 0 : c.elevation;
+      mesh.castShadow = !proxy; mesh.receiveShadow = !proxy;
+      const { mesh: _mesh, selection_mesh: _selection, ...metadata } = c;
+      mesh.userData = { ...metadata, baseColor: color, sourceUnit: 'm', selectionOnly: proxy };
       mesh.name = c.id;
       const edge = new THREE.LineSegments(new THREE.EdgesGeometry(geometry, 25), new THREE.LineBasicMaterial({ color: '#535650', transparent: true, opacity: .28 }));
       edge.name = 'edges'; mesh.add(edge);
+      edge.visible = !proxy;
       this.group.add(mesh); this.meshes.push(mesh);
     }
     this.bounds = new THREE.Box3().setFromObject(this.group);
@@ -99,7 +108,7 @@ export class SceneView {
     Object.assign(shadow, { left: -this.span, right: this.span, top: this.span, bottom: -this.span, far: this.span * 6 }); shadow.updateProjectionMatrix();
     this.light.position.set(-this.span, this.span * 2, this.span);
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(this.span * 4, this.span * 4), new THREE.ShadowMaterial({ opacity: .09 }));
-    ground.rotation.x = -Math.PI / 2; ground.position.y = -.04; ground.receiveShadow = true; ground.name = 'ground'; this.group.add(ground);
+    ground.rotation.x = -Math.PI / 2; ground.position.y = this.bounds.min.y - .04; ground.receiveShadow = true; ground.name = 'ground'; this.group.add(ground);
     this.controls.minDistance = this.span * .25; this.controls.maxDistance = this.span * 6;
     this.perspective.far = this.span * 20; this.orthographic.far = this.span * 20;
     this.setMode(this.mode); this.setVisibility(this.floor, this.hiddenTypes); this.setSection(this.sectionValue ?? 100);
@@ -134,6 +143,7 @@ export class SceneView {
   setMode(mode) {
     this.mode = mode; this.needsRender = true;
     this.meshes.forEach(mesh => {
+      if (mesh.userData.selectionOnly) return;
       mesh.material.wireframe = mode === 'edges';
       mesh.material.transparent = mode === 'transparent' || mesh.userData.type === 'window';
       mesh.material.opacity = mode === 'transparent' ? .22 : mesh.userData.type === 'window' ? .5 : 1;
@@ -155,12 +165,20 @@ export class SceneView {
     this.clip.constant = this.bounds.min.y + (this.bounds.max.y - this.bounds.min.y) * this.sectionValue / 100;
     this.meshes.forEach(m => {
       m.material.clippingPlanes = this.section ? [this.clip] : [];
+      m.material.clipShadows = this.section;
       m.children.forEach(e => { e.material.clippingPlanes = this.section ? [this.clip] : []; });
     });
   }
   select(id) {
     this.selected = id; this.needsRender = true;
-    this.meshes.forEach(m => m.material.emissive.set(m.userData.id === id ? '#c45c3d' : '#000000'));
+    this.meshes.forEach(m => {
+      const selected = m.userData.id === id;
+      m.material.emissive.set(selected ? '#c45c3d' : '#000000');
+      if (m.userData.selectionOnly) {
+        m.material.colorWrite = selected; m.material.opacity = selected ? .16 : 0;
+        m.children.forEach(edge => { edge.visible = selected; });
+      }
+    });
     this.onSelect(this.model?.components.find(c => c.id === id) || null);
   }
   render({ progress = 1, active = false, orbit = false, delta = 0 } = {}) {
@@ -171,7 +189,8 @@ export class SceneView {
         const start = delays[mesh.userData.type] || 0;
         const rise = THREE.MathUtils.clamp((progress - start) / (1 - start), .001, 1);
         mesh.scale.y = rise;
-        mesh.position.y = mesh.userData.elevation * rise;
+        mesh.position.y = mesh.userData.backendGeometry ? 0 : mesh.userData.elevation * rise;
+        if (mesh.userData.selectionOnly) return;
         const baseOpacity = this.mode === 'transparent' ? .22 : mesh.userData.type === 'window' ? .5 : 1;
         mesh.material.opacity = baseOpacity * Math.min(1, progress * 5);
         mesh.material.transparent = progress < 1 || this.mode === 'transparent' || mesh.userData.type === 'window';
@@ -200,8 +219,13 @@ export class SceneView {
   async export() {
     const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
     const output = new THREE.Group(); output.name = this.model.name;
-    output.userData = { sample: this.model.sample, unit: 'm', sourceOrigin: this.origin.toArray(), warnings: this.model.warnings };
+    output.userData = { sample: this.model.sample, unit: 'm', sourceOrigin: this.origin.toArray(), warnings: this.model.warnings,
+      ...(this.model.backend ? { schema_version: this.model.scene.schema_version, job_id: this.model.job_id,
+        source_hash: this.model.source_hash, revision: this.model.scene.revision, parameters: this.model.scene.parameters,
+        coordinate_frame: this.model.scene.coordinate_frame,
+        openings: this.model.components.filter(c => c.opening).map(({ mesh, selection_mesh, ...metadata }) => metadata) } : {}) };
     this.meshes.forEach(m => {
+      if (m.userData.selectionOnly) return;
       const copy = new THREE.Mesh(m.geometry, m.material.clone());
       copy.material.clippingPlanes = []; copy.material.wireframe = false;
       copy.name = m.name; copy.position.copy(m.position); copy.userData = { ...m.userData }; output.add(copy);

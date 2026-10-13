@@ -1,4 +1,4 @@
-export const typeNames = { wall: 'Wall', slab: 'Slab', column: 'Column', window: 'Glass', roof: 'Roof' };
+export const typeNames = { wall: 'Wall', slab: 'Slab', column: 'Column', window: 'Window', door: 'Door opening', roof: 'Roof' };
 export const projects = [
   { name: 'Courtyard Residence', note: 'Residential · 5 floors · Inner courtyard', floors: 5, width: 12, depth: 10 },
   { name: 'A Modest Home', note: 'Residential · 2 floors · Open porch', floors: 2, width: 14, depth: 7 },
