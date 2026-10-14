@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1840" viewBox="0 0 1400 1840" role="img">
+  <title>Modern Villa / F4 / ROOF TERRACE</title>
+  <desc>Synthetic architectural test drawing: three storeys and an open roof terrace. Semantic footprints support Hephaestus SVG reconstruction. Stair treads are 2D annotations only.</desc>
+  <rect x="0" y="0" width="1400" height="1840" fill="#fafafa" />
+  <text x="140" y="65" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">HEPHAESTUS / SYNTHETIC TEST INPUT</text>
+  <text x="140" y="115" fill="#222" font-family="Arial, sans-serif" font-size="36" text-anchor="start">F4 / ROOF TERRACE</text>
+  <text x="140" y="157" fill="#666" font-family="Arial, sans-serif" font-size="22" text-anchor="start">Modern villa / 10.00 m x 14.00 m / SVG source geometry</text>
+  <g id="Floor-4" class="Floorplan" transform="translate(140 240)">
+    <g id="F4-terrace-rear" class="Space Outdoor_roof_terrace">
+      <rect x="20" y="20" width="960" height="630" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    </g>
+    <g id="F4-terrace-left" class="Space Outdoor_roof_terrace">
+      <rect x="20" y="650" width="60" height="200" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    </g>
+    <g id="F4-terrace-right" class="Space Outdoor_roof_terrace">
+      <rect x="330" y="650" width="650" height="200" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    </g>
+    <g id="F4-terrace-front" class="Space Outdoor_roof_terrace">
+      <rect x="20" y="850" width="960" height="530" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    </g>
+    <text x="600" y="400" fill="#222" font-family="Arial, sans-serif" font-size="28" text-anchor="middle">OPEN ROOF TERRACE</text>
+    <text x="600" y="440" fill="#666" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">Low parapet / 1.10 m</text>
+    <text x="600" y="1160" fill="#222" font-family="Arial, sans-serif" font-size="24" text-anchor="middle">ROOF SLAB AT +10.20 m</text>
+    <g id="F4-north" class="Wall Parapet">
+      <rect x="0" y="0" width="1000" height="20" fill="#222" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F4-south" class="Wall Parapet">
+      <rect x="0" y="1380" width="1000" height="20" fill="#222" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F4-west" class="Wall Parapet">
+      <rect x="0" y="20" width="20" height="1360" fill="#222" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F4-east" class="Wall Parapet">
+      <rect x="980" y="20" width="20" height="1360" fill="#222" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F4-stair-annotation" class="Annotation" stroke="#888" fill="none">
+      <rect x="80" y="650" width="250" height="200" stroke-dasharray="6 4" stroke-width="2" />
+    </g>
+    <text x="205" y="735" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">STAIR</text>
+    <text x="205" y="765" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">VOID</text>
+  </g>
+  <g stroke="#666" fill="none" stroke-width="1">
+    <line x1="140" y1="204" x2="1140" y2="204" />
+    <line x1="140" y1="190" x2="140" y2="220" />
+    <line x1="1140" y1="190" x2="1140" y2="220" />
+    <line x1="1210" y1="240" x2="1210" y2="1640" />
+    <line x1="1196" y1="240" x2="1224" y2="240" />
+    <line x1="1196" y1="1640" x2="1224" y2="1640" />
+  </g>
+  <text x="640" y="195" fill="#666" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">10.00 m</text>
+  <text x="1240" y="940" fill="#666" font-family="Arial, sans-serif" font-size="22" text-anchor="start">14.00 m</text>
+  <text x="140" y="1710" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Scale: 100 SVG source units = 1.00 m / enter 0.01 meters per source unit</text>
+  <text x="140" y="1750" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Confirm floor height: 1.10 m / slab: 0.20 m / offsets X and Y: zero</text>
+  <text x="140" y="1790" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="start">Synthetic concept for software testing / 2D stair annotation / no inferred staircase mesh</text>
+</svg>

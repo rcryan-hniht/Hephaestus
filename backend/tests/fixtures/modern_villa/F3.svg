@@ -1,0 +1,164 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1840" viewBox="0 0 1400 1840" role="img">
+  <title>Modern Villa / F3 / WORK / WELLNESS</title>
+  <desc>Synthetic architectural test drawing: three storeys and an open roof terrace. Semantic footprints support Hephaestus SVG reconstruction. Stair treads are 2D annotations only.</desc>
+  <rect x="0" y="0" width="1400" height="1840" fill="#fafafa" />
+  <text x="140" y="65" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">HEPHAESTUS / SYNTHETIC TEST INPUT</text>
+  <text x="140" y="115" fill="#222" font-family="Arial, sans-serif" font-size="36" text-anchor="start">F3 / WORK / WELLNESS</text>
+  <text x="140" y="157" fill="#666" font-family="Arial, sans-serif" font-size="22" text-anchor="start">Modern villa / 10.00 m x 14.00 m / SVG source geometry</text>
+  <g id="Floor-3" class="Floorplan" transform="translate(140 240)">
+    <g id="F3-left-rear" class="Space HOME_OFFICE">
+      <rect x="20" y="20" width="380" height="580" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+      <text x="210.0" y="304.0" fill="#222" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">HOME OFFICE</text>
+      <text x="210.0" y="334.0" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">22.04 m²</text>
+    </g>
+    <g id="F3-left-front" class="Space MULTIPURPOSE">
+      <rect x="20" y="915" width="380" height="465" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+      <text x="210.0" y="1141.5" fill="#222" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">MULTIPURPOSE</text>
+      <text x="210.0" y="1171.5" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">17.67 m²</text>
+    </g>
+    <g id="F3-right-rear" class="Space GYM_/_STUDIO">
+      <rect x="415" y="20" width="565" height="580" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+      <text x="697.5" y="304.0" fill="#222" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">GYM / STUDIO</text>
+      <text x="697.5" y="334.0" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">32.77 m²</text>
+    </g>
+    <g id="F3-right-front" class="Space MEDIA_LOUNGE">
+      <rect x="415" y="915" width="565" height="465" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+      <text x="697.5" y="1141.5" fill="#222" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">MEDIA LOUNGE</text>
+      <text x="697.5" y="1171.5" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">26.27 m²</text>
+    </g>
+    <g id="F3-hall" class="Space HALL">
+      <rect x="415" y="615" width="275" height="285" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+      <text x="552.5" y="751.5" fill="#222" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">HALL</text>
+      <text x="552.5" y="781.5" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">7.84 m²</text>
+    </g>
+    <g id="F3-bath" class="Space BATHROOM">
+      <rect x="705" y="615" width="275" height="285" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+      <text x="842.5" y="751.5" fill="#222" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">BATHROOM</text>
+      <text x="842.5" y="781.5" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">7.84 m²</text>
+    </g>
+    <g id="F3-landing-back" class="Space Stair_landing">
+      <rect x="20" y="615" width="380" height="35" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    </g>
+    <g id="F3-landing-left" class="Space Stair_landing">
+      <rect x="20" y="650" width="60" height="200" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    </g>
+    <g id="F3-landing-right" class="Space Stair_landing">
+      <rect x="330" y="650" width="70" height="200" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    </g>
+    <g id="F3-landing-front" class="Space Stair_landing">
+      <rect x="20" y="850" width="380" height="50" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    </g>
+    <g id="F3-north" class="Wall External">
+      <rect x="0" y="0" width="1000" height="20" fill="#222" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F3-south" class="Wall External">
+      <rect x="0" y="1380" width="1000" height="20" fill="#222" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F3-west" class="Wall External">
+      <rect x="0" y="20" width="20" height="1360" fill="#222" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F3-east" class="Wall External">
+      <rect x="980" y="20" width="20" height="1360" fill="#222" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F3-spine" class="Wall Internal">
+      <rect x="400" y="20" width="15" height="1360" fill="#222" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F3-left-cross-rear" class="Wall Internal">
+      <rect x="20" y="600" width="380" height="15" fill="#222" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F3-left-cross-front" class="Wall Internal">
+      <rect x="20" y="900" width="380" height="15" fill="#222" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F3-right-cross-rear" class="Wall Internal">
+      <rect x="415" y="600" width="565" height="15" fill="#222" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F3-right-cross-front" class="Wall Internal">
+      <rect x="415" y="900" width="565" height="15" fill="#222" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F3-bath-west" class="Wall Internal">
+      <rect x="690" y="615" width="15" height="285" fill="#222" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F3-nw" class="Column">
+      <rect x="20" y="20" width="25" height="25" fill="#c45c3d" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F3-ne" class="Column">
+      <rect x="955" y="20" width="25" height="25" fill="#c45c3d" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F3-sw" class="Column">
+      <rect x="20" y="1355" width="25" height="25" fill="#c45c3d" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F3-se" class="Column">
+      <rect x="955" y="1355" width="25" height="25" fill="#c45c3d" stroke="#222" stroke-width="1" />
+    </g>
+    <g id="F3-stair-study-opening" class="Door">
+      <rect x="180" y="600" width="90" height="15" fill="#fafafa" stroke="#c45c3d" stroke-width="1" />
+    </g>
+    <g id="F3-stair-front-opening" class="Door">
+      <rect x="180" y="900" width="90" height="15" fill="#fafafa" stroke="#c45c3d" stroke-width="1" />
+    </g>
+    <g id="F3-stair-hall-opening" class="Door">
+      <rect x="400" y="720" width="15" height="100" fill="#fafafa" stroke="#c45c3d" stroke-width="1" />
+    </g>
+    <g id="F3-primary-hall-opening" class="Door">
+      <rect x="500" y="600" width="100" height="15" fill="#fafafa" stroke="#c45c3d" stroke-width="1" />
+    </g>
+    <g id="F3-lounge-hall-opening" class="Door">
+      <rect x="500" y="900" width="100" height="15" fill="#fafafa" stroke="#c45c3d" stroke-width="1" />
+    </g>
+    <g id="F3-bath-opening" class="Door">
+      <rect x="690" y="690" width="15" height="90" fill="#fafafa" stroke="#c45c3d" stroke-width="1" />
+    </g>
+    <g id="F3-north-left-opening" class="Window">
+      <rect x="80" y="0" width="140" height="20" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    </g>
+    <g id="F3-north-right-opening" class="Window">
+      <rect x="580" y="0" width="300" height="20" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    </g>
+    <g id="F3-west-rear-opening" class="Window">
+      <rect x="0" y="220" width="20" height="180" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    </g>
+    <g id="F3-east-rear-opening" class="Window">
+      <rect x="980" y="160" width="20" height="280" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    </g>
+    <g id="F3-east-front-opening" class="Window">
+      <rect x="980" y="1040" width="20" height="220" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    </g>
+    <g id="F3-south-left-opening" class="Window">
+      <rect x="80" y="1380" width="280" height="20" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    </g>
+    <g id="F3-south-right-opening" class="Window">
+      <rect x="580" y="1380" width="300" height="20" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    </g>
+    <g id="F3-west-front-opening" class="Window">
+      <rect x="0" y="1060" width="20" height="200" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    </g>
+    <g id="F3-stair-annotation" class="Annotation" stroke="#888" fill="none">
+      <rect x="80" y="650" width="250" height="200" stroke-dasharray="6 4" stroke-width="2" />
+      <line x1="90" y1="674" x2="190" y2="674" stroke-width="1" />
+      <line x1="90" y1="693" x2="190" y2="693" stroke-width="1" />
+      <line x1="90" y1="712" x2="190" y2="712" stroke-width="1" />
+      <line x1="90" y1="731" x2="190" y2="731" stroke-width="1" />
+      <line x1="90" y1="750" x2="190" y2="750" stroke-width="1" />
+      <line x1="90" y1="769" x2="190" y2="769" stroke-width="1" />
+      <line x1="90" y1="788" x2="190" y2="788" stroke-width="1" />
+      <line x1="90" y1="807" x2="190" y2="807" stroke-width="1" />
+      <line x1="90" y1="826" x2="190" y2="826" stroke-width="1" />
+      <line x1="140" y1="825" x2="140" y2="675" stroke-width="2" />
+    </g>
+    <text x="250" y="740" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">UP</text>
+  </g>
+  <g stroke="#666" fill="none" stroke-width="1">
+    <line x1="140" y1="204" x2="1140" y2="204" />
+    <line x1="140" y1="190" x2="140" y2="220" />
+    <line x1="1140" y1="190" x2="1140" y2="220" />
+    <line x1="1210" y1="240" x2="1210" y2="1640" />
+    <line x1="1196" y1="240" x2="1224" y2="240" />
+    <line x1="1196" y1="1640" x2="1224" y2="1640" />
+  </g>
+  <text x="640" y="195" fill="#666" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">10.00 m</text>
+  <text x="1240" y="940" fill="#666" font-family="Arial, sans-serif" font-size="22" text-anchor="start">14.00 m</text>
+  <text x="140" y="1710" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Scale: 100 SVG source units = 1.00 m / enter 0.01 meters per source unit</text>
+  <text x="140" y="1750" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Confirm floor height: 3.30 m / slab: 0.20 m / offsets X and Y: zero</text>
+  <text x="140" y="1790" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="start">Synthetic concept for software testing / 2D stair annotation / no inferred staircase mesh</text>
+</svg>
