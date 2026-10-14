@@ -392,11 +392,15 @@ class Jobs:
         self.schedule(self.mutate(job))
         return self.get(job_id)
 
-    def import_proposal(self, job_id, generation, proposal):
+    def import_proposal(self, job_id, generation, proposal, component_values=None):
         job = self.check(job_id, generation)
         if job["state"] == "cancelled":
             raise JobError(409, "Retry the cancelled job before importing")
         self.validate_binding(job, proposal)
+        try:
+            validate_component_parameters(proposal, component_values or {})
+        except ValueError as e:
+            raise JobError(422, str(e)) from e
         self.capacity()
         if len(job["corrections"]) >= 100:
             raise JobError(429, "Correction history limit reached for this experiment")
@@ -409,8 +413,15 @@ class Jobs:
             for k, v in job.get("component_parameters", {}).items()
             if k in new_types and old_types.get(k) == new_types[k]
         }
+        for component_id, values in (component_values or {}).items():
+            job["component_parameters"].setdefault(component_id, {}).update(values)
         job["corrections"].append(
-            {"generation": generation + 1, "kind": "proposal_import", "time": time.time()}
+            {
+                "generation": generation + 1,
+                "kind": "proposal_import",
+                "component_values": component_values or {},
+                "time": time.time(),
+            }
         )
         self.schedule(self.mutate(job))
         return self.get(job_id)

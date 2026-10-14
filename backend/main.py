@@ -25,6 +25,7 @@ class Answers(Generation):
 
 class ImportProposal(Generation):
     proposal: Proposal
+    component_values: dict[str, dict[str, float]] = Field(default_factory=dict, max_length=2000)
 
 
 class BodyLimit:
@@ -164,7 +165,9 @@ def create_app(settings: Settings | None = None, inference=None):
     @app.post("/api/jobs/{job_id}/proposal", status_code=202)
     async def import_proposal(job_id: str, body: ImportProposal, request: Request):
         jobs = request.app.state.jobs
-        return jobs.public(jobs.import_proposal(job_id, body.generation, body.proposal))
+        return jobs.public(
+            jobs.import_proposal(job_id, body.generation, body.proposal, body.component_values)
+        )
 
     @app.post("/api/jobs/{job_id}/answers", status_code=202)
     async def answers(job_id: str, body: Answers, request: Request):

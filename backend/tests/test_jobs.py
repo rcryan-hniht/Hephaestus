@@ -258,3 +258,38 @@ def test_retyped_component_does_not_inherit_prior_overrides(client):
     assert r.status_code == 202
     assert wait(client, job_id)["state"] == "ready"
     assert client.get(f"/api/jobs/{job_id}/scene").json()["components"][0]["elevation"] == 0
+
+
+def test_geometry_and_height_correction_are_applied_in_one_revision(client):
+    job_id = submit(client)
+    wait(client, job_id)
+    answer(client, job_id, PARAMS)
+    wait(client, job_id)
+    data = client.get(f"/api/jobs/{job_id}/proposal").json()
+    p = data["proposal"]
+    component_id = p["components"][0]["id"]
+    p["components"][0]["polygon"] = [[x + 10, y] for x, y in p["components"][0]["polygon"]]
+    r = client.post(
+        f"/api/jobs/{job_id}/proposal",
+        json={
+            "generation": data["generation"],
+            "proposal": p,
+            "component_values": {component_id: {"height": 4}},
+        },
+    )
+    assert r.status_code == 202
+    assert wait(client, job_id)["state"] == "ready"
+    scene = client.get(f"/api/jobs/{job_id}/scene").json()
+    assert scene["revision"] == 2
+    assert scene["components"][0]["height"] == 4
+    assert scene["components"][0]["polygon"][0][0] == 1
+    bad = client.post(
+        f"/api/jobs/{job_id}/proposal",
+        json={
+            "generation": client.get(f"/api/jobs/{job_id}").json()["generation"],
+            "proposal": p,
+            "component_values": {component_id: {"height": -4}},
+        },
+    )
+    assert bad.status_code == 422
+    assert client.get(f"/api/jobs/{job_id}/scene").json() == scene
