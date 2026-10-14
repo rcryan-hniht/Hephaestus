@@ -172,7 +172,7 @@ function layout() {
     { x: margin, y: manifestoActionY + actionHeight + 18, w: width * .88, h: Math.max(100, bottom - manifestoActionY - actionHeight - 18) },
     { x: margin, y: worksY, w: width * .88, h: worksFrameH },
   ] : [
-    { x: width * .55, y: top, w: width * .45, h: bottom - top },
+    { x: width * .55, y: 0, w: width * .45, h: height },
     { x: width * .48, y: Math.max(top, height * .22), w: width * .445, h: Math.max(120, Math.min(height * .54, bottom - Math.max(top, height * .22))) },
     { x: margin, y: worksY, w: width * .525, h: worksFrameH },
   ];
@@ -182,7 +182,8 @@ function layout() {
   frame.style.width = `${w}px`; frame.style.height = `${h}px`;
   const heroRadius = mobile ? 2 : 0;
   frame.style.borderRadius = `${lerp(from === 0 ? heroRadius : 6, next === 0 ? heroRadius : 6, mix)}px`;
-  frame.style.borderRightWidth = `${lerp(from === 0 && !mobile ? 0 : 1, next === 0 && !mobile ? 0 : 1, mix)}px`;
+  const heroBorder = lerp(from === 0 && !mobile ? 0 : 1, next === 0 && !mobile ? 0 : 1, mix);
+  frame.style.borderWidth = `${heroBorder}px ${heroBorder}px ${heroBorder}px 1px`;
   if (Math.abs(w - lastWidth) > .5 || Math.abs(h - lastHeight) > .5) { scene?.resize(); lastWidth = w; lastHeight = h; }
   copies.forEach((copy, i) => {
     const visible = i === chapter;
@@ -201,6 +202,7 @@ function layout() {
   const photoMask = from === 0 ? `inset(0 0 ${mix * 100}% 0)` : next === 0 ? `inset(${(1 - mix) * 100}% 0 0 0)` : 'inset(100% 0 0 0)';
   photo.style.clipPath = motion.matches ? heroWeight ? 'none' : 'inset(100% 0 0 0)' : photoMask;
   frame.dataset.photo = String(heroWeight >= .5);
+  frame.dataset.fullBleed = String(!mobile && heroWeight >= .5 && !photo.hidden);
   if (modelWeight > 0 && worksWeight < 1) { canvas.hidden = false; prepareScene(); }
   canvas.hidden = !scene || modelWeight <= 0 || worksWeight === 1;
   canvas.style.opacity = String(1 - worksWeight);

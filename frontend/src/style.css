@@ -97,6 +97,9 @@ canvas { display: block; width: 100%; height: 100%; }
 .landing-footer { position: absolute; left: 7.5vw; right: 7.5vw; bottom: 18px; display: flex; justify-content: space-between; align-items: center; gap: 14px; font-size: 10px; color: var(--muted); }
 .landing-footer button { display: flex; align-items: center; gap: 22px; min-height: 44px; border: 0; background: none; font-size: 10px; }
 .landing-footer button>span:last-child { color: var(--accent); font-size: 20px; }
+.visual-frame[data-full-bleed="true"] .visual-topline { bottom: 80px; }
+.visual-frame[data-full-bleed="true"] ~ .landing-footer button,
+.visual-frame[data-full-bleed="true"] ~ .landing-footer button>span:last-child { color: #fff; text-shadow: 0 1px 5px #0008; }
 .work-list { position: absolute; left: 66%; top: 40%; width: 26.5%; will-change: transform; }
 .work-item { display: grid; grid-template-columns: 40px 1fr 44px; align-items: center; gap: 14px; border-top: 1px solid var(--line); padding: 19px 0; }
 .work-item:last-child { border-bottom: 1px solid var(--line); }
