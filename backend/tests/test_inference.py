@@ -216,3 +216,8 @@ def test_null_source_annotations_preserve_image_geometry():
     assert result.proposal.components[0].polygon == [(1, 1), (10, 1), (10, 3), (1, 3)]
     assert result.proposal.components[0].source.element_id is None
     assert result.proposal.components[0].source.text is None
+
+
+def test_unknown_inference_engine_does_not_silently_select_a_model():
+    with pytest.raises(ValueError, match="cubicasa or openrouter"):
+        Settings(inference_engine="typo")

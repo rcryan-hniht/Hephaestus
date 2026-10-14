@@ -46,6 +46,7 @@ class Jobs:
         else:
             self.inference = CubiCasaInference(settings)
         self.tasks = {}
+        self.reserved_submissions = 0
         self.semaphore = asyncio.Semaphore(1)
 
     def recover(self):
@@ -80,17 +81,18 @@ class Jobs:
             raise JobError(409, "This job changed; refresh before applying your correction")
         return job
 
-    def capacity(self, new=False):
-        if (new and self.store.count() >= self.settings.max_jobs) or sum(
+    def capacity(self, new=False, amount=1):
+        reserved = self.reserved_submissions
+        if (new and self.store.count() + reserved + amount > self.settings.max_jobs) or sum(
             not t.done() for t in self.tasks.values()
-        ) >= self.settings.max_pending_jobs:
+        ) + reserved + amount > self.settings.max_pending_jobs:
             raise JobError(
                 429,
                 "Local experiment capacity reached; wait for processing or archive data offline",
             )
 
-    async def submit(self, data, name):
-        self.capacity(new=True)
+    async def submit(self, data, name, reserved=False):
+        self.capacity(new=True, amount=0 if reserved else 1)
         if not data or len(data) > self.settings.max_upload_bytes:
             raise JobError(422, "Empty drawing or file exceeds configured limit")
         name = name.replace("\\", "/").split("/")[-1][:200]
@@ -104,6 +106,11 @@ class Jobs:
                 with Image.open(io.BytesIO(data)) as img:
                     if getattr(img, "n_frames", 1) != 1:
                         raise ValueError("Only single-frame images are supported")
+                    if (
+                        img.width * img.height > self.settings.max_image_pixels
+                        or max(img.size) > 20000
+                    ):
+                        raise ValueError("Image exceeds decoded image limits")
                     bg = Image.new("RGB", img.size, "white")
                     if img.mode in ("RGBA", "LA") or (
                         img.mode == "P" and "transparency" in img.info
@@ -114,6 +121,8 @@ class Jobs:
                     out = io.BytesIO()
                     bg.save(out, format="PNG")
                     data = out.getvalue()
+                    if len(data) > self.settings.max_upload_bytes:
+                        raise ValueError("Normalized image exceeds the drawing upload limit")
                 kind = "png"
             except Exception as e:
                 raise JobError(422, f"Invalid image format: {e}") from e
@@ -133,11 +142,12 @@ class Jobs:
                 proposal = None
         except (ValueError, TimeoutError, RecursionError) as e:
             raise JobError(422, str(e) or "Drawing validation timed out") from e
-        self.capacity(new=True)
+        self.capacity(new=True, amount=0 if reserved else 1)
         job = {
             "id": job_id,
             "name": name,
             "source_kind": kind,
+            "inference_engine": self.settings.inference_engine if kind == "png" else "svg",
             "source_hash": source_hash,
             "source_dimensions": list(dimensions),
             "generation": 1,

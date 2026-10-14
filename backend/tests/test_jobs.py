@@ -27,7 +27,9 @@ def submit(client, data=SVG, name="drawing.svg"):
     return r.json()["id"]
 
 
-def wait(client, job_id, states=("needs_information", "ready", "failed", "cancelled"), timeout=15.0):
+def wait(
+    client, job_id, states=("needs_information", "ready", "failed", "cancelled"), timeout=15.0
+):
     deadline = time.time() + timeout
     job = {}
     while time.time() < deadline:
@@ -37,7 +39,9 @@ def wait(client, job_id, states=("needs_information", "ready", "failed", "cancel
         if job["state"] in states:
             return job
         time.sleep(0.05)
-    pytest.fail(f"Job did not reach expected state within {timeout}s, current state: {job.get('state')}")
+    pytest.fail(
+        f"Job did not reach expected state within {timeout}s, current state: {job.get('state')}"
+    )
 
 
 def answer(client, job_id, values):
@@ -156,9 +160,10 @@ def test_export_blend_converts_glb(client):
         assert len(res.content) > 1000
 
 
-
 def test_png_offline_import_requires_binding_and_review(tmp_path):
-    with TestClient(create_app(Settings(data_dir=tmp_path, inference_engine="openrouter"))) as client:
+    with TestClient(
+        create_app(Settings(data_dir=tmp_path, inference_engine="openrouter"))
+    ) as client:
         out = io.BytesIO()
         Image.new("RGB", (30, 20)).save(out, format="PNG")
         data = out.getvalue()
@@ -181,7 +186,10 @@ def test_png_offline_import_requires_binding_and_review(tmp_path):
             client.post(path, json={"generation": j["generation"], "proposal": wrong}).status_code
             == 422
         )
-        assert client.post(path, json={"generation": j["generation"], "proposal": p}).status_code == 202
+        assert (
+            client.post(path, json={"generation": j["generation"], "proposal": p}).status_code
+            == 202
+        )
         j = wait(client, job_id)
         assert "review_confirmed" in [q["key"] for q in j["questions"]]
         answer(client, job_id, PARAMS)
@@ -190,7 +198,26 @@ def test_png_offline_import_requires_binding_and_review(tmp_path):
         assert wait(client, job_id)["state"] == "ready"
 
 
-def test_png_cubicasa_vectorization(tmp_path):
+def test_png_cubicasa_vectorization(tmp_path, monkeypatch):
+    import vectorizer
+    from contracts import Proposal
+
+    def fixture_extract(data, job_id, source_hash, **settings):
+        return Proposal(
+            job_id=job_id,
+            source_hash=source_hash,
+            source_kind="png",
+            coordinate_frame={"width": 64, "height": 64, "unit": "pixel"},
+            components=[
+                {
+                    "id": job_id + ":f0:wall",
+                    "type": "wall",
+                    "polygon": [[1, 1], [50, 1], [50, 4], [1, 4]],
+                }
+            ],
+        )
+
+    monkeypatch.setattr(vectorizer, "vectorize_floorplan", fixture_extract)
     with TestClient(create_app(Settings(data_dir=tmp_path, inference_engine="cubicasa"))) as client:
         out = io.BytesIO()
         Image.new("RGB", (64, 64), "white").save(out, format="PNG")
@@ -340,3 +367,32 @@ def test_geometry_and_height_correction_are_applied_in_one_revision(client):
     )
     assert bad.status_code == 422
     assert client.get(f"/api/jobs/{job_id}/scene").json() == scene
+
+
+def test_jpeg_dimensions_are_bounded_before_canvas_allocation(tmp_path, monkeypatch):
+    out = io.BytesIO()
+    Image.new("RGB", (20, 20)).save(out, format="JPEG")
+
+    def unexpected_allocation(*args, **kwargs):
+        raise AssertionError("Decoded-limit check must happen before allocation")
+
+    monkeypatch.setattr(Image, "new", unexpected_allocation)
+    with TestClient(create_app(Settings(data_dir=tmp_path, max_image_pixels=100))) as c:
+        r = c.post("/api/jobs", files={"file": ("drawing.jpg", out.getvalue())})
+        assert r.status_code == 422
+        assert "decoded image limits" in r.json()["detail"]
+        assert c.app.state.jobs.store.count() == 0
+
+
+def test_jpeg_normalization_cannot_exceed_stored_source_limit(tmp_path):
+    import random
+
+    image = Image.frombytes("RGB", (64, 64), random.Random(42).randbytes(64 * 64 * 3))
+    jpeg = io.BytesIO()
+    image.save(jpeg, format="JPEG", quality=80)
+    assert len(jpeg.getvalue()) < 10000
+    with TestClient(create_app(Settings(data_dir=tmp_path, max_upload_bytes=10000))) as c:
+        r = c.post("/api/jobs", files={"file": ("drawing.jpg", jpeg.getvalue())})
+        assert r.status_code == 422
+        assert "Normalized image exceeds" in r.json()["detail"]
+        assert c.app.state.jobs.store.count() == 0

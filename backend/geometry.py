@@ -175,3 +175,95 @@ def build_scene(
             "Door/window components represent voids, not inferred door leaves or glazing.",
         ],
     }
+
+
+def assemble_building(building, jobs, scenes):
+    """Compose validated source scenes; never mutate single-floor evidence."""
+    import copy
+    import hashlib
+    import json
+
+    result, sources, warnings = [], [], []
+    elevation, size = 0, 0
+    ids = set()
+    for floor, job, scene in zip(building["floors"], jobs, scenes, strict=True):
+        if (
+            job["state"] != "ready"
+            or scene["job_id"] != job["id"]
+            or scene["source_hash"] != job["source_hash"]
+            or scene["revision"] != job["active_revision"]
+        ):
+            raise ValueError("Every assembled floor must match its ready source revision")
+        if not any(c["type"] == "wall" for c in scene["components"]):
+            raise ValueError(
+                f"F{floor['number']} has no wall geometry; correct its extraction before assembly"
+            )
+        scale = scene["parameters"]["meters_per_unit"]["value"]
+        origin = scene["coordinate_frame"]["origin"]
+        transform = [
+            floor["offset_x"] - origin[0] * scale,
+            elevation,
+            -floor["offset_y"] + origin[1] * scale,
+        ]
+        for component in scene["components"]:
+            size += len(component["mesh"]["positions"]) + len(
+                (component.get("selection_mesh") or {}).get("positions", [])
+            )
+            if len(result) >= 2000 or size > 2_000_000 or component["id"] in ids:
+                raise ValueError(
+                    "Combined building exceeds geometry limits or repeats component IDs"
+                )
+            ids.add(component["id"])
+            c = copy.deepcopy(component)
+            c.update(
+                floor=len(sources),
+                source_floor=floor["number"],
+                job_id=job["id"],
+                source_hash=job["source_hash"],
+                local_elevation=c["elevation"],
+                elevation=c["elevation"] + elevation,
+            )
+            c["polygon"] = [[x + transform[0], z + transform[2]] for x, z in c["polygon"]]
+            for mesh in [c["mesh"], c.get("selection_mesh")]:
+                if mesh:
+                    mesh["positions"] = [
+                        v + transform[i % 3] for i, v in enumerate(mesh["positions"])
+                    ]
+                    if any(not math.isfinite(v) or abs(v) > 20000 for v in mesh["positions"]):
+                        raise ValueError("Aligned geometry exceeds supported model coordinates")
+            result.append(c)
+        sources.append(
+            {
+                "number": floor["number"],
+                "name": job["name"],
+                "transform": transform,
+                "provenance": "user_confirmed",
+                "scene": scene,
+                "drawings": [
+                    {k: v for k, v in s.items() if k != "artifact"} for s in floor["sources"]
+                ],
+            }
+        )
+        warnings.extend(f"F{floor['number']}: {w}" for w in scene.get("warnings", []))
+        elevation += scene["parameters"]["floor_height"]["value"]
+    fingerprint = hashlib.sha256(
+        json.dumps(
+            [(f["scene"]["source_hash"], f["transform"]) for f in sources], allow_nan=False
+        ).encode()
+    ).hexdigest()
+    return {
+        "schema_version": "hephaestus.building.v1",
+        "building_id": building["id"],
+        "job_id": ":".join(j["id"] for j in jobs),
+        "source_hash": fingerprint,
+        "unit": "m",
+        "source_kind": "multiple",
+        "name": "Building · " + " + ".join(f"F{f['number']}" for f in sources),
+        "revision": ".".join(str(s["revision"]) for s in scenes),
+        "alignment_revision": building["generation"],
+        "floors": sources,
+        "components": result,
+        "parameters": {},
+        "warnings": warnings,
+        "alignment": "User-confirmed source-origin offsets; paired PNG/SVG registration is not inferred.",
+    }

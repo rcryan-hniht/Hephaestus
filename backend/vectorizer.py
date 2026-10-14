@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import io
 import logging
+import math
 
 import numpy as np
 import torch
@@ -41,9 +42,13 @@ ROOM_CLASS_NAMES = [
 ]
 
 
-def _clean_polygon(coords: list[tuple[float, float]], min_area: float = 1.0) -> list[tuple[float, float]] | None:
+def _clean_polygon(
+    coords: list[tuple[float, float]], min_area: float = 1.0
+) -> list[tuple[float, float]] | None:
     """Validate and clean a 2D polygon using Shapely, ensuring simple non-zero area."""
     if len(coords) < 3:
+        return None
+    if any(not math.isfinite(value) for point in coords for value in point):
         return None
     poly = Polygon(coords)
     if not poly.is_valid:
@@ -105,6 +110,7 @@ def vectorize_floorplan(
 
     components: list[Component] = []
     wall_shapely_polys: list[Polygon] = []
+    validation_issues: list[str] = []
 
     # 1. Extract Wall components
     for idx, (poly, t) in enumerate(zip(raw_polygons, raw_types)):
@@ -125,13 +131,15 @@ def vectorize_floorplan(
                         floor=0,
                         label="Wall",
                         polygon=clean,
-                        confidence=0.92,
                     )
                 )
 
+    if not wall_shapely_polys:
+        raise ValueError("No walls detected in the PNG; check the drawing or use its paired SVG.")
+
     # 2. Extract Openings (Doors and Windows) that intersect at least one wall
     for idx, (poly, t) in enumerate(zip(raw_polygons, raw_types)):
-        kind = t.get("type")
+        kind = {1: "window", 2: "door"}.get(t.get("class")) if t.get("type") == "icon" else None
         if kind in ("door", "window"):
             scaled_coords = [
                 (float(np.clip(x / sx, 0, orig_w)), float(np.clip(y / sy, 0, orig_h)))
@@ -150,18 +158,19 @@ def vectorize_floorplan(
                             floor=0,
                             label=kind.capitalize(),
                             polygon=clean,
-                            confidence=0.86,
                         )
                     )
+                else:
+                    validation_issues.append(
+                        f"Opening candidate {idx} ({kind}) does not intersect a detected wall"
+                    )
+            else:
+                validation_issues.append(f"Opening candidate {idx} ({kind}) has invalid geometry")
 
     # 3. Extract Room components
     for idx, (room_poly, rtype) in enumerate(zip(raw_room_polygons, raw_room_types)):
         cls_idx = rtype.get("class", 11)
-        label = (
-            ROOM_CLASS_NAMES[cls_idx]
-            if 0 <= cls_idx < len(ROOM_CLASS_NAMES)
-            else "Room"
-        )
+        label = ROOM_CLASS_NAMES[cls_idx] if 0 <= cls_idx < len(ROOM_CLASS_NAMES) else "Room"
         if hasattr(room_poly, "exterior"):
             scaled_coords = [
                 (float(np.clip(x / sx, 0, orig_w)), float(np.clip(y / sy, 0, orig_h)))
@@ -177,31 +186,8 @@ def vectorize_floorplan(
                         floor=0,
                         label=label,
                         polygon=clean,
-                        confidence=0.89,
                     )
                 )
-
-    # Fallback: if no walls were recognized (e.g., highly stylized or degenerate image),
-    # generate a perimeter bounding wall to guarantee valid architectural reconstruction.
-    if not components:
-        margin = min(orig_w, orig_h) * 0.05
-        perimeter = [
-            (margin, margin),
-            (orig_w - margin, margin),
-            (orig_w - margin, orig_h - margin),
-            (margin, orig_h - margin),
-        ]
-        components.append(
-            Component(
-                id=f"{job_id}:f0:wall_0",
-                type="wall",
-                floor=0,
-                label="Exterior Wall",
-                polygon=perimeter,
-                confidence=0.5,
-                uncertainty="Fallback perimeter wall generated due to sparse recognition",
-            )
-        )
 
     preprocessing_transform = [sx, 0.0, 0.0, sy, 0.0, 0.0]
 
@@ -219,4 +205,5 @@ def vectorize_floorplan(
         components=components,
         meters_per_unit=None,
         dimensions=[],
+        validation_issues=validation_issues,
     )

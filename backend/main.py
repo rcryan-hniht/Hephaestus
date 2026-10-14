@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from pydantic import Field
 
+from buildings import Buildings
 from config import Settings
 from contracts import Proposal, StrictModel
 from jobs import JobError, Jobs
@@ -34,6 +35,16 @@ class ImportProposal(Generation):
     component_values: dict[str, dict[str, float]] = Field(default_factory=dict, max_length=2000)
 
 
+class FloorOffset(StrictModel):
+    number: int = Field(ge=1, le=8)
+    x: float = Field(ge=-1000, le=1000)
+    y: float = Field(ge=-1000, le=1000)
+
+
+class BuildingAlignment(Generation):
+    offsets: list[FloorOffset] = Field(min_length=1, max_length=8)
+
+
 class BodyLimit:
     """Bound the body before multipart parsing/spooling, including chunked uploads."""
 
@@ -49,7 +60,8 @@ class BodyLimit:
             if message["type"] == "http.disconnect":
                 return
             size += len(message.get("body", b""))
-            if size > self.limit:
+            limit = 44 * 1024 * 1024 if scope["path"] == "/api/buildings" else self.limit
+            if size > limit:
                 return await JSONResponse(
                     status_code=413, content={"detail": "Request exceeds drawing upload limit"}
                 )(scope, receive, send)
@@ -102,6 +114,7 @@ def create_app(settings: Settings | None = None, inference=None):
     @asynccontextmanager
     async def lifespan(app):
         app.state.jobs = Jobs(settings, inference)
+        app.state.buildings = Buildings(app.state.jobs)
         app.state.jobs.recover()
         yield
         await app.state.jobs.close()
@@ -132,10 +145,11 @@ def create_app(settings: Settings | None = None, inference=None):
     async def validation_error(request, exc):
         import logging
 
+        issues = [{"loc": e["loc"], "msg": e["msg"], "type": e["type"]} for e in exc.errors()]
         logging.getLogger("uvicorn.error").warning(
-            "RequestValidationError on %s: %s", request.url.path, exc.errors()
+            "Request validation failed on %s", request.url.path
         )
-        return JSONResponse(status_code=422, content={"detail": exc.errors()})
+        return JSONResponse(status_code=422, content={"detail": issues})
 
     @app.get("/health")
     def health():
@@ -156,17 +170,32 @@ def create_app(settings: Settings | None = None, inference=None):
 
     @app.get("/api/capabilities")
     def capabilities():
+        local = settings.inference_engine == "cubicasa"
+        configured = bool(settings.api_key)
+        if local:
+            from weights_manager import get_weights_path
+
+            path = get_weights_path()
+            configured = path.is_file() and path.stat().st_size > 10_000_000
+        blender_available = bool(shutil.which("blender") or os.path.isfile("/snap/bin/blender"))
         return {
             "formats": ["png", "svg", "jpg", "jpeg"],
             "max_upload_bytes": settings.max_upload_bytes,
             "max_image_pixels": settings.max_image_pixels,
             "schema_version": "hephaestus.scene.v1",
-            "requested_model": settings.model,
-            "engine": "cubicasa5k-pytorch",
-            "inference_configured": True,
-            "model_availability": "checked before each PNG inference",
-            "export_formats": ["scene.json", "blend", "glb"],
+            "requested_model": "CubiCasa5k-Hourglass" if local else settings.model,
+            "engine": "cubicasa5k-pytorch" if local else "openrouter",
+            "inference_configured": configured,
+            "model_availability": "validated before each image inference",
+            "export_formats": ["scene.json", "glb"] + (["blend"] if blender_available else []),
+            "blender_available": blender_available,
             "single_floor": True,
+            "building_batch": {
+                "max_floors": 8,
+                "max_files": 16,
+                "max_total_bytes": 40 * 1024 * 1024,
+                "schema_version": "hephaestus.building.v1",
+            },
         }
 
     @app.post("/api/jobs", status_code=202)
@@ -177,6 +206,45 @@ def create_app(settings: Settings | None = None, inference=None):
             return jobs.public(await jobs.submit(data, file.filename or "drawing"))
         finally:
             await file.close()
+
+    @app.post("/api/buildings", status_code=202)
+    async def submit_building(request: Request, files: list[UploadFile]):
+        try:
+            if not 1 <= len(files) <= 16:
+                raise JobError(422, "Select at most 16 drawings")
+            drawings = [
+                (f.filename or "drawing", await f.read(settings.max_upload_bytes + 1))
+                for f in files
+            ]
+            return await request.app.state.buildings.submit(drawings)
+        finally:
+            for file in files:
+                await file.close()
+
+    @app.get("/api/buildings/{building_id}")
+    def building_status(building_id: str, request: Request):
+        return request.app.state.buildings.get(building_id)
+
+    @app.post("/api/buildings/{building_id}/alignment")
+    def building_alignment(building_id: str, body: BuildingAlignment, request: Request):
+        return request.app.state.buildings.align(building_id, body.generation, body.offsets)
+
+    @app.post("/api/buildings/{building_id}/cancel")
+    def building_cancel(building_id: str, body: Generation, request: Request):
+        return request.app.state.buildings.cancel(building_id, body.generation)
+
+    @app.get("/api/buildings/{building_id}/scene")
+    def building_scene(building_id: str, request: Request):
+        return request.app.state.buildings.scene(building_id)
+
+    @app.get("/api/buildings/{building_id}/floors/{number}/sources/{index}")
+    def building_source(building_id: str, number: int, index: int, request: Request):
+        data, kind = request.app.state.buildings.source(building_id, number, index)
+        return Response(
+            data,
+            media_type="image/png" if kind == "png" else "application/octet-stream",
+            headers={"X-Content-Type-Options": "nosniff", "Content-Security-Policy": "sandbox"},
+        )
 
     @app.get("/api/jobs/{job_id}")
     def status(job_id: str, request: Request):

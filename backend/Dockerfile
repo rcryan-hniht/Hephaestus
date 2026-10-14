@@ -5,6 +5,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/app/backend/.venv/bin:$PATH" \
     HEPHAESTUS_DATA_DIR=/app/data
 WORKDIR /app/backend
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends blender \
+    && rm -rf /var/lib/apt/lists/*
 COPY backend/requirements.txt ./
 RUN uv venv .venv \
     && uv pip install --python .venv/bin/python --require-hashes -r requirements.txt \

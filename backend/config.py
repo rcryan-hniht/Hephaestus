@@ -31,6 +31,10 @@ class Settings:
         "http://127.0.0.1:5173",
     )
 
+    def __post_init__(self):
+        if self.inference_engine not in {"cubicasa", "openrouter"}:
+            raise ValueError("HEPHAESTUS_INFERENCE_ENGINE must be cubicasa or openrouter")
+
     @classmethod
     def from_env(cls):
         env = Path(__file__).resolve().parent.parent / ".env"

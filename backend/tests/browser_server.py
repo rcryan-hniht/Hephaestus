@@ -22,7 +22,9 @@ def main():
     args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix="hephaestus-browser-") as data_dir:
         settings = Settings(
-            data_dir=Path(data_dir), api_key="fixture-only" if args.mock_ai else None
+            data_dir=Path(data_dir),
+            api_key="fixture-only" if args.mock_ai else None,
+            inference_engine="openrouter",
         )
 
         def handler(request):

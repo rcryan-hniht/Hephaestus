@@ -20,6 +20,21 @@ class Store:
             db.execute(
                 "CREATE TABLE IF NOT EXISTS revisions (job_id TEXT, version INTEGER, payload TEXT NOT NULL, PRIMARY KEY(job_id,version))"
             )
+            db.execute(
+                "CREATE TABLE IF NOT EXISTS buildings (id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
+            )
+
+    def save_building(self, building):
+        with self.connect() as db:
+            db.execute(
+                "INSERT OR REPLACE INTO buildings VALUES (?,?)",
+                (building["id"], json.dumps(building, allow_nan=False)),
+            )
+
+    def get_building(self, building_id):
+        with self.connect() as db:
+            row = db.execute("SELECT payload FROM buildings WHERE id=?", (building_id,)).fetchone()
+        return json.loads(row[0]) if row else None
 
     def connect(self):
         return sqlite3.connect(self.db, timeout=10)

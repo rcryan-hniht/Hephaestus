@@ -284,29 +284,46 @@ class CubiCasaInference:
         self.device = device
 
     async def extract(self, data: bytes, job_id: str, source_hash: str) -> ExtractionResult:
-        from vectorizer import vectorize_floorplan
-
         start = time.monotonic()
-        proposal = await asyncio.to_thread(
-            vectorize_floorplan,
-            data,
-            job_id,
-            source_hash,
-            max_side=min(self.settings.max_image_side, 512),
-            threshold=0.4,
-            device=self.device,
-        )
+
+        def run_local():
+            from vectorizer import vectorize_floorplan
+
+            return vectorize_floorplan(
+                data,
+                job_id,
+                source_hash,
+                max_side=min(self.settings.max_image_side, 512),
+                threshold=0.4,
+                device=self.device,
+            )
+
+        proposal = await asyncio.to_thread(run_local)
         latency = time.monotonic() - start
         attempt = {
             "attempt": 1,
             "engine": "cubicasa5k-pytorch",
             "requested_model": "CubiCasa5k-Hourglass",
-            "prompt_version": PROMPT_VERSION,
+            "prompt_version": None,
+            "extraction_version": "cubicasa-vector.v1",
             "schema_version": "hephaestus.scene.v1",
-            "image_resolution": [proposal.coordinate_frame.width, proposal.coordinate_frame.height],
+            "image_resolution": [
+                round(
+                    proposal.coordinate_frame.width
+                    * proposal.coordinate_frame.preprocessing_transform[0]
+                ),
+                round(
+                    proposal.coordinate_frame.height
+                    * proposal.coordinate_frame.preprocessing_transform[3]
+                ),
+            ],
+            "settings": {
+                "max_side": min(self.settings.max_image_side, 512),
+                "threshold": 0.4,
+                "device": self.device,
+            },
             "preprocessing": proposal.coordinate_frame.model_dump(mode="json"),
             "latency_seconds": latency,
             "valid": True,
         }
         return ExtractionResult(proposal, [attempt])
-

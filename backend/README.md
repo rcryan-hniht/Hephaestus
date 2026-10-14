@@ -1,9 +1,18 @@
 # Hephaestus backend
 
-Personal, single-floor CubeCasa5K research backend. Python 3.14+, FastAPI,
+Personal CubeCasa5K research backend with retained multi-floor buildings. Python 3.14+, FastAPI,
 SQLite and private local artifacts. It accepts PNG and semantic SVG drawings,
 asks for missing essential information, and exports inspectable component
 meshes in a versioned scene JSON. It has no public-user authentication.
+
+Default PNG engine: local CubiCasa5K/PyTorch on CPU. SVG uses exact vector evidence.
+OpenRouter is an optional comparison engine (`HEPHAESTUS_INFERENCE_ENGINE=openrouter`),
+using the explicitly selected `qwen/qwen2.5-vl-72b-instruct`.
+
+Local weights are read from `CUBICASA_MODEL_PATH` or
+`<HEPHAESTUS_DATA_DIR>/models/model_best_val_loss_var.pkl` (default `backend/data`).
+Missing weights fail clearly; automatic download requires
+`HEPHAESTUS_ALLOW_WEIGHT_DOWNLOAD=1`. Tests never require a model download.
 
 ## Run locally
 
@@ -59,13 +68,28 @@ A failed, cancelled or incomplete floor cannot replace the valid building.
 The frontend exports `hephaestus.building.v1` JSON containing each original
 single-floor `hephaestus.scene.v1` scene, source hash, revision, drawings and
 confirmed transform, plus combined components in meters. GLB includes the
-per-floor source and transform metadata. Backend jobs remain single-floor;
-there is no new bulk inference endpoint. Grouping/alignment is held in the
-current workspace and exported JSON, and is not restored after page reload.
+per-floor source and transform metadata. `POST /api/buildings` accepts repeated
+multipart `files` in one request, retains paired sources and creates source-bound
+single-floor jobs. `GET /api/buildings/{id}` reports every floor; `POST .../alignment`
+confirms `{generation, offsets: [{number, x, y}]}`; `GET .../scene` publishes the
+combined wall-bearing building only after all floors and alignment are ready.
+`POST .../cancel` invalidates a batch; `GET .../floors/{number}/sources/{index}`
+retrieves retained originals. SQLite building manifests and scene artifacts
+survive backend restart. The browser does not automatically reopen a building
+on page reload yet; retain the building ID or export its JSON.
+
+A single Export button opens `.glb` and `.blend` options. GLB is produced in the
+viewport with floor/source metadata; native `.blend` uses the backend's headless
+Blender CLI. The Docker image installs Blender. The menu disables native Blender
+export when the server lacks it, and conversion failure does not silently change
+the selected format.
 
 Browser integration checks use private temporary jobs and no live AI requests.
 Start `backend/.venv/bin/python backend/tests/browser_server.py` from the root,
 then `BACKEND_PORT=8765 bun run dev --host 127.0.0.1 --port 4174` in `frontend/`.
+Run `node tests/floors.browser.mjs` and `node tests/floors-lifecycle.browser.mjs`
+for batch assembly, persistence handoff, independent drafts and failed-source handling.
+Run `node tests/export-menu.browser.mjs` for the single-button export flow.
 Run `node tests/workspace.browser.mjs` in `frontend/` for SVG reconstruction,
 correction recovery, history, export, failed PNG retention and mobile layout.
 For PNG, start the test server with `--mock-ai --port 8766`, use another Vite
