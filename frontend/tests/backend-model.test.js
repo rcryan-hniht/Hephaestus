@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { backendGeometry, sceneToModel, offsetProposal } from '../src/backend-model.js';
+import { backendGeometry, sceneToModel, offsetProposal, sourceDescription } from '../src/backend-model.js';
 import { Vector3 } from 'three';
 
 const job = { id: 'j', source_hash: 'a'.repeat(64), name: 'plan.svg' };
@@ -53,4 +53,9 @@ test('position corrections convert meters back to source coordinates without mut
   const shifted = offsetProposal(proposal, 'wall', 1, -.5, .1);
   expect(shifted.components[0].polygon[0]).toEqual([10,5]);
   expect(proposal.components[0].polygon[0]).toEqual([0,0]);
+});
+
+
+test('missing source annotations do not appear as a fabricated element label', () => {
+ expect(sourceDescription({ source: { element_id:null, occurrence:null } }, 'F1.png')).toBe('F1.png');
 });

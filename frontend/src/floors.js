@@ -26,7 +26,7 @@ export function groupFloorFiles(files) {
 }
 
 export function assembleFloors(floors) {
-  // shortcut: floor grouping/alignment lasts for this workspace; persist building records when reload recovery is needed.
+  // shortcut: workspace reopening after reload is manual; add a persisted building picker when session recovery is needed.
   if (!floors.length || floors.length > 8 || floors.some(f => f.job?.state !== 'ready' || !f.scene)) throw new Error('Every floor must be ready before replacing the building.');
   if (floors.some((f, i) => f.number !== i + 1)) throw new Error('Building floors must have consecutive numbers starting with F1.');
   let elevation = 0, size = 0;

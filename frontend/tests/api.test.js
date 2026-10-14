@@ -107,3 +107,15 @@ describe('drawing jobs', () => {
     expect(errors[0]).toContain('source or generation');
   });
 });
+
+test('attaches a retained batch job without uploading a duplicate source', async () => {
+ let update;
+ const client = createJobClient({ onUpdate: value => { update = value; }, fetcher: async url => {
+  if (url.endsWith('/proposal')) return response({ generation:1, proposal:{job_id:'batch',source_hash:'a'.repeat(64)} });
+  if (url.endsWith('/scene')) return response(scene('batch'));
+  throw new Error('Attachment must not upload another source');
+ } });
+ await client.attach(job('batch','ready'));
+ expect(update.scene.job_id).toBe('batch');
+ expect(client.job.state).toBe('ready');
+});

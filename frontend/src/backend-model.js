@@ -48,7 +48,7 @@ export function backendGeometry(component, origin) {
 
 export function sourceDescription(component, name = '') {
   if (typeof component.source === 'string') return component.source;
-  return [name, component.source?.element_id, component.source?.occurrence === undefined ? null : `element ${component.source.occurrence}`].filter(Boolean).join(' / ');
+  return [name, component.source?.element_id, component.source?.occurrence == null ? null : `element ${component.source.occurrence}`].filter(Boolean).join(' / ');
 }
 
 export function offsetProposal(proposal, id, x, z, scale) {

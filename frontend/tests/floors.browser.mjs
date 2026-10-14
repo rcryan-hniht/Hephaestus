@@ -11,7 +11,7 @@ try {
  assert.equal(await page.locator('#file-input').getAttribute('multiple') !== null, true, 'batch file selection enabled');
  const png = Buffer.from(await page.evaluate(() => { const c = document.createElement('canvas'); c.width = 20; c.height = 10; return c.toDataURL().split(',')[1]; }), 'base64');
  const svg = await readFile(new URL('../../backend/tests/fixtures/known_rooms.svg', import.meta.url));
- const jobs = []; page.on('response', async r => { if (r.url().endsWith('/api/jobs') && r.status() === 202) jobs.push(await r.json()); });
+ const jobs = []; page.on('response', async r => { if (r.url().endsWith('/api/buildings') && r.status() === 202) { const building = await r.json(); jobs.push(...building.floors.map(f => f.job)); } });
  await page.locator('#file-input').setInputFiles([
   { name:'F2.svg', mimeType:'image/svg+xml', buffer:svg }, { name:'F1_scaled.png', mimeType:'image/png', buffer:png },
   { name:'F1.svg', mimeType:'image/svg+xml', buffer:svg }, { name:'F2_scaled.png', mimeType:'image/png', buffer:png },
@@ -33,7 +33,8 @@ try {
   await page.locator('#api-questions button[type=submit]').click();
   await page.waitForFunction(() => document.getElementById('processing-status').textContent.includes('Ready'));
  }
- assert.equal(jobs.length,2, 'only vector build sources submitted');
+ assert.equal(jobs.length,2, 'one batch creates both vector build jobs');
+ assert.match(await page.locator('#building-summary').textContent(),/4 drawings · 2 floors received/);
  assert.ok(jobs.every(j => j.source_kind === 'svg'));
  assert.equal(await page.locator('#model-label').isVisible(),false, 'do not publish before alignment confirmation');
  await page.locator('#floor-2-x').fill('1');
@@ -63,7 +64,7 @@ try {
  await page.waitForFunction(() => document.getElementById('model-label').textContent.includes('1.1'));
  await page.locator('#redo').click();
  await page.waitForFunction(() => document.getElementById('model-label').textContent.includes('1.2'));
- const glbDownload = page.waitForEvent('download'); await page.locator('#export-model').click();
+ const glbDownload = page.waitForEvent('download'); await page.locator('#export-model').click(); await page.locator('[data-export=glb]').click();
  const binary = await readFile(await (await glbDownload).path());
  assert.equal(binary.readUInt32LE(0),0x46546c67);
  const gltf = JSON.parse(binary.subarray(20,20+binary.readUInt32LE(12)).toString());

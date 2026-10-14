@@ -1,0 +1,30 @@
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+const browser = await chromium.launch({headless:true,args:['--enable-unsafe-swiftshader']});
+const page = await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});
+page.setDefaultTimeout(10000);
+try {
+ await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4174');
+ await page.locator('#explore-demo').click();
+ assert.equal(await page.locator('#export-format').count(),0,'format picker appears only after pressing Export');
+ await page.route('**/api/capabilities',route=>route.fulfill({json:{blender_available:true}}));
+ await page.locator('#export-model').click();
+ await page.locator('#export-options').waitFor({state:'visible'});
+ assert.equal(await page.locator('#export-model').getAttribute('aria-expanded'),'true');
+ await page.keyboard.press('Escape');
+ assert.equal(await page.locator('#export-options').isVisible(),false);
+ await page.locator('#export-model').click();
+ const glb = page.waitForEvent('download'); await page.locator('[data-export=glb]').click();
+ const downloaded = await glb;
+ assert.match(downloaded.suggestedFilename(),/\.glb$/);
+ assert.equal((await readFile(await downloaded.path())).readUInt32LE(0),0x46546c67);
+ await page.route('**/api/export/blend',route=>route.fulfill({status:503,json:{detail:'Blender unavailable'}}));
+ let unexpectedDownload=false; page.on('download',()=>unexpectedDownload=true);
+ await page.locator('#export-model').click();
+ await page.locator('[data-export=blend]').click();
+ await page.waitForFunction(()=>document.getElementById('processing-status').textContent.includes('Blender unavailable'));
+ assert.equal(unexpectedDownload,false,'chosen format failure does not silently download another format');
+ assert.equal(await page.locator('#export-model').isEnabled(),true);
+ console.log('PASS: single Export button, format popup, Escape, GLB download and honest Blender errors');
+} finally { await browser.close(); }

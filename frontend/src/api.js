@@ -1,4 +1,4 @@
-const API_BASE = (import.meta.env?.VITE_API_BASE_URL || '').replace(/\/$/, '');
+export const API_BASE = (import.meta.env?.VITE_API_BASE_URL || '').replace(/\/$/, '');
 const terminal = new Set(['needs_information', 'ready', 'failed', 'cancelled']);
 const states = new Set(['queued', 'extracting', 'awaiting_ai_result', 'validating', 'building', ...terminal]);
 
@@ -77,6 +77,11 @@ export function createJobClient({ onUpdate = () => {}, onError = () => {}, inter
     get job() { return current; },
     get changing() { return changing; },
     request,
+    async attach(job) {
+      const old = current, token = invalidate(); current = null; changing = false;
+      void cancelObsolete(old);
+      await guarded(() => watch(job, token), token);
+    },
     async start(file) {
       const old = current, token = invalidate(); current = null; changing = false;
       void cancelObsolete(old);

@@ -10,10 +10,11 @@ try {
  await page.locator('[data-upload]').first().click();
  const svg = await readFile(new URL('../../backend/tests/fixtures/known_rooms.svg',import.meta.url));
  const valid = number => ({name:`F${number}.svg`,mimeType:'image/svg+xml',buffer:svg});
- const rejected = page.waitForResponse(r=>r.url().endsWith('/api/jobs') && r.status()===422);
+ const rejected = page.waitForResponse(r=>r.url().endsWith('/api/buildings') && r.status()===422);
  await page.locator('#file-input').setInputFiles([valid(1),{name:'F2.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<invalid>')}]);
  await rejected;
- await page.locator('#api-questions').waitFor({state:'visible'});
+ await page.waitForFunction(()=>document.getElementById('building-summary').textContent.includes('Batch rejected'));
+ assert.equal(await page.locator('#api-questions').isVisible(),false,'invalid batch cannot partially schedule inference');
  await page.locator('#source-floor').selectOption('2');
  assert.equal(await page.locator('#retry-job').isVisible(),true,'submission failure remains retryable after switching floor');
  assert.match(await page.locator('#floor-status-2').textContent(),/failed/i);

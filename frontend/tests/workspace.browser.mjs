@@ -47,7 +47,7 @@ try {
   assert.equal(exported.job_id, job.id);
   assert.equal(exported.revision, 2);
   const glbDownload = page.waitForEvent('download');
-  await page.locator('#export-model').click();
+  await page.locator('#export-model').click(); await page.locator('[data-export=glb]').click();
   const binary = await readFile(await (await glbDownload).path());
   assert.equal(binary.readUInt32LE(0), 0x46546c67);
   const gltf = JSON.parse(binary.subarray(20, 20 + binary.readUInt32LE(12)).toString());

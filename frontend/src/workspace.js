@@ -1,5 +1,5 @@
 import { SceneView } from './scene.js';
-import { createJobClient } from './api.js';
+import { API_BASE, apiRequest, createJobClient } from './api.js';
 import { sceneToModel, sourceDescription, offsetProposal } from './backend-model.js';
 import { groupFloorFiles, assembleFloors } from './floors.js';
 import { sampleModel, reconstructDrawing, typeNames, drawingBounds } from './model.js';
@@ -15,8 +15,9 @@ export function createWorkspace({ reducedMotion, onClose }) {
   const singleDrafts = new Map();
   let drafts = singleDrafts, floors = [], arrangementConfirmed = false;
   let previewEpoch = 0;
+  let building = null;
   let fillSuggestions = false;
-  const stageNames = { queued: 'Queued', extracting: 'Extracting drawing evidence', awaiting_ai_result: 'Waiting for hosted AI', validating: 'Validating geometry', building: 'Building model', needs_information: 'Confirm missing information', ready: 'Ready · Confirmed parameters', failed: 'Failed', cancelled: 'Cancelled' };
+    const stageNames = { queued: 'Queued', extracting: 'Extracting drawing evidence', awaiting_ai_result: 'Analyzing image', validating: 'Validating geometry', building: 'Building model', needs_information: 'Confirm missing information', ready: 'Ready · Confirmed parameters', failed: 'Failed', cancelled: 'Cancelled' };
   const questionSpecs = {
     meters_per_unit: ['Meters per source unit', 1e-8, 1000], floor_height: ['Floor height (m)', .5, 20],
     slab_thickness: ['Slab thickness (m)', .01, 2], door_height: ['Door height (m)', .2, 10],
@@ -72,13 +73,13 @@ export function createWorkspace({ reducedMotion, onClose }) {
     for (const q of job.questions) {
       const spec = questionSpecs[q.key]; if (!spec) throw new Error('Unsupported required drawing parameter. Update the frontend.');
       const row = document.createElement('div'); row.className = 'question';
-      const label = document.createElement('label'); label.textContent = spec[0];
+      const label = document.createElement('label'); label.textContent = q.key === 'meters_per_unit' && job.source_kind === 'png' ? 'Scale (meters per pixel)' : spec[0];
       const input = document.createElement('input'); input.id = `question-${q.key}`; input.name = q.key; input.required = true;
       input.type = q.key === 'review_confirmed' ? 'checkbox' : 'number';
       if (input.type === 'checkbox') input.checked = drafts.get(q.key) === true;
       else { input.min = spec[1]; input.max = spec[2]; input.step = 'any'; input.value = drafts.get(q.key) ?? ''; }
       if (fillSuggestions && input.type !== 'checkbox' && input.value === '' && Number.isFinite(job.suggestions[q.key]?.value)) input.value = job.suggestions[q.key].value;
-      const note = document.createElement('small'); note.id = `note-${q.key}`; note.textContent = q.message;
+      const note = document.createElement('small'); note.id = `note-${q.key}`; note.textContent = q.message + (q.key === 'meters_per_unit' ? ' Example: a measured span of 100 source units equals 1 m → enter 0.01, not 1.' : '');
       input.setAttribute('aria-describedby', note.id); label.append(input); row.append(label, note);
       if (q.key !== 'review_confirmed') {
         const unknown = document.createElement('button'); unknown.type = 'button'; unknown.className = 'text-button'; unknown.textContent = "I don't know";
@@ -164,6 +165,8 @@ export function createWorkspace({ reducedMotion, onClose }) {
   }
   function cancel(text = 'Processing cancelled. Current model retained.') {
     ticket++; previewEpoch++; worker?.terminate(); worker = null; parsed = null;
+    if (building) void apiRequest(`/api/buildings/${building.id}/cancel`, { method: 'POST', json: { generation: building.generation } }).catch(() => {});
+    building = null;
     void singleApi.stop(); floors.forEach(f => { void f.client.stop(); });
     floors = []; api = singleApi; drafts = singleDrafts; arrangementConfirmed = false;
     $('floor-sources').hidden = true; $('floor-alignment').hidden = true;
@@ -283,16 +286,22 @@ export function createWorkspace({ reducedMotion, onClose }) {
     $('floor-alignment').querySelector('button').disabled = apiBusy || floors.some(f => f.job?.state !== 'ready');
     $('source-floor').disabled = apiBusy;
   }
-  function publishBuilding() {
-    if (!arrangementConfirmed || floors.some(f => f.job?.state !== 'ready')) return;
+  async function publishBuilding() {
+    if (!building || !arrangementConfirmed || floors.some(f => f.job?.state !== 'ready')) return;
+    const current = ticket, buildingId = building.id;
+    const revisions = floors.map(f => f.scene?.revision).join('.');
     try {
       const next = assembleFloors(floors);
       const sameSources = model?.multiFloor && model.job_id === next.job_id;
-      if (sameSources && model.scene.revision === next.scene.revision && JSON.stringify(model.scene.floors.map(f => f.transform)) === JSON.stringify(next.scene.floors.map(f => f.transform))) return;
+      if (sameSources && model.scene.alignment_revision === building.generation && model.scene.revision === next.scene.revision && JSON.stringify(model.scene.floors.map(f => f.transform)) === JSON.stringify(next.scene.floors.map(f => f.transform))) return;
+      const scene = await apiRequest(`/api/buildings/${buildingId}/scene`);
+      if (current !== ticket || building?.id !== buildingId || revisions !== floors.map(f => f.scene?.revision).join('.')) return;
+      if (scene.building_id !== buildingId || scene.schema_version !== 'hephaestus.building.v1' || scene.floors.length !== floors.length || scene.floors.some((f, i) => f.number !== floors[i].number || f.scene.job_id !== floors[i].job.id || f.scene.source_hash !== floors[i].job.source_hash || f.scene.revision !== floors[i].scene.revision || JSON.stringify(f.transform) !== JSON.stringify(next.scene.floors[i].transform))) throw new Error('Assembled building does not match the selected floor sources. Refresh before exporting.');
+      next.scene = scene; next.source_hash = scene.source_hash;
       applyModel(next, { preserveSource: true, fit: !sameSources, clearHistory: !sameSources });
       status(`Ready · ${next.floors} confirmed floors${view ? '' : ' · 3D unavailable'}`);
       message('Building assembled from individually validated drawings and confirmed floor alignment.');
-    } catch (error) { apiError(error); }
+    } catch (error) { if (current === ticket) apiError(error); }
   }
   async function displayFloorDrawing(floor, name) {
     const epoch = ++previewEpoch, current = ticket;
@@ -326,7 +335,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     $('source-floor').value = String(floor.number);
     $('source-drawing').replaceChildren(...floor.files.map(f => new Option(f.name, f.name)));
     $('source-drawing').value = floor.file.name;
-    $('source-files').textContent = `Build source: ${floor.file.name}${/\.svg$/i.test(floor.file.name) ? ' · SVG vector evidence' : ' · PNG hosted AI'}. ${floor.files.length} drawing(s) retained.`;
+    $('source-files').textContent = `Build source: ${floor.file.name}${/\.svg$/i.test(floor.file.name) ? ' · SVG vector evidence' : ' · PNG inference'}. ${floor.files.length} drawing(s) retained.`;
     $('file-name').textContent = floor.file.name; $('drawing-settings').hidden = true;
     $('api-questions').hidden = true; $('proposal-edit').hidden = true; $('retry-job').hidden = true;
     $('toggle-source').hidden = true; $('cancel-job').hidden = false;
@@ -377,7 +386,20 @@ export function createWorkspace({ reducedMotion, onClose }) {
       offsets.append(row);
     }
     activateFloor(floors[0]);
-    await Promise.all(floors.map(floor => floor.client.start(floor.file)));
+    const body = new FormData(); files.forEach(file => body.append('files', file));
+    $('building-summary').textContent = `${files.length} drawings · ${floors.length} floors · Uploading batch`;
+    try {
+      const submitted = await apiRequest('/api/buildings', { method: 'POST', body });
+      if (current !== ticket) { void apiRequest(`/api/buildings/${submitted.id}/cancel`, { method: 'POST', json: { generation: submitted.generation } }).catch(() => {}); return; }
+      if (submitted.floors.length !== floors.length || submitted.floors.some((f, i) => f.number !== floors[i].number || f.job.name !== floors[i].file.name)) throw new Error('Batch floor assignment does not match the selected files.');
+      building = submitted;
+      $('building-summary').textContent = `${files.length} drawings · ${floors.length} floors received`;
+      await Promise.all(floors.map((floor, i) => floor.client.attach(submitted.floors[i].job)));
+    } catch (error) {
+      if (current !== ticket) return;
+      floors.forEach(f => { f.error = error; }); renderFloorStatus(); apiError(error);
+      $('building-summary').textContent = 'Batch rejected · Selected drawings retained locally';
+    }
   }
 
   async function receiveFile(file) {
@@ -471,13 +493,21 @@ export function createWorkspace({ reducedMotion, onClose }) {
   listen($('source-floor'), 'change', event => activateFloor(floors.find(f => f.number === Number(event.target.value))));
   listen($('source-drawing'), 'change', event => { const floor = floors.find(f => f.client === api); if (floor) void displayFloorDrawing(floor, event.target.value); });
   listen($('floor-alignment'), 'input', () => { arrangementConfirmed = false; });
-  listen($('floor-alignment'), 'submit', event => {
+  listen($('floor-alignment'), 'submit', async event => {
     event.preventDefault();
+    if (!building) return;
+    const current = ticket;
     for (const floor of floors) { floor.offsetX = Number($(`floor-${floor.number}-x`).value); floor.offsetY = Number($(`floor-${floor.number}-y`).value); }
-    arrangementConfirmed = true; publishBuilding();
+    $('floor-alignment').querySelector('button').disabled = true;
+    try {
+      const aligned = await apiRequest(`/api/buildings/${building.id}/alignment`, { method: 'POST', json: { generation: building.generation, offsets: floors.map(f => ({ number: f.number, x: f.offsetX, y: f.offsetY })) } });
+      if (current !== ticket) return;
+      building = aligned; arrangementConfirmed = true; await publishBuilding();
+    } catch (error) { if (current === ticket) apiError(error); }
+    finally { if (current === ticket) renderFloorStatus(); }
   });
   listen($('cancel-job'), 'click', () => { if (api.job) void apiAction('cancel'); else cancel(); });
-  listen($('retry-job'), 'click', () => { if (!api.job) { if (floors.length) void api.start(lastFile); else void receiveFile(lastFile); } else if (['failed', 'cancelled'].includes(api.job.state)) void apiAction('retry'); else void api.refresh(); });
+  listen($('retry-job'), 'click', () => { if (!api.job) { if (floors.length) void receiveFiles(floors.flatMap(f => f.files)); else void receiveFile(lastFile); } else if (['failed', 'cancelled'].includes(api.job.state)) void apiAction('retry'); else void api.refresh(); });
   listen($('drop-zone'), 'dragover', e => { e.preventDefault(); $('drop-zone').classList.add('is-over'); });
   listen($('drop-zone'), 'dragleave', () => $('drop-zone').classList.remove('is-over'));
   listen($('drop-zone'), 'drop', e => { e.preventDefault(); $('drop-zone').classList.remove('is-over'); void receiveFiles([...e.dataTransfer.files]); });
@@ -545,46 +575,46 @@ export function createWorkspace({ reducedMotion, onClose }) {
     const from = id === 'undo' ? undo : redo, to = id === 'undo' ? redo : undo;
     if (!from.length) return; to.push(structuredClone(model)); applyModel(from.pop(), { fit: false, clearHistory: false });
   });
-  const updateExportButton = () => {
-    const fmt = $('export-format')?.value || 'blend';
-    $('export-model').textContent = fmt === 'blend' ? 'Export .blend ↗' : 'Export GLB ↗';
-  };
-  listen($('export-format'), 'change', updateExportButton);
+  function closeExport(restoreFocus = false) {
+    const wasOpen = !$('export-options').hidden;
+    $('export-options').hidden = true; $('export-model').setAttribute('aria-expanded', 'false');
+    if (wasOpen && restoreFocus) $('export-model').focus();
+  }
   listen($('export-model'), 'click', async () => {
     if (!view || !model) return;
-    const exportingView = view, name = model.name;
-    const format = $('export-format')?.value || 'blend';
-    $('export-model').disabled = true;
+    if (!$('export-options').hidden) { closeExport(); return; }
+    $('export-options').hidden = false; $('export-model').setAttribute('aria-expanded', 'true');
+    $('export-options').querySelector('[data-export="glb"]').focus();
+    const blend = $('export-options').querySelector('[data-export="blend"]'); blend.disabled = true;
+    $('blend-note').textContent = 'Checking Blender availability…';
+    try {
+      const capabilities = await apiRequest('/api/capabilities');
+      blend.disabled = !capabilities.blender_available;
+      $('blend-note').textContent = blend.disabled ? 'Blender is unavailable on this server.' : 'Native Blender project or portable GLB.';
+    } catch { $('blend-note').textContent = 'Server unavailable. GLB can still be exported.'; }
+  });
+  listen(document, 'pointerdown', event => { if (!event.target.closest('.export-control')) closeExport(); });
+  $('export-options').querySelectorAll('[data-export]').forEach(button => listen(button, 'click', async () => {
+    if (!view || !model) return;
+    const exportingView = view, name = model.name, format = button.dataset.export;
+    closeExport(true); $('export-model').disabled = true;
     try {
       const binary = await exportingView.export();
-      const baseName = `${name.replace(/[^\p{L}\p{N}_-]/gu, '-') || 'model'}`;
+      let blob;
       if (format === 'blend') {
-        try {
-          const res = await fetch('/api/export/blend', {
-            method: 'POST',
-            headers: { 'Content-Type': 'model/gltf-binary' },
-            body: binary,
-          });
-          if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.detail || `Conversion failed (${res.status})`);
-          }
-          const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a'); link.href = url; link.download = `${baseName}.blend`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-          status('Exported .blend file. Ready to open directly in Blender.');
-          return;
-        } catch (blendErr) {
-          console.warn('Backend .blend export failed, falling back to GLB:', blendErr);
-          status('Blender server conversion unavailable, exported GLB fallback. In Blender: File → Import → glTF 2.0');
+        const response = await fetch(`${API_BASE}/api/export/blend`, { method: 'POST', headers: { 'Content-Type': 'model/gltf-binary' }, body: binary });
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.detail || `Blender conversion failed (${response.status})`);
         }
-      }
-      const url = URL.createObjectURL(new Blob([binary], { type: 'model/gltf-binary' }));
-      const link = document.createElement('a'); link.href = url; link.download = `${baseName}.glb`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-      status('Exported GLB model. In Blender: File → Import → glTF 2.0');
-    } catch { status('Model export failed. Please try again.'); }
+        blob = await response.blob();
+      } else blob = new Blob([binary], { type: 'model/gltf-binary' });
+      const url = URL.createObjectURL(blob), link = document.createElement('a');
+      link.href = url; link.download = `${name.replace(/[^\p{L}\p{N}_-]/gu, '-') || 'model'}.${format}`;
+      link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); status(`Exported .${format} model`);
+    } catch (error) { status(`Export failed: ${error.message}`); }
     finally { $('export-model').disabled = !model || !view; }
-  });
+  }));
   function openDrawer(id) {
     closeDrawers(); $(id).classList.add('is-open');
     root.querySelector(`[data-drawer="${id}"]`).setAttribute('aria-expanded', 'true');
@@ -594,7 +624,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     if ($(b.dataset.drawer).classList.contains('is-open')) closeDrawers(); else openDrawer(b.dataset.drawer);
   }));
   root.querySelectorAll('[data-close-drawer]').forEach(b => listen(b, 'click', closeDrawers));
-  listen(root, 'keydown', e => { if (e.key === 'Escape') closeDrawers(); });
+  listen(root, 'keydown', e => { if (e.key === 'Escape') { closeExport(true); closeDrawers(); } });
   listen(canvas, 'webglcontextlost', e => {
     e.preventDefault(); view?.dispose(); view = null;
     $('workspace-error').textContent = 'Graphics context lost. Drawings and parameters are preserved; reload the page to restore 3D.';
