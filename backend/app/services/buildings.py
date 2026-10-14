@@ -7,10 +7,10 @@ import re
 import threading
 import uuid
 
-from geometry import assemble_building
-from inference import validate_png
-from jobs import JobError
-from svg import validate_svg
+from app.extraction.inference import validate_png
+from app.extraction.svg import validate_svg
+from app.geometry import assemble_building
+from app.services.jobs import JobError
 
 
 class Buildings:

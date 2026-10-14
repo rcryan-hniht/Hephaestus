@@ -8,10 +8,8 @@ from pathlib import Path
 
 import torch
 
-try:
-    from cubicasa_model import HourglassNet
-except ImportError:
-    from backend.cubicasa_model import HourglassNet
+from app.config import Settings
+from app.extraction.cubicasa.cubicasa_model import HourglassNet
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +27,8 @@ def get_weights_path() -> Path:
     if env_path:
         return Path(env_path)
     # Default location: backend/data/models/model_best_val_loss_var.pkl
-    base_dir = Path(__file__).resolve().parent
     return (
-        Path(os.environ.get("HEPHAESTUS_DATA_DIR", str(base_dir / "data")))
+        Path(os.environ.get("HEPHAESTUS_DATA_DIR", str(Settings.data_dir)))
         / "models"
         / DEFAULT_WEIGHTS_FILENAME
     )

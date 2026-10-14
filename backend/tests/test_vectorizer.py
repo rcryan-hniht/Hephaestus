@@ -7,8 +7,7 @@ import torch
 from PIL import Image
 from shapely.geometry import Polygon
 
-import vectorizer
-import weights_manager
+from app.extraction.cubicasa import vectorizer, weights_manager
 
 
 def png():

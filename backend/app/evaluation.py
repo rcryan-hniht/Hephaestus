@@ -13,8 +13,8 @@ from PIL import Image
 from shapely.geometry import Polygon
 from shapely.ops import unary_union
 
-from contracts import Proposal
-from svg import extract_svg
+from app.contracts import Proposal
+from app.extraction.svg import extract_svg
 
 
 def safe_sample(root: Path, entry: str) -> Path:
@@ -230,7 +230,7 @@ def evaluate(root, manifest, predictions=None, confirmations=None):
                     ):
                         record.update(status="needs_alignment_confirmation")
                     else:
-                        from svg import point
+                        from app.extraction.svg import point
 
                         t = confirmation["image_to_svg_transform"]
                         if (
@@ -289,7 +289,7 @@ def write_result(path, root, value):
 
 
 def main():
-    default_root = Path(__file__).resolve().parent.parent / "cubicasa5k"
+    default_root = Path(__file__).resolve().parents[2] / "cubicasa5k"
     if not default_root.exists():
         default_root = Path.home() / "Downloads" / "cubicasa5k"
     parser = argparse.ArgumentParser(description=__doc__)

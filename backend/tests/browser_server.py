@@ -10,9 +10,9 @@ import httpx
 import uvicorn
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from config import Settings
-from inference import OpenRouter
-from main import create_app
+from app.config import Settings
+from app.extraction.inference import OpenRouter
+from app.main import create_app
 
 
 def main():

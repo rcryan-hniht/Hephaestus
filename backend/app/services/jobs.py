@@ -6,18 +6,18 @@ import json
 import time
 import uuid
 
-from config import Settings
-from contracts import (
+from app.config import Settings
+from app.contracts import (
     Proposal,
     missing_parameters,
     required_parameters,
     validate_component_parameters,
     validate_parameters,
 )
-from geometry import build_scene
-from inference import CubiCasaInference, InferenceError, OpenRouter, validate_png
-from store import Store
-from svg import extract_svg, validate_svg
+from app.extraction.inference import CubiCasaInference, InferenceError, OpenRouter, validate_png
+from app.extraction.svg import extract_svg, validate_svg
+from app.geometry import build_scene
+from app.store import Store
 
 ACTIVE = {"queued", "extracting", "awaiting_ai_result", "validating", "building"}
 SUGGESTIONS = {

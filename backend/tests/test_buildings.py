@@ -5,8 +5,8 @@ import time
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from config import Settings
-from main import create_app
+from app.config import Settings
+from app.main import create_app
 
 SVG = b'<svg viewBox="0 0 100 100"><g class="Wall"><rect x="0" y="0" width="40" height="4"/></g></svg>'
 

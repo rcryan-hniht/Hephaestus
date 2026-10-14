@@ -21,7 +21,7 @@ trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
-uv run --directory backend --frozen --no-sync uvicorn main:app --host 0.0.0.0 --port "${BACKEND_PORT:-8000}" &
+uv run --directory backend --frozen --no-sync uvicorn app.main:app --host 0.0.0.0 --port "${BACKEND_PORT:-8000}" &
 pids+=("$!")
 (cd frontend && exec bun --bun run preview --host 0.0.0.0 --port "${PORT:-3000}" --strictPort) &
 pids+=("$!")

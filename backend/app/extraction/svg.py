@@ -5,7 +5,14 @@ import re
 
 from defusedxml import ElementTree
 
-from contracts import Component, CoordinateFrame, Dimension, Proposal, SourceRef, dimension_values
+from app.contracts import (
+    Component,
+    CoordinateFrame,
+    Dimension,
+    Proposal,
+    SourceRef,
+    dimension_values,
+)
 
 NUMBER = r"[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?"
 IDENTITY = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]

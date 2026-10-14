@@ -8,8 +8,8 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from config import Settings
-from main import create_app
+from app.config import Settings
+from app.main import create_app
 
 SVG = b'<svg viewBox="0 0 100 100"><g class="Wall" id="Wall"><rect x="0" y="0" width="40" height="4"/></g></svg>'
 PARAMS = {"meters_per_unit": 0.1, "floor_height": 3}
@@ -199,8 +199,8 @@ def test_png_offline_import_requires_binding_and_review(tmp_path):
 
 
 def test_png_cubicasa_vectorization(tmp_path, monkeypatch):
-    import vectorizer
-    from contracts import Proposal
+    from app.contracts import Proposal
+    from app.extraction.cubicasa import vectorizer
 
     def fixture_extract(data, job_id, source_hash, **settings):
         return Proposal(

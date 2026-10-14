@@ -12,17 +12,12 @@ import math
 
 import numpy as np
 import torch
-
-try:
-    from contracts import Component, CoordinateFrame, Proposal
-    from cubicasa_post import get_polygons, split_prediction
-    from weights_manager import get_cubicasa_model
-except ImportError:
-    from backend.contracts import Component, CoordinateFrame, Proposal
-    from backend.cubicasa_post import get_polygons, split_prediction
-    from backend.weights_manager import get_cubicasa_model
 from PIL import Image
 from shapely.geometry import Polygon
+
+from app.contracts import Component, CoordinateFrame, Proposal
+from app.extraction.cubicasa.cubicasa_post import get_polygons, split_prediction
+from app.extraction.cubicasa.weights_manager import get_cubicasa_model
 
 logger = logging.getLogger(__name__)
 

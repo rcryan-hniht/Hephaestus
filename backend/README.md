@@ -14,6 +14,36 @@ Local weights are read from `CUBICASA_MODEL_PATH` or
 Missing weights fail clearly; automatic download requires
 `HEPHAESTUS_ALLOW_WEIGHT_DOWNLOAD=1`. Tests never require a model download.
 
+## Layout
+
+```text
+backend/
+├── app/
+│   ├── main.py                 # FastAPI application and endpoints
+│   ├── config.py               # Backend environment and runtime settings
+│   ├── contracts.py            # Validated scene and parameter schemas
+│   ├── store.py                # SQLite persistence and local artifacts
+│   ├── geometry.py             # Scene meshes and multi-floor assembly
+│   ├── evaluation.py           # Read-only dataset evaluation CLI
+│   ├── services/
+│   │   ├── jobs.py             # Source-bound extraction/build lifecycle
+│   │   └── buildings.py        # Batch floors and building manifests
+│   └── extraction/
+│       ├── svg.py              # Safe vector evidence parsing
+│       ├── inference.py        # Local and optional OpenRouter engines
+│       └── cubicasa/
+│           ├── cubicasa_model.py
+│           ├── cubicasa_post.py
+│           ├── vectorizer.py
+│           └── weights_manager.py
+├── tests/                     # Regression tests and synthetic fixtures
+└── data/                      # Ignored runtime artifacts and checkpoints
+```
+
+Run Python modules from `backend/`: the API entrypoint is `app.main:app`,
+and evaluation uses `python -m app.evaluation`. Application imports use the
+`app` package; model loading remains deferred until local inference is needed.
+
 ## Run locally
 
 From the repository root:
@@ -21,7 +51,7 @@ From the repository root:
 ```sh
 uv venv backend/.venv --python 3.14
 uv pip install --python backend/.venv/bin/python -r backend/requirements.txt
-uv run --directory backend --frozen --no-dev uvicorn main:app --host 127.0.0.1 --port 8000 --workers 1
+uv run --directory backend --frozen --no-dev uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
 ```
 
 `http://localhost:8000/docs` provides the interactive API. `/health` and
@@ -291,9 +321,9 @@ are rejected. Outputs must stay outside the dataset.
 From `backend/`:
 
 ```sh
-.venv/bin/python evaluation.py manifest --split val --count 10 --seed 42 --output data/validation-manifest.json
-.venv/bin/python evaluation.py manifest --split test --count 10 --seed 42 --output data/test-manifest.json
-.venv/bin/python evaluation.py evaluate --manifest data/validation-manifest.json --output data/vector-validation-report.json
+.venv/bin/python -m app.evaluation manifest --split val --count 10 --seed 42 --output data/validation-manifest.json
+.venv/bin/python -m app.evaluation manifest --split test --count 10 --seed 42 --output data/test-manifest.json
+.venv/bin/python -m app.evaluation evaluate --manifest data/validation-manifest.json --output data/vector-validation-report.json
 ```
 
 Manifests record sample paths, seed and split-file hash. Evaluation verifies

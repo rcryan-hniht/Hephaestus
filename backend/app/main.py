@@ -14,10 +14,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from pydantic import Field
 
-from buildings import Buildings
-from config import Settings
-from contracts import Proposal, StrictModel
-from jobs import JobError, Jobs
+from app.config import Settings
+from app.contracts import Proposal, StrictModel
+from app.services.buildings import Buildings
+from app.services.jobs import JobError, Jobs
 
 
 class Generation(StrictModel):
@@ -173,7 +173,7 @@ def create_app(settings: Settings | None = None, inference=None):
         local = settings.inference_engine == "cubicasa"
         configured = bool(settings.api_key)
         if local:
-            from weights_manager import get_weights_path
+            from app.extraction.cubicasa.weights_manager import get_weights_path
 
             path = get_weights_path()
             configured = path.is_file() and path.stat().st_size > 10_000_000

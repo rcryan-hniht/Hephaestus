@@ -7,8 +7,8 @@ import httpx
 import pytest
 from PIL import Image
 
-from config import Settings
-from inference import InferenceError, OpenRouter
+from app.config import Settings
+from app.extraction.inference import InferenceError, OpenRouter
 
 
 def png():

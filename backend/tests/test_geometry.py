@@ -4,9 +4,9 @@ import math
 import pytest
 from shapely.geometry import Polygon
 
-from contracts import Component, Proposal
-from geometry import build_scene
-from svg import extract_svg
+from app.contracts import Component, Proposal
+from app.extraction.svg import extract_svg
+from app.geometry import build_scene
 
 SVG = b"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
 <g transform="translate(10 5)"><g id="Wall" class="Wall"><polygon points="0,0 40,0 40,4 0,4"/></g>
@@ -194,7 +194,7 @@ def test_dimension_value_cannot_contradict_its_source_text():
 
 
 def test_printed_area_is_preserved_but_never_used_as_a_length_scale():
-    from contracts import Dimension, dimension_values
+    from app.contracts import Dimension, dimension_values
 
     area = Dimension(
         text="35,0 m²",

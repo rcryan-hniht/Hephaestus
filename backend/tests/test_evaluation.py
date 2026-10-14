@@ -4,8 +4,8 @@ import json
 import pytest
 from PIL import Image
 
-from contracts import Component, Proposal
-from evaluation import alignment, compare, create_manifest, evaluate, safe_sample
+from app.contracts import Component, Proposal
+from app.evaluation import alignment, compare, create_manifest, evaluate, safe_sample
 
 
 def test_split_leading_slash_and_path_traversal(tmp_path):

@@ -78,7 +78,7 @@ docker compose up --build -d
    ```bash
    cd backend
    uv sync
-   uv run uvicorn main:app --reload --port 8000
+   uv run uvicorn app.main:app --reload --port 8000
    ```
    _Runs at `http://localhost:8000` (interactive docs at `/docs`, health check at `/health`)._
 

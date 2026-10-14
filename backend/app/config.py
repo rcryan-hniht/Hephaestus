@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 @dataclass(frozen=True)
 class Settings:
-    data_dir: Path = Path(__file__).resolve().parent / "data"
+    data_dir: Path = Path(__file__).resolve().parents[1] / "data"
     api_key: str | None = None
     base_url: str = "https://openrouter.ai/api/v1"
     model: str = "qwen/qwen2.5-vl-72b-instruct"
@@ -37,7 +37,7 @@ class Settings:
 
     @classmethod
     def from_env(cls):
-        env = Path(__file__).resolve().parent.parent / ".env"
+        env = Path(__file__).resolve().parents[2] / ".env"
         if env.exists():
             if stat.S_IMODE(env.stat().st_mode) & 0o077:
                 raise RuntimeError("Repository .env must be owner-readable only (chmod 600)")
