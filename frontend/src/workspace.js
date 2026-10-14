@@ -12,6 +12,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
   let undo = [], redo = [];
   let previewTracksModel = true, proposal, sourceJob, sourceOutlines = false, pendingFit = false, apiBusy = false;
   const drafts = new Map();
+  let fillSuggestions = false;
   const stageNames = { queued: 'Queued', extracting: 'Extracting drawing evidence', awaiting_ai_result: 'Waiting for hosted AI', validating: 'Validating geometry', building: 'Building model', needs_information: 'Confirm missing information', ready: 'Ready · Confirmed parameters', failed: 'Failed', cancelled: 'Cancelled' };
   const questionSpecs = {
     meters_per_unit: ['Meters per source unit', 1e-8, 1000], floor_height: ['Floor height (m)', .5, 20],
@@ -67,6 +68,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
       input.type = q.key === 'review_confirmed' ? 'checkbox' : 'number';
       if (input.type === 'checkbox') input.checked = drafts.get(q.key) === true;
       else { input.min = spec[1]; input.max = spec[2]; input.step = 'any'; input.value = drafts.get(q.key) ?? ''; }
+      if (fillSuggestions && input.type !== 'checkbox' && Number.isFinite(job.suggestions[q.key]?.value)) input.value = job.suggestions[q.key].value;
       const note = document.createElement('small'); note.id = `note-${q.key}`; note.textContent = q.message;
       input.setAttribute('aria-describedby', note.id); label.append(input); row.append(label, note);
       if (q.key !== 'review_confirmed') {
@@ -83,7 +85,10 @@ export function createWorkspace({ reducedMotion, onClose }) {
       }
       form.append(row);
     }
-    const submit = document.createElement('button'); submit.type = 'submit'; submit.className = 'button button--white'; submit.textContent = 'Confirm and build'; form.append(submit);
+    fillSuggestions = false;
+    const useAll = document.createElement('button'); useAll.type = 'button'; useAll.className = 'button'; useAll.textContent = 'Use all suggestions';
+    useAll.addEventListener('click', () => { fillSuggestions = true; void apiAction('answers', { unknown: job.questions.filter(q => q.key !== 'review_confirmed').map(q => q.key) }); });
+    const submit = document.createElement('button'); submit.type = 'submit'; submit.className = 'button button--white'; submit.textContent = 'Confirm and build'; form.append(useAll, submit);
   }
   async function updateJob({ job, proposal: nextProposal, scene }) {
     sourceJob = job.id;
@@ -145,7 +150,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
   }
   function cancel(text = 'Processing cancelled. Current model retained.') {
     ticket++; worker?.terminate(); worker = null; parsed = null; void api.stop();
-    proposal = null; sourceJob = null; apiBusy = false; drafts.clear();
+    proposal = null; sourceJob = null; apiBusy = false; drafts.clear(); fillSuggestions = false;
     $('api-questions').hidden = true; $('proposal-edit').hidden = true; $('toggle-source').hidden = true;
     $('cancel-job').hidden = true; $('continue-build').disabled = true;
     message(text); status(model ? 'Current model retained' : 'No model loaded');
