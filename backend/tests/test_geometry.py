@@ -193,6 +193,55 @@ def test_dimension_value_cannot_contradict_its_source_text():
         Proposal.model_validate(base)
 
 
+def test_printed_area_is_preserved_but_never_used_as_a_length_scale():
+    from contracts import Dimension, dimension_values
+
+    area = Dimension(
+        text="35,0 m²",
+        position=[300, 200],
+        visible=True,
+        value=35,
+        unit="m²",
+        reference=[[200, 0], [680, 0]],
+    )
+    assert dimension_values("35,0 m²; 3.20 m; 350000 cm^2") == [
+        (35, "m²"),
+        (3.2, "m"),
+        (350000, "cm²"),
+    ]
+    base = proposal().model_dump()
+    base["dimensions"] = [area.model_dump()]
+    p = Proposal.model_validate(base)
+    assert p.dimensions[0].unit == "m²"
+    assert p.meters_per_unit is None
+    base["meters_per_unit"] = 35 / 480
+    with pytest.raises(ValueError, match="visible dimension"):
+        Proposal.model_validate(base)
+    base["meters_per_unit"] = 0.3
+    base["dimensions"].append(
+        {
+            "text": "3 m",
+            "position": [0, 0],
+            "visible": True,
+            "value": 3,
+            "unit": "m",
+            "reference": [[0, 0], [10, 0]],
+        }
+    )
+    assert Proposal.model_validate(base).meters_per_unit == 0.3
+    with pytest.raises(ValueError, match="contradicts"):
+        Dimension(text="35 m²", position=[0, 0], visible=True, value=35, unit="m")
+
+
+def test_svg_area_annotations_keep_the_square_unit():
+    p = proposal(
+        b'<svg viewBox="0 0 100 100"><g class="Wall"><rect width="40" height="4"/></g><text x="2" y="8">35.0 m&#178;</text></svg>'
+    )
+    assert p.dimensions[0].value == 35
+    assert p.dimensions[0].unit == "m²"
+    assert p.meters_per_unit is None
+
+
 def test_local_marker_reference_does_not_require_external_resources():
     p = proposal(
         b'<svg viewBox="0 0 100 100"><defs><marker id="arrow"/></defs><g class="Wall"><rect width="40" height="4"/></g><path d="M0 0 L1 1" style="marker-end:url(#arrow)"/></svg>'

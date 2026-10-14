@@ -151,3 +151,40 @@ def test_invalid_source_binding_is_not_accepted():
         run(handler)
     assert err.value.code == "invalid_ai_output"
     assert len(err.value.attempts) == 2
+
+
+def test_printed_square_meters_do_not_reject_an_image_proposal():
+    def handler(request):
+        if request.url.path.endswith("/models"):
+            return httpx.Response(
+                200,
+                json={
+                    "data": [
+                        {"id": Settings().model, "architecture": {"input_modalities": ["image"]}}
+                    ]
+                },
+            )
+        p = valid_response()
+        p["dimensions"] = [
+            {
+                "text": "35,0 m²",
+                "position": [3, 2],
+                "visible": True,
+                "value": 35,
+                "unit": "m²",
+                "reference": [[1, 0], [10, 0]],
+            }
+        ]
+        return httpx.Response(
+            200,
+            json={
+                "model": Settings().model,
+                "choices": [{"finish_reason": "stop", "message": {"content": json.dumps(p)}}],
+            },
+        )
+
+    result = run(handler)
+    assert len(result.attempts) == 1
+    assert result.attempts[0]["valid"] is True
+    assert result.proposal.dimensions[0].unit == "m²"
+    assert result.proposal.meters_per_unit is None

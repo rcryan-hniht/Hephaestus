@@ -8,15 +8,17 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from shapely.geometry import Polygon
 
 SCHEMA_VERSION = "hephaestus.scene.v1"
-PROMPT_VERSION = "architectural-evidence.v1"
+PROMPT_VERSION = "architectural-evidence.v2"
 MAX_COMPONENTS = 2000
 MAX_VERTICES = 20000
 
 
 def dimension_values(text: str) -> list[tuple[float, str]]:
     return [
-        (float(value.replace(",", ".")), unit)
-        for value, unit in re.findall(r"([-+]?(?:\d*[.,]\d+|\d+))\s*(mm|cm|m|ft|in)\b", text)
+        (float(value.replace(",", ".")), unit + ("²" if square else ""))
+        for value, unit, square in re.findall(
+            r"([-+]?(?:\d*[.,]\d+|\d+))\s*(mm|cm|m|ft|in)(²|\^2|2)?(?!\w|\^)", text
+        )
     ]
 
 
@@ -72,7 +74,7 @@ class Dimension(StrictModel):
     visible: bool
     source_element_id: str | None = Field(default=None, max_length=256)
     value: float | None = Field(default=None, gt=0)
-    unit: Literal["m", "cm", "mm", "ft", "in"] | None = None
+    unit: Literal["m", "cm", "mm", "ft", "in", "m²", "cm²", "mm²", "ft²", "in²"] | None = None
     reference: tuple[tuple[float, float], tuple[float, float]] | None = None
 
     @model_validator(mode="after")
@@ -116,7 +118,7 @@ class Proposal(StrictModel):
             conversions = {"m": 1, "cm": 0.01, "mm": 0.001, "ft": 0.3048, "in": 0.0254}
             scales = []
             for d in self.dimensions:
-                if d.visible and d.value and d.unit and d.reference:
+                if d.visible and d.value and d.unit in conversions and d.reference:
                     distance = math.dist(*d.reference)
                     if distance <= 0:
                         raise ValueError("Dimension reference has zero length")

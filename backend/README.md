@@ -141,7 +141,7 @@ the caller; never accept a response for a different active drawing.
 ## Evidence and export contract
 
 The version is `hephaestus.scene.v1`; the PNG prompt version is
-`architectural-evidence.v1`. `contracts.py` defines the extraction JSON Schema,
+`architectural-evidence.v2`. `contracts.py` defines the extraction JSON Schema,
 also included in OpenAPI's proposal-import request. The proposal includes:
 
 - `job_id`, `source_hash`, `schema_version`, and `source_kind`.
@@ -153,6 +153,8 @@ also included in OpenAPI's proposal-import request. The proposal includes:
   reference endpoints. SVG dimensions alone are not meters. A recognized scale
   needs consistent visible text and reference-length evidence; contradictions
   fail validation. Hidden labels remain hidden evidence.
+  Printed areas retain square units such as `m²`; an area and its proposed
+  reference endpoints never establish a linear scale.
 - Geometric validation issues. Passing polygon validation does not establish
   that a PNG boundary is exact or that text recognition is correct.
 
