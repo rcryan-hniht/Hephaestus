@@ -1,7 +1,7 @@
 # Hephaestus
 
-> *From drawing. To space.*  
-> *"Imagination is beginning, hephaestus brings it closer."*
+> _From drawing. To space._  
+> _"Imagination is beginning, hephaestus brings it closer."_
 
 Hephaestus is an interactive 3D architecture visualizer designed to bridge the gap between 2D floor plans (PNG, SVG, DXF) and spatial 3D building models.
 
@@ -34,39 +34,45 @@ The system is built around a dual-path ingestion and deterministic reconstructio
 - **Dual-Path Ingestion**: Hierarchical SVG vector parsing for CAD contours and hosted Vision-Language Model (OpenRouter Qwen2.5-VL) extraction for raster floor plans.
 - **Reconstruction Engine**: Shapely-powered 2D-to-3D polygon extrusion with opening voids and floor slab generation.
 
-👉 **[Hephaestus Interactive System Architecture](file:///home/killua/Projects/Hephaestus/.archify/architecture-hephaestus-source-20261014-103629/hephaestus-source.html)**
+![Hephaestus Interactive System Architecture](media/hephaestus-3d-architecture-visualizer.png)
 
 ---
 
 ## Quick Start
 
 ### Prerequisites
+
 - [Bun](https://bun.sh/)
 - [Python 3.14+](https://www.python.org/) & [uv](https://docs.astral.sh/uv/)
-- [Docker](https://www.docker.com/) *(optional)*
+- [Docker](https://www.docker.com/) _(optional)_
 
 ### Running with Docker
+
 ```bash
 docker compose up --build -d
 ```
+
 - Frontend: `http://localhost:3000`
 - Backend API Docs: `http://localhost:8000/docs`
 
 ### Running Locally
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/rcryan-hniht/Hephaestus.git
    cd Hephaestus
    ```
 
 2. **Start the Frontend**:
+
    ```bash
    cd frontend
    bun install
    bun run dev
    ```
-   *Runs at `http://localhost:5173` (proxies `/api` to port 8000).*
+
+   _Runs at `http://localhost:5173` (proxies `/api` to port 8000)._
 
 3. **Start the Backend**:
    ```bash
@@ -74,6 +80,6 @@ docker compose up --build -d
    uv sync
    uv run uvicorn main:app --reload --port 8000
    ```
-   *Runs at `http://localhost:8000` (interactive docs at `/docs`, health check at `/health`).*
+   _Runs at `http://localhost:8000` (interactive docs at `/docs`, health check at `/health`)._
 
 Alternatively, start both with `./start.sh`.
