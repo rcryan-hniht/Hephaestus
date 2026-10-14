@@ -172,7 +172,7 @@ function layout() {
     { x: margin, y: manifestoActionY + actionHeight + 18, w: width * .88, h: Math.max(100, bottom - manifestoActionY - actionHeight - 18) },
     { x: margin, y: worksY, w: width * .88, h: worksFrameH },
   ] : [
-    { x: width * .55, y: 0, w: width * .45, h: height },
+    { x: width * .5, y: 0, w: width * .5, h: height },
     { x: width * .48, y: Math.max(top, height * .22), w: width * .445, h: Math.max(120, Math.min(height * .54, bottom - Math.max(top, height * .22))) },
     { x: margin, y: worksY, w: width * .525, h: worksFrameH },
   ];
