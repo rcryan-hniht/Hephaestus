@@ -182,6 +182,8 @@ def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
         "Column": "column",
         "Door": "door",
         "Window": "window",
+        "Roof": "roof",
+        "Stair": "stair",
     }
 
     def walk(node, parent, visible, owner=None, depth=0, geometry_context=True):
@@ -198,7 +200,34 @@ def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
             floors.add(node.get("id", str(len(floors))))
         kind = next((kinds[c] for c in classes if c in kinds), None)
         if kind:
-            owner = {"type": kind, "node": node, "seen": False}
+            evidence = {}
+            if kind in {"roof", "stair"}:
+                raw = node.get("data-direction")
+                if raw is None:
+                    raise ValueError(f"{kind} requires an explicit data-direction")
+                try:
+                    direction = numbers(raw)
+                except ValueError as e:
+                    raise ValueError(f"Invalid {kind} direction") from e
+                if len(direction) != 2:
+                    raise ValueError(f"{kind} direction must have two coordinates")
+                evidence["direction"] = (
+                    t[0] * direction[0] + t[2] * direction[1],
+                    t[1] * direction[0] + t[3] * direction[1],
+                )
+            if kind == "roof":
+                roof_kinds = {c.lower() for c in classes if c in {"Gable", "Shed"}}
+                if len(roof_kinds) != 1:
+                    raise ValueError("Roof requires one explicit roof kind: Gable or Shed")
+                evidence["roof_kind"] = roof_kinds.pop()
+            if kind == "stair" and set(classes) & {"Spiral", "Curved", "Winder", "U", "L"}:
+                raise ValueError("Only straight stair flights can be reconstructed")
+            if kind == "stair" and node.get("data-steps") is not None:
+                raw_steps = node.get("data-steps")
+                if len(raw_steps) > 3 or not re.fullmatch(r"[0-9]+", raw_steps):
+                    raise ValueError("Stair steps must be an integer between 2 and 128")
+                evidence["steps"] = int(raw_steps)
+            owner = {"type": kind, "node": node, "seen": False, "evidence": evidence}
             geometry_context = True
         tag = node.tag.split("}")[-1]
         if tag == "g" and classes and not kind and owner:
@@ -236,6 +265,7 @@ def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
                     label=group.get("class"),
                     polygon=pts,
                     source=SourceRef(element_id=group.get("id"), occurrence=index, transform=t),
+                    **owner["evidence"],
                 )
             )
             owner["seen"] = True

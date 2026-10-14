@@ -37,13 +37,16 @@ class SourceRef(StrictModel):
 
 class Component(StrictModel):
     id: str = Field(min_length=1, max_length=200, pattern=r"^[A-Za-z0-9_.:-]+$")
-    type: Literal["wall", "room", "column", "door", "window"]
+    type: Literal["wall", "room", "column", "door", "window", "roof", "stair"]
     floor: Literal[0] = 0
     label: str | None = Field(default=None, max_length=256)
     polygon: list[tuple[float, float]] = Field(min_length=3, max_length=512)
     source: SourceRef = Field(default_factory=SourceRef)
     confidence: float | None = Field(default=None, ge=0, le=1)
     uncertainty: str | None = Field(default=None, max_length=2000)
+    direction: tuple[float, float] | None = None
+    roof_kind: Literal["gable", "shed"] | None = None
+    steps: int | None = Field(default=None, strict=True, ge=2, le=128)
 
     @field_validator("source", mode="before")
     @classmethod
@@ -53,6 +56,15 @@ class Component(StrictModel):
 
     @model_validator(mode="after")
     def valid_polygon(self):
+        if self.type in {"roof", "stair"}:
+            if (
+                self.direction is None
+                or any(not math.isfinite(v) or abs(v) > 1e7 for v in self.direction)
+                or math.hypot(*self.direction) < 1e-12
+            ):
+                raise ValueError(f"{self.type} requires an explicit finite nonzero direction")
+            if self.type == "roof" and self.roof_kind is None:
+                raise ValueError("Roof requires an explicit roof kind: gable or shed")
         if any(not math.isfinite(n) or abs(n) > 1e7 for p in self.polygon for n in p):
             raise ValueError("Coordinates must be finite and bounded")
         if self.polygon[0] == self.polygon[-1]:
@@ -141,6 +153,10 @@ PARAMETER_LIMITS = {
     "door_height": (0.2, 10),
     "window_height": (0.1, 10),
     "window_sill": (0, 10),
+    "roof_rise": (0.05, 20),
+    "roof_thickness": (0.01, 2),
+    "stair_height": (0.1, 20),
+    "stair_steps": (2, 128),
 }
 
 
@@ -153,7 +169,11 @@ def validate_parameters(values: dict) -> dict:
             raise ValueError(f"Unsupported parameter: {key}")
         else:
             low, high = PARAMETER_LIMITS[key]
-            if not math.isfinite(value) or not low <= value <= high:
+            if (
+                not math.isfinite(value)
+                or not low <= value <= high
+                or (key == "stair_steps" and type(value) is not int)
+            ):
                 raise ValueError(f"{key} must be between {low} and {high}")
     return values
 
@@ -169,24 +189,55 @@ def required_parameters(p: Proposal) -> list[str]:
         keys.append("door_height")
     if "window" in kinds:
         keys.extend(["window_height", "window_sill"])
+    if "roof" in kinds:
+        keys.extend(["roof_rise", "roof_thickness"])
+    if "stair" in kinds:
+        keys.append("stair_height")
+        if any(c.steps is None for c in p.components if c.type == "stair"):
+            keys.append("stair_steps")
     if p.source_kind == "png":
         keys.append("review_confirmed")
     return keys
 
 
 def validate_component_parameters(p: Proposal, values: dict) -> dict:
-    ids = {c.id for c in p.components}
-    if len(values) > MAX_COMPONENTS or any(key not in ids for key in values):
+    kinds = {c.id: c.type for c in p.components}
+    if len(values) > MAX_COMPONENTS or any(key not in kinds for key in values):
         raise ValueError("Component corrections must identify existing components")
-    for component_values in values.values():
+    for component_id, component_values in values.items():
         for key, value in component_values.items():
+            if key == "steps":
+                if kinds[component_id] != "stair":
+                    raise ValueError("Step corrections apply only to stairs")
+                if type(value) is not int or not 2 <= value <= 128:
+                    raise ValueError("Stair steps must be an integer between 2 and 128")
+                continue
+            if key == "roof_thickness":
+                if kinds[component_id] != "roof":
+                    raise ValueError("Roof thickness corrections apply only to roof components")
+                if (
+                    type(value) not in {int, float}
+                    or not math.isfinite(value)
+                    or not 0.01 <= value <= 2
+                ):
+                    raise ValueError("Roof thickness must be between 0.01 and 2")
+                continue
             if (
                 key not in {"height", "elevation"}
                 or type(value) not in {int, float}
                 or not math.isfinite(value)
             ):
                 raise ValueError("Component correction requires a finite height or elevation")
-            if not (0.01 if key == "height" else 0) <= value <= 20:
+            low = (
+                0.05
+                if key == "height" and kinds[component_id] == "roof"
+                else (
+                    0.1
+                    if key == "height" and kinds[component_id] == "stair"
+                    else (0.01 if key == "height" else 0)
+                )
+            )
+            if not low <= value <= 20:
                 raise ValueError("Component height/elevation is outside supported limits")
     return values
 
@@ -197,6 +248,10 @@ def missing_parameters(p: Proposal, values: dict, component_values: dict) -> lis
         "window_height": ("window", "height"),
         "window_sill": ("window", "elevation"),
         "slab_thickness": ("room", "height"),
+        "roof_rise": ("roof", "height"),
+        "roof_thickness": ("roof", "roof_thickness"),
+        "stair_height": ("stair", "height"),
+        "stair_steps": ("stair", "steps"),
     }
     missing = []
     for key in required_parameters(p):
@@ -204,7 +259,12 @@ def missing_parameters(p: Proposal, values: dict, component_values: dict) -> lis
             continue
         if key in overrides:
             kind, field = overrides[key]
-            if all(field in component_values.get(c.id, {}) for c in p.components if c.type == kind):
+            if all(
+                field in component_values.get(c.id, {})
+                or (key == "stair_steps" and c.steps is not None)
+                for c in p.components
+                if c.type == kind
+            ):
                 continue
         missing.append(key)
     return missing

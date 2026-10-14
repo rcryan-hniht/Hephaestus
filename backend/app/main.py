@@ -15,7 +15,7 @@ from fastapi.responses import JSONResponse, Response
 from pydantic import Field
 
 from app.config import Settings
-from app.contracts import Proposal, StrictModel
+from app.contracts import PARAMETER_LIMITS, Proposal, StrictModel
 from app.services.buildings import Buildings
 from app.services.jobs import JobError, Jobs
 
@@ -25,14 +25,20 @@ class Generation(StrictModel):
 
 
 class Answers(Generation):
-    values: dict[str, float | bool] = Field(default_factory=dict, max_length=7)
-    unknown: list[str] = Field(default_factory=list, max_length=7)
-    component_values: dict[str, dict[str, float]] = Field(default_factory=dict, max_length=2000)
+    values: dict[str, int | float | bool] = Field(
+        default_factory=dict, max_length=len(PARAMETER_LIMITS) + 1
+    )
+    unknown: list[str] = Field(default_factory=list, max_length=len(PARAMETER_LIMITS) + 1)
+    component_values: dict[str, dict[str, int | float]] = Field(
+        default_factory=dict, max_length=2000
+    )
 
 
 class ImportProposal(Generation):
     proposal: Proposal
-    component_values: dict[str, dict[str, float]] = Field(default_factory=dict, max_length=2000)
+    component_values: dict[str, dict[str, int | float]] = Field(
+        default_factory=dict, max_length=2000
+    )
 
 
 class FloorOffset(StrictModel):

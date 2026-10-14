@@ -26,6 +26,10 @@ SUGGESTIONS = {
     "door_height": (2.1, "Illustrative door opening height; verify against a section."),
     "window_height": (1.2, "Illustrative window opening height; verify your project."),
     "window_sill": (0.9, "Illustrative window sill height; verify against an elevation."),
+    "roof_rise": (1.2, "Illustrative roof rise; confirm from an elevation or section."),
+    "roof_thickness": (0.2, "Illustrative vertical roof thickness; confirm construction detail."),
+    "stair_height": (2.7, "Illustrative total stair rise; confirm floor-to-floor height."),
+    "stair_steps": (16, "Illustrative straight-flight step count; confirm from the drawing."),
 }
 
 
@@ -348,15 +352,37 @@ class Jobs:
                 "window_height": {"window"},
                 "window_sill": {"window"},
                 "slab_thickness": {"room"},
+                "roof_rise": {"roof"},
+                "roof_thickness": {"roof"},
+                "stair_height": {"stair"},
+                "stair_steps": {"stair"},
             }
+            override_field = {
+                "door_height": "height",
+                "window_height": "height",
+                "window_sill": "elevation",
+                "slab_thickness": "height",
+                "roof_rise": "height",
+                "roof_thickness": "roof_thickness",
+                "stair_height": "height",
+                "stair_steps": "steps",
+            }.get(key)
             affected = [
                 c.id
                 for c in proposal.components
-                if c.type in kinds.get(key, {"wall", "column", "room", "door", "window"})
+                if c.type
+                in kinds.get(key, {"wall", "column", "room", "door", "window", "roof", "stair"})
+                and (
+                    override_field is None
+                    or override_field not in component_parameters.get(c.id, {})
+                )
+                and (key != "stair_steps" or c.steps is None)
             ]
             message = {
                 "meters_per_unit": "Confirm meters per source unit, using a known reference length.",
                 "review_confirmed": "Review and correct the candidate PNG footprints before confirming them.",
+                "stair_steps": "Confirm the number of steps in the straight stair flight.",
+                "roof_thickness": "Confirm vertical roof thickness in meters.",
             }.get(key, "Confirm " + key.replace("_", " ") + " in meters.")
             result.append(
                 {

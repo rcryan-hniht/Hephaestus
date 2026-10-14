@@ -4,7 +4,7 @@ import itertools
 import math
 
 from shapely import constrained_delaunay_triangles
-from shapely.geometry import Polygon
+from shapely.geometry import Point, Polygon
 from shapely.geometry.polygon import orient
 from shapely.ops import unary_union
 
@@ -46,6 +46,89 @@ def extrude(shape, bottom, top, bottom_cap=None, top_cap=None):
     return {"positions": positions, "indices": indices}
 
 
+def clip_band(shape, direction, start, end):
+    """Clip a footprint between two planes normal to its travel direction."""
+    dx, dz = direction
+    px, pz = -dz, dx
+    reach = max(abs(v) for v in shape.bounds) * 2 + 100
+    return shape.intersection(
+        Polygon(
+            [
+                (dx * start + px * reach, dz * start + pz * reach),
+                (dx * end + px * reach, dz * end + pz * reach),
+                (dx * end - px * reach, dz * end - pz * reach),
+                (dx * start - px * reach, dz * start - pz * reach),
+            ]
+        )
+    )
+
+
+def roof_mesh(shape, direction, eave, rise, thickness, kind):
+    projections = [x * direction[0] + z * direction[1] for x, z in shape.exterior.coords]
+    start, end = min(projections), max(projections)
+    if end - start < 1e-8:
+        raise ValueError("Roof direction has no usable span across its footprint")
+    midpoint = (start + end) / 2
+    bands = [(start, end)] if kind == "shed" else [(start, midpoint), (midpoint, end)]
+    positions, indices = [], []
+
+    def triangle(a, b, c):
+        index = len(positions) // 3
+        positions.extend([*a, *b, *c])
+        indices.extend((index, index + 1, index + 2))
+
+    def top(x, z):
+        progress = (x * direction[0] + z * direction[1] - start) / (end - start)
+        return eave + rise * (progress if kind == "shed" else 1 - abs(2 * progress - 1))
+
+    for lo, hi in bands:
+        clipped = clip_band(shape, direction, lo, hi)
+        polygons = [clipped] if clipped.geom_type == "Polygon" else list(clipped.geoms)
+        for part in polygons:
+            if part.is_empty or part.area < 1e-10:
+                continue
+            for tri in constrained_delaunay_triangles(part).geoms:
+                a, b, c = list(orient(tri, sign=1).exterior.coords)[:3]
+                triangle(
+                    (a[0], top(*a) - thickness, a[1]),
+                    (b[0], top(*b) - thickness, b[1]),
+                    (c[0], top(*c) - thickness, c[1]),
+                )
+                triangle((a[0], top(*a), a[1]), (c[0], top(*c), c[1]), (b[0], top(*b), b[1]))
+            for ring in [part.exterior, *part.interiors]:
+                for a, b in itertools.pairwise(ring.coords):
+                    if shape.boundary.distance(Point((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)) > 1e-8:
+                        continue
+                    low_a, low_b = top(*a) - thickness, top(*b) - thickness
+                    triangle((a[0], low_a, a[1]), (a[0], top(*a), a[1]), (b[0], top(*b), b[1]))
+                    triangle((a[0], low_a, a[1]), (b[0], top(*b), b[1]), (b[0], low_b, b[1]))
+    return {"positions": positions, "indices": indices}
+
+
+def stair_mesh(shape, direction, bottom, rise, steps):
+    projections = [x * direction[0] + z * direction[1] for x, z in shape.exterior.coords]
+    start, end = min(projections), max(projections)
+    if end - start < 1e-8:
+        raise ValueError("Stair direction has no usable span across its footprint")
+    mesh = {"positions": [], "indices": []}
+    for step in range(steps):
+        part = clip_band(
+            shape,
+            direction,
+            start + (end - start) * step / steps,
+            start + (end - start) * (step + 1) / steps,
+        )
+        if part.is_empty or part.area < 1e-10:
+            continue
+        segment = extrude(part, bottom, bottom + rise * (step + 1) / steps)
+        offset = len(mesh["positions"]) // 3
+        mesh["positions"].extend(segment["positions"])
+        mesh["indices"].extend(i + offset for i in segment["indices"])
+    if not mesh["indices"]:
+        raise ValueError("Stair footprint has no buildable steps")
+    return mesh
+
+
 def build_scene(
     proposal: Proposal, parameters: dict, revision: int, component_parameters: dict | None = None
 ) -> dict:
@@ -63,16 +146,23 @@ def build_scene(
         default_height = (
             parameters.get("slab_thickness")
             if c.type == "room"
-            else parameters.get(c.type + "_height", height)
+            else parameters.get({"roof": "roof_rise"}.get(c.type, c.type + "_height"), height)
         )
         h = confirmed.get("height", default_height)
         b = confirmed.get(
-            "elevation", parameters.get("window_sill", 0) if c.type == "window" else 0
+            "elevation",
+            parameters.get("window_sill", 0)
+            if c.type == "window"
+            else height
+            if c.type == "roof"
+            else 0,
         )
         if c.type == "room":
             b -= h
         if c.type in {"door", "window"} and b + h > height:
             raise ValueError("Opening elevation/height exceeds confirmed floor height")
+        if c.type == "stair" and b + h > height:
+            raise ValueError("Straight stair rise exceeds confirmed floor height")
         elevations[c.id] = (b, b + h)
     shapes = {
         c.id: Polygon([(x * scale, -y * scale) for x, y in c.polygon]) for c in proposal.components
@@ -101,7 +191,22 @@ def build_scene(
         shape = shapes[c.id]
         bottom, top = elevations[c.id]
         mesh = {"positions": [], "indices": []}
-        if c.type not in ("door", "window"):
+        confirmed = component_parameters.get(c.id, {})
+        thickness = None
+        steps = None
+        if c.type in {"roof", "stair"}:
+            dx, dy = c.direction
+            length = math.hypot(dx, dy)
+            direction = (dx / length, -dy / length)
+            if c.type == "roof":
+                thickness = confirmed.get("roof_thickness", parameters.get("roof_thickness"))
+                mesh = roof_mesh(shape, direction, bottom, top - bottom, thickness, c.roof_kind)
+            else:
+                steps = confirmed.get(
+                    "steps", c.steps if c.steps is not None else parameters.get("stair_steps")
+                )
+                mesh = stair_mesh(shape, direction, bottom, top - bottom, steps)
+        elif c.type not in ("door", "window"):
             relevant = [
                 (p, b, t, i)
                 for p, b, t, i in openings
@@ -136,7 +241,7 @@ def build_scene(
                     "basis": "axis_aligned_bounds",
                     "width": bounds[2] - bounds[0],
                     "depth": bounds[3] - bounds[1],
-                    "height": top - bottom,
+                    "height": top - bottom + (thickness or 0),
                     "footprint_edge_lengths": [
                         math.dist(a, b) for a, b in itertools.pairwise(list(shape.exterior.coords))
                     ],
@@ -151,6 +256,8 @@ def build_scene(
                     k: {"value": v, "provenance": "user_confirmed"}
                     for k, v in component_parameters.get(c.id, {}).items()
                 },
+                **({"roof_thickness": thickness} if c.type == "roof" else {}),
+                **({"steps": steps} if c.type == "stair" else {}),
             }
         )
     values = {k: {"value": v, "provenance": "user_confirmed"} for k, v in parameters.items()}
@@ -171,7 +278,14 @@ def build_scene(
         "dimensions": [d.model_dump(mode="json") for d in proposal.dimensions],
         "validation_issues": proposal.validation_issues,
         "warnings": [
-            "Single-floor research reconstruction; no unsupported roof, site or interior detail.",
+            "Single-floor research reconstruction; only source-bound straight stairs and shed/gable roofs are supported."
+            if any(c.type in {"roof", "stair"} for c in proposal.components)
+            else "Single-floor research reconstruction; no unsupported roof, site or interior detail.",
+            *(
+                ["Roof thickness is vertical below the sloped surface, not measured normal to it."]
+                if any(c.type == "roof" for c in proposal.components)
+                else []
+            ),
             "Door/window components represent voids, not inferred door leaves or glazing.",
         ],
     }
