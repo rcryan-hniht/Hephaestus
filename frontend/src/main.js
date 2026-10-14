@@ -5,7 +5,7 @@ import { createWorkspace } from './workspace.js';
 import { createAntigravity } from './Antigravity.js';
 import { createMaskedHeading } from './MaskedHeading.js';
 import { createDriftWall } from './DriftWall.js';
-import { cubicasaSamples } from './cubicasa-samples.js';
+import { cubicasaSamples, cubicasaGallery } from './cubicasa-samples.js';
 import { createSplitText } from './SplitText.js';
 
 const $ = id => document.getElementById(id);
@@ -79,10 +79,10 @@ function setProject(index) {
   driftWall?.select(index);
   document.querySelectorAll('.work-item').forEach((item, i) => item.dataset.active = String(i === index)); dirty = true;
 }
-function openDatasetSample(index) { openWorkspace(); void workspace.loadDatasetSample(cubicasaSamples[index]); }
+function openDatasetSample(index) { openWorkspace(); void workspace.loadDatasetSample(cubicasaGallery[index]); }
 function prepareWall() {
   if (driftWall) return;
-  const items = cubicasaSamples.map((sample, project) => ({ project, kind: 'drawing', title: `${sample.name} / F1_scaled.png`, image: sample.image }));
+  const items = cubicasaGallery.map((sample, project) => ({ project, kind: 'drawing', title: `${sample.name}/F1_scaled.png`, image: sample.image }));
   driftWall = createDriftWall($('drift-wall'), { items, onSelect: openDatasetSample });
 }
 function showFallback() {

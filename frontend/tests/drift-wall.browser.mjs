@@ -10,18 +10,20 @@ const errors = [];
 page.on('pageerror', error => errors.push(error.message));
 const url = process.env.TEST_URL || 'http://127.0.0.1:4174';
 try {
-  await page.goto(url); await page.locator('[data-chapter="2"]').click();
+  await page.goto(url); await page.keyboard.press('End');
+  await page.waitForFunction(() => document.body.dataset.chapter === '2');
   const wall = page.locator('#drift-wall'); await wall.waitFor({ state: 'visible' });
   async function checkVisiblePairs() {
     const visible = await wall.evaluate(root => {
-      const bounds = root.getBoundingClientRect(), keys = new Set();
+      const bounds = root.getBoundingClientRect(), keys = [];
       for (const tile of root.querySelectorAll('.drift-wall__tile')) {
         const box = tile.getBoundingClientRect(), x = box.left + box.width / 2, y = box.top + box.height / 2;
-        if (x > bounds.left && x < bounds.right && y > bounds.top && y < bounds.bottom && document.elementFromPoint(x, y)?.closest('.drift-wall__tile') === tile) keys.add(`${tile.dataset.project}:${tile.dataset.kind}`);
+        if (x > bounds.left && x < bounds.right && y > bounds.top && y < bounds.bottom && document.elementFromPoint(x, y)?.closest('.drift-wall__tile') === tile) keys.push(`${tile.dataset.project}:${tile.dataset.kind}`);
       }
       return [...keys];
     });
-    assert.equal(visible.length, 3, `The frame crops sample pairs: ${visible.join(', ')}`);
+    assert.ok(visible.length > 0);
+    assert.equal(new Set(visible).size, visible.length, 'Visible frames must show distinct sample drawings');
   }
   await wall.evaluate(async root => {
     await Promise.all([...new Set([...root.querySelectorAll('img')].map(image => image.src))].map(async src => { const image = new Image(); image.src = src; await image.decode(); }));
@@ -29,7 +31,7 @@ try {
   assert.equal(await wall.locator('.drift-wall__col').count(), 5);
   assert.equal(await wall.locator('button, a, [tabindex]').count(), 0, 'Repeated tiles must not duplicate keyboard controls');
   const items = await wall.locator('.drift-wall__tile').evaluateAll(nodes => [...new Set(nodes.map(node => `${node.dataset.project}:${node.dataset.kind}`))]);
-  assert.equal(items.length, 3);
+  assert.ok(items.length >= 20);
   assert.equal(await wall.locator('img[data-kind=model]').count(), 0);
   assert.equal(await page.locator('#landing-canvas').isVisible(), false, 'CubeCasa gallery must not display the prepared demo behind its drawings');
   assert.equal(await wall.locator('img').evaluateAll(nodes => nodes.every(image => new URL(image.src).pathname.startsWith('/samples/'))), true);
@@ -43,9 +45,9 @@ try {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const hit = await wall.evaluate(root => {
     const bounds = root.getBoundingClientRect();
-    for (const tile of root.querySelectorAll('[data-project="1"]')) {
+    for (const tile of root.querySelectorAll('.drift-wall__tile')) {
       const box = tile.getBoundingClientRect(), x = box.left + box.width / 2, y = box.top + box.height / 2;
-      if (x > bounds.left && x < bounds.right && y > bounds.top && y < bounds.bottom && document.elementFromPoint(x, y)?.closest('.drift-wall__tile') === tile) return { x, y };
+      if (x > bounds.left && x < bounds.right && y > bounds.top && y < bounds.bottom && document.elementFromPoint(x, y)?.closest('.drift-wall__tile') === tile) return { x, y, id: tile.querySelector('.drift-wall__caption').textContent.split('/')[0] };
     }
   });
   assert.ok(hit, 'A sample tile must remain clickable');
@@ -53,17 +55,17 @@ try {
   await page.mouse.click(hit.x, hit.y);
   const job = await (await submission).json();
   assert.equal(job.source_kind, 'svg');
-  const vector = await readFile(new URL('../../assets/cubicasa/13852/source.svg', import.meta.url));
+  const vector = await readFile(new URL(`../../assets/cubicasa/${hit.id}/source.svg`, import.meta.url));
   assert.equal(job.source_hash, createHash('sha256').update(vector).digest('hex'));
   assert.equal(await page.locator('#workspace').isVisible(), true);
   await page.locator('#api-questions').waitFor({ state: 'visible' });
-  assert.equal(await page.locator('#project-name').textContent(), 'CubeCasa 13852.svg');
+  assert.equal(await page.locator('#project-name').textContent(), `${hit.id}.svg`);
   assert.equal(await page.locator('#question-meters_per_unit').inputValue(), '');
   assert.equal(await page.locator('#question-floor_height').inputValue(), '');
   assert.equal(await page.locator('#model-label').isVisible(), false);
   await page.locator('#back-home').click();
-  await page.locator('[data-chapter="0"]').first().click(); await wall.waitFor({ state: 'hidden' });
-  await page.locator('[data-chapter="2"]').click();
+  await page.keyboard.press('Home'); await wall.waitFor({ state: 'hidden' });
+  await page.keyboard.press('End');
   await wall.waitFor({ state: 'visible' });
   assert.equal(await wall.locator('.drift-wall__col').count(), 5);
   await page.screenshot({ path: '/tmp/hephaestus-drift-wall.png' });
@@ -75,7 +77,8 @@ try {
   assert.deepEqual(errors, []);
   const fallback = await browser.newPage({ reducedMotion: 'reduce' });
   await fallback.addInitScript(() => { const original = HTMLCanvasElement.prototype.getContext; HTMLCanvasElement.prototype.getContext = function(type, ...args) { return type.startsWith('webgl') ? null : original.call(this, type, ...args); }; });
-  await fallback.goto(url); await fallback.locator('[data-chapter="2"]').click();
+  await fallback.goto(url); await fallback.keyboard.press('End');
+  await fallback.waitForFunction(() => document.body.dataset.chapter === '2');
   assert.equal(await fallback.locator('#work-list .work-open').count(), 3);
   assert.equal(await fallback.locator('#drift-wall img[data-kind="drawing"]').count() > 0, true);
   assert.equal(await fallback.locator('#drift-wall img[data-kind="model"]').count(), 0);
