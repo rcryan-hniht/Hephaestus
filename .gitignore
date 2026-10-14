@@ -22,6 +22,7 @@ assets.md
 .claude/
 skills-lock.json
 .codex/
+.archify/
 
 # Playwright CLI output (may contain credentials)
 .playwright-cli/
