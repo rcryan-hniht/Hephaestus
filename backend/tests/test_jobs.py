@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 import io
 import time
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -137,6 +138,23 @@ def test_valid_jpg_upload_accepted(client):
     r = client.post("/api/jobs", files={"file": ("drawing.jpg", out.getvalue())})
     assert r.status_code == 202
     assert r.json()["source_kind"] == "png"
+
+
+def test_export_blend_rejects_invalid_data(client):
+    assert client.post("/api/export/blend", content=b"").status_code == 422
+    assert client.post("/api/export/blend", content=b"not-a-glb").status_code == 422
+
+
+def test_export_blend_converts_glb(client):
+    glb_path = Path(__file__).resolve().parent.parent.parent / "assets" / "F1_original-png.glb"
+    if glb_path.exists():
+        with open(glb_path, "rb") as f:
+            glb_data = f.read()
+        res = client.post("/api/export/blend", content=glb_data)
+        assert res.status_code == 200
+        assert res.headers["content-type"] == "application/x-blender"
+        assert len(res.content) > 1000
+
 
 
 def test_png_offline_import_requires_binding_and_review(tmp_path):

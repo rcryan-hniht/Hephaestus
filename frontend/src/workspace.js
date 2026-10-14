@@ -545,15 +545,43 @@ export function createWorkspace({ reducedMotion, onClose }) {
     const from = id === 'undo' ? undo : redo, to = id === 'undo' ? redo : undo;
     if (!from.length) return; to.push(structuredClone(model)); applyModel(from.pop(), { fit: false, clearHistory: false });
   });
+  const updateExportButton = () => {
+    const fmt = $('export-format')?.value || 'blend';
+    $('export-model').textContent = fmt === 'blend' ? 'Export .blend ↗' : 'Export GLB ↗';
+  };
+  listen($('export-format'), 'change', updateExportButton);
   listen($('export-model'), 'click', async () => {
     if (!view || !model) return;
     const exportingView = view, name = model.name;
+    const format = $('export-format')?.value || 'blend';
     $('export-model').disabled = true;
     try {
       const binary = await exportingView.export();
+      const baseName = `${name.replace(/[^\p{L}\p{N}_-]/gu, '-') || 'model'}`;
+      if (format === 'blend') {
+        try {
+          const res = await fetch('/api/export/blend', {
+            method: 'POST',
+            headers: { 'Content-Type': 'model/gltf-binary' },
+            body: binary,
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || `Conversion failed (${res.status})`);
+          }
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a'); link.href = url; link.download = `${baseName}.blend`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+          status('Exported .blend file. Ready to open directly in Blender.');
+          return;
+        } catch (blendErr) {
+          console.warn('Backend .blend export failed, falling back to GLB:', blendErr);
+          status('Blender server conversion unavailable, exported GLB fallback. In Blender: File → Import → glTF 2.0');
+        }
+      }
       const url = URL.createObjectURL(new Blob([binary], { type: 'model/gltf-binary' }));
-      const link = document.createElement('a'); link.href = url; link.download = `${name.replace(/[^\p{L}\p{N}_-]/gu, '-')}.glb`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-      status('Exported GLB model');
+      const link = document.createElement('a'); link.href = url; link.download = `${baseName}.glb`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+      status('Exported GLB model. In Blender: File → Import → glTF 2.0');
     } catch { status('Model export failed. Please try again.'); }
     finally { $('export-model').disabled = !model || !view; }
   });

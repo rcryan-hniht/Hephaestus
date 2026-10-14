@@ -1,6 +1,11 @@
 """Local asynchronous drawing API. Run one worker; this prototype has no public auth."""
 
+import asyncio
 import json
+import os
+import shutil
+import subprocess
+import tempfile
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, UploadFile
@@ -62,6 +67,33 @@ class BodyLimit:
             return await receive()
 
         await self.app(scope, replay, send)
+
+
+def _convert_glb_to_blend(data: bytes, blender_bin: str) -> bytes:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        in_glb = os.path.join(tmpdir, "model.glb")
+        out_blend = os.path.join(tmpdir, "model.blend")
+        with open(in_glb, "wb") as f:
+            f.write(data)
+
+        script = (
+            "import bpy\n"
+            "bpy.ops.wm.read_factory_settings(use_empty=True)\n"
+            f"bpy.ops.import_scene.gltf(filepath=r'{in_glb}')\n"
+            f"bpy.ops.wm.save_as_mainfile(filepath=r'{out_blend}')\n"
+        )
+        proc = subprocess.run(
+            [blender_bin, "--background", "--python-expr", script],
+            capture_output=True,
+            check=False,
+            timeout=45,
+        )
+        if proc.returncode != 0 or not os.path.exists(out_blend):
+            err = proc.stderr.decode(errors="replace")[-300:] or "Conversion failed"
+            raise RuntimeError(f"Blender conversion error: {err}")
+
+        with open(out_blend, "rb") as f:
+            return f.read()
 
 
 def create_app(settings: Settings | None = None, inference=None):
@@ -133,7 +165,7 @@ def create_app(settings: Settings | None = None, inference=None):
             "engine": "cubicasa5k-pytorch",
             "inference_configured": True,
             "model_availability": "checked before each PNG inference",
-            "export_formats": ["scene.json"],
+            "export_formats": ["scene.json", "blend", "glb"],
             "single_floor": True,
         }
 
@@ -221,6 +253,38 @@ def create_app(settings: Settings | None = None, inference=None):
             json.dumps(scene, allow_nan=False),
             media_type="application/json",
             headers={"Content-Disposition": 'attachment; filename="hephaestus-scene.json"'},
+        )
+
+    @app.post("/api/export/blend")
+    async def export_blend(request: Request):
+        data = await request.body()
+        if not data:
+            raise JobError(422, "No 3D model data provided")
+        if len(data) > settings.max_upload_bytes:
+            raise JobError(422, "Model exceeds configured size limit")
+        if len(data) < 4 or data[:4] != b"glTF":
+            raise JobError(422, "Invalid GLB binary data")
+
+        blender_bin = shutil.which("blender") or (
+            "/snap/bin/blender" if os.path.exists("/snap/bin/blender") else None
+        )
+        if not blender_bin:
+            raise JobError(503, "Blender executable not found on server")
+
+        try:
+            blend_bytes = await asyncio.to_thread(_convert_glb_to_blend, data, blender_bin)
+        except TimeoutError as err:
+            raise JobError(504, "Blender conversion timed out") from err
+        except RuntimeError as err:
+            raise JobError(500, str(err)) from err
+
+        return Response(
+            blend_bytes,
+            media_type="application/x-blender",
+            headers={
+                "Content-Disposition": 'attachment; filename="model.blend"',
+                "X-Content-Type-Options": "nosniff",
+            },
         )
 
     return app

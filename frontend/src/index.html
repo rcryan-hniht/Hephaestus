@@ -39,7 +39,7 @@
   </div>
 
   <section id="workspace" class="workspace" aria-label="Architectural workspace" hidden>
-    <header class="workspace-top"><button id="back-home" class="brand" aria-label="Back to landing">h.<span>hephaestus</span></button><div class="project-heading"><strong id="project-name">New drawing</strong><span id="processing-status" role="status" aria-live="polite">Ready for drawing</span></div><div class="top-actions"><button class="button" data-upload>Upload drawing</button><button id="export-model" class="button button--white" disabled>Export GLB ↗</button></div></header>
+    <header class="workspace-top"><button id="back-home" class="brand" aria-label="Back to landing">h.<span>hephaestus</span></button><div class="project-heading"><strong id="project-name">New drawing</strong><span id="processing-status" role="status" aria-live="polite">Ready for drawing</span></div><div class="top-actions"><button class="button" data-upload>Upload drawing</button><button id="export-model" class="button button--white" disabled>Export .blend ↗</button><select id="export-format" class="format-select" aria-label="Export format"><option value="blend" selected>.blend</option><option value="glb">.glb</option></select></div></header>
     <div class="workspace-body">
       <aside id="drawing-panel" class="panel drawing-panel" aria-label="Source drawing"><div class="panel-heading"><h2>Source drawing</h2><button class="drawer-close" data-close-drawer aria-label="Close drawing panel">×</button></div>
         <div id="drop-zone" class="drop-zone"><span aria-hidden="true">＋</span><p>Drag drawings here</p><button class="button" data-upload>Select files</button><small>PNG · SVG · ASCII DXF · max 10 MB each</small></div>
