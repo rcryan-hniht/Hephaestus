@@ -2,23 +2,22 @@ import './style.css';
 import { SceneView } from './scene.js';
 import { projects, sampleModel, phaseAt } from './model.js';
 import { createWorkspace } from './workspace.js';
+import { createAntigravity } from './Antigravity.js';
 
 const $ = id => document.getElementById(id);
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const events = new AbortController();
 const listen = (element, name, fn) => element.addEventListener(name, fn, { signal: events.signal });
 const frame = $('visual-frame'), canvas = $('landing-canvas'), copies = [...document.querySelectorAll('[data-copy]')];
-const glow = $('glow-cursor');
-let pointerX = -300, pointerY = -300, glowX = -300, glowY = -300;
-if (glow) {
-  listen(window, 'pointermove', e => { pointerX = e.clientX; pointerY = e.clientY; });
-  listen(document, 'pointerleave', () => { pointerX = -300; pointerY = -300; });
-}
+const particlesCanvas = $('antigravity-canvas');
+let antigravity;
 let scene, sceneFailed = false, raf, previous = 0, currentProject = 0;
 let workspaceOpen = false, returnFocus, savedScroll = 0, chapter = 0, height = innerHeight, dirty = true;
 let lastWidth = 0, lastHeight = 0, lastOffset = scrollY;
 const photo = $('hero-photograph');
-const glowEnabled = matchMedia('(pointer: fine)').matches && (navigator.hardwareConcurrency || 8) > 4;
+if ((navigator.hardwareConcurrency || 8) > 4 && (navigator.deviceMemory || 8) > 4) {
+  try { antigravity = createAntigravity(particlesCanvas); } catch { particlesCanvas.hidden = true; }
+} else particlesCanvas.hidden = true;
 const workspace = createWorkspace({ reducedMotion: motion, onClose() {
   workspaceOpen = false; $('landing').hidden = false; document.body.style.overflow = '';
   window.scrollTo(0, savedScroll); returnFocus?.focus({ preventScroll: true }); dirty = true;
@@ -201,19 +200,14 @@ let renderState = { progress: 1, active: false };
 function animate(time) {
   const delta = Math.min((time - (previous || time)) / 1000, .05); previous = time;
   if (!workspaceOpen) {
-    if (glow && glowEnabled && !motion.matches) {
-      glowX += (pointerX - glowX) * (1 - Math.exp(-12 * delta));
-      glowY += (pointerY - glowY) * (1 - Math.exp(-12 * delta));
-      glow.style.transform = `translate(${glowX}px,${glowY}px)`;
-      glow.style.opacity = pointerX < 0 ? '0' : '1';
-    }
+    antigravity?.render(delta, motion.matches);
     if (dirty) { renderState = layout(); dirty = false; }
     if (!document.hidden && renderState.visible) scene?.render({ ...renderState, delta });
-  } else { if (glow) glow.style.opacity = '0'; workspace.render(delta); }
+  } else workspace.render(delta);
   raf = requestAnimationFrame(animate);
 }
 document.fonts.ready.then(() => { fitIntro(); dirty = true; });
 raf = requestAnimationFrame(animate);
-function dispose() { cancelAnimationFrame(raf); events.abort(); scene?.dispose(); workspace.dispose(); }
+function dispose() { cancelAnimationFrame(raf); events.abort(); antigravity?.dispose(); scene?.dispose(); workspace.dispose(); }
 if (import.meta.hot) import.meta.hot.dispose(dispose);
 listen(window, 'pagehide', e => { if (!e.persisted) dispose(); });

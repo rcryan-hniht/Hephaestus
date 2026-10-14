@@ -102,7 +102,7 @@ canvas { display: block; width: 100%; height: 100%; }
 .work-item small { display: block; font-size: 10px; line-height: 1.7; color: var(--muted); }
 .work-item .work-open { width: 44px; height: 44px; text-align: center; font-size: 22px; }
 .work-item[data-active="true"] strong { color: var(--accent); }
-.glow-cursor { position: fixed; left: -36px; top: -36px; width: 72px; height: 72px; border-radius: 50%; background: #c45c3d0b; box-shadow: 0 0 32px 12px #c45c3d08; pointer-events: none; z-index: 25; opacity: 0; }
+.antigravity { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; user-select: none; z-index: 5; opacity: .5; }
 
 /* Workspace */
 .workspace {
@@ -321,7 +321,7 @@ canvas { display: block; width: 100%; height: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .morph-word span { transform: scale(.32); }.morph-word span:not(:first-child) { display: none; }
-  .glow-cursor { display: none; }.chapter-copy,.visual-frame,.landing-action,.work-list { will-change: auto; }
+  .chapter-copy,.visual-frame,.landing-action,.work-list { will-change: auto; }
 }
 
 .landing-action .slogan { position: absolute; top: 100%; left: 0; margin: 16px 0 0; }
