@@ -5,6 +5,7 @@ import { createWorkspace } from './workspace.js';
 import { createAntigravity } from './Antigravity.js';
 import { createMaskedHeading } from './MaskedHeading.js';
 import { createDriftWall } from './DriftWall.js';
+import { cubicasaSamples } from './cubicasa-samples.js';
 
 const $ = id => document.getElementById(id);
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -45,41 +46,27 @@ listen($('menu-toggle'), 'click', () => {
 });
 listen($('nav-links'), 'keydown', e => { if (e.key === 'Escape') { $('nav-links').classList.remove('is-open'); $('menu-toggle').setAttribute('aria-expanded', 'false'); $('menu-toggle').focus(); } });
 const projectModels = projects.map((_, i) => sampleModel(i));
-projectModels.forEach((model, index) => {
+cubicasaSamples.forEach((sample, index) => {
   const item = document.createElement('div'); item.className = 'work-item'; item.dataset.active = String(index === 0);
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '-9 -9 18 18'); svg.setAttribute('aria-hidden', 'true');
-  model.components.filter(c => c.floor === 0 && c.type !== 'window').forEach(c => {
-    const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon'); polygon.setAttribute('points', c.polygon.map(p => p.join(',')).join(' ')); svg.append(polygon);
-  });
-  const preview = document.createElement('button'); preview.type = 'button'; preview.setAttribute('aria-label', `Preview ${model.name}`);
-  const title = document.createElement('strong'); title.textContent = model.name;
-  const detail = document.createElement('small'); detail.textContent = projects[index].note;
-  const source = document.createElement('small'); source.textContent = 'Sample plan → 3D model'; preview.append(title, detail, source);
-  const open = document.createElement('button'); open.type = 'button'; open.className = 'work-open'; open.textContent = '↗'; open.setAttribute('aria-label', `Explore ${model.name}`);
-  listen(preview, 'click', () => setProject(index)); listen(open, 'click', () => openWorkspace(index));
-  item.append(svg, preview, open); $('work-list').append(item);
+  const image = new Image(); image.src = sample.image; image.alt = ''; image.loading = 'lazy';
+  listen(image, 'error', () => { image.hidden = true; });
+  const preview = document.createElement('button'); preview.type = 'button'; preview.setAttribute('aria-label', `Select ${sample.name}`);
+  const title = document.createElement('strong'); title.textContent = sample.name;
+  const detail = document.createElement('small'); detail.textContent = sample.note;
+  const source = document.createElement('small'); source.textContent = 'Confirm scale and height to build'; preview.append(title, detail, source);
+  const open = document.createElement('button'); open.type = 'button'; open.className = 'work-open'; open.textContent = '↗'; open.setAttribute('aria-label', `Explore ${sample.name}`);
+  listen(preview, 'click', () => setProject(index)); listen(open, 'click', () => openDatasetSample(index));
+  item.append(image, preview, open); $('work-list').append(item);
 });
 function setProject(index) {
-  currentProject = index; scene?.setModel(projectModels[index]);
   driftWall?.select(index);
   document.querySelectorAll('.work-item').forEach((item, i) => item.dataset.active = String(i === index)); dirty = true;
 }
+function openDatasetSample(index) { openWorkspace(); void workspace.loadDatasetSample(cubicasaSamples[index]); }
 function prepareWall() {
   if (driftWall) return;
-  const items = [];
-  projectModels.forEach((model, project) => {
-    const drawing = $('work-list').children[project].querySelector('svg').cloneNode(true);
-    drawing.setAttribute('fill', 'none'); drawing.setAttribute('stroke', '#555'); drawing.setAttribute('stroke-width', '.13');
-    items.push({ project, kind: 'drawing', title: `${model.name} / Sample plan`, image: `data:image/svg+xml,${encodeURIComponent(new XMLSerializer().serializeToString(drawing))}` });
-    if (scene) {
-      scene.setModel(model); scene.render({ progress: 1 });
-      items.push({ project, kind: 'model', title: `${model.name} / Demo model`, image: canvas.toDataURL('image/png') });
-    }
-  });
-  scene?.setModel(projectModels[currentProject]);
-  items.sort((a, b) => a.kind === b.kind ? a.project - b.project : a.kind === 'drawing' ? -1 : 1);
-  driftWall = createDriftWall($('drift-wall'), { items, onSelect: openWorkspace });
-  driftWall.select(currentProject);
+  const items = cubicasaSamples.map((sample, project) => ({ project, kind: 'drawing', title: `${sample.name} / F1_scaled.png`, image: sample.image }));
+  driftWall = createDriftWall($('drift-wall'), { items, onSelect: openDatasetSample });
 }
 function showFallback() {
   scene?.dispose(); scene = null; sceneFailed = true;
@@ -179,17 +166,18 @@ function layout() {
     copy.style.mixBlendMode = mix > 0 ? 'multiply' : 'normal';
   });
   const heroWeight = from === 0 ? 1 - mix : next === 0 ? mix : 0;
+  const worksWeight = from === 2 ? 1 - mix : next === 2 ? mix : 0;
   const modelWeight = 1 - heroWeight;
   const photoMask = from === 0 ? `inset(0 0 ${mix * 100}% 0)` : next === 0 ? `inset(${(1 - mix) * 100}% 0 0 0)` : 'inset(100% 0 0 0)';
   photo.style.clipPath = motion.matches ? heroWeight ? 'none' : 'inset(100% 0 0 0)' : photoMask;
   frame.dataset.photo = String(heroWeight >= .5);
-  if (modelWeight > 0) { canvas.hidden = false; prepareScene(); }
-  canvas.hidden = !scene || modelWeight <= 0;
-  $('landing-error').hidden = !sceneFailed || modelWeight <= 0;
+  if (modelWeight > 0 && worksWeight < 1) { canvas.hidden = false; prepareScene(); }
+  canvas.hidden = !scene || modelWeight <= 0 || worksWeight === 1;
+  canvas.style.opacity = String(1 - worksWeight);
+  $('landing-error').hidden = !sceneFailed || modelWeight <= 0 || worksWeight === 1;
   $('reference-fallback').style.opacity = String(heroWeight);
   $('visual-label').textContent = heroWeight >= .5 ? 'ARCHITECTURE / A NEW PERSPECTIVE' : chapter === 1 ? 'CONSTRUCTION PROCESS DEMO' : `DEMO MODEL / ${projects[currentProject].name.toUpperCase()}`;
-  const worksWeight = from === 2 ? 1 - mix : next === 2 ? mix : 0;
-  if (worksWeight >= .5) $('visual-label').textContent = 'SELECTED WORKS / SAMPLE PLANS & MODELS';
+  if (worksWeight >= .5) $('visual-label').textContent = 'CUBICASA5K / SOURCE DRAWINGS';
   if (worksWeight > 0) prepareWall();
   $('drift-wall').hidden = worksWeight <= 0; $('drift-wall').style.opacity = String(worksWeight);
   const interactive = chapter === 2 && mix === 0 && !!scene && !driftWall;

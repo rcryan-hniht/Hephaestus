@@ -33,7 +33,7 @@ export function createDriftWall(root, { items, onSelect, columns = 5, tileWidth 
         const element = document.createElement('div'); element.className = 'drift-wall__col';
         const track = document.createElement('div'); track.className = 'drift-wall__track'; element.append(track); plane.append(element);
         const entries = items.filter((_, i) => i % count === index);
-        if (!entries.length) entries.push(items[0]);
+        if (!entries.length) entries.push(items[index % items.length]);
         const copyHeight = entries.length * (fittedHeight + gap);
         return { track, entries, copyHeight, copies: 0, offset: copyHeight * ((index * .37) % 1), velocity: 0,
           baseVelocity: speed * columnFactor(index, variance) * (direction === 'up' ? 1 : -1) * (index % 2 ? -1 : 1) };
@@ -46,9 +46,10 @@ export function createDriftWall(root, { items, onSelect, columns = 5, tileWidth 
       if (copies === col.copies) return;
       col.copies = copies; col.track.replaceChildren();
       for (let copy = 0; copy < copies; copy++) for (const item of col.entries) {
-        const tile = document.createElement('div'); tile.className = 'drift-wall__tile'; tile.dataset.col = index; tile.dataset.project = item.project; tile.dataset.kind = item.kind; tile.title = `${item.title} · Open sample model`;
+        const tile = document.createElement('div'); tile.className = 'drift-wall__tile'; tile.dataset.col = index; tile.dataset.project = item.project; tile.dataset.kind = item.kind; tile.title = `${item.title} · Open sample drawing`;
         const inner = document.createElement('span'); inner.className = 'drift-wall__inner';
         const image = new Image(); image.src = item.image; image.alt = ''; image.loading = 'lazy'; image.decoding = 'async'; image.draggable = false; image.dataset.kind = item.kind;
+        image.addEventListener('error', () => { image.hidden = true; caption.textContent = `${item.title} / Drawing unavailable`; }, { once: true });
         const overlay = document.createElement('span'); overlay.className = 'drift-wall__overlay';
         const caption = document.createElement('span'); caption.className = 'drift-wall__caption'; caption.textContent = item.title;
         inner.append(image, overlay, caption); tile.append(inner); col.track.append(tile);

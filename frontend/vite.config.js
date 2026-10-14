@@ -1,8 +1,16 @@
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { readFileSync, existsSync } from 'node:fs';
+import { cubicasaSamples } from './src/cubicasa-samples.js';
 
 const heroReference = fileURLToPath(new URL('../assets/cosmos_2096171389.webp', import.meta.url));
+const references = new Map([
+  ['/reference/hero.webp', { path: heroReference, type: 'image/webp' }],
+  ...cubicasaSamples.flatMap(sample => [
+    [sample.image, { path: fileURLToPath(new URL(`../assets/cubicasa/${sample.id}/drawing.png`, import.meta.url)), type: 'image/png' }],
+    [sample.source, { path: fileURLToPath(new URL(`../assets/cubicasa/${sample.id}/source.svg`, import.meta.url)), type: 'image/svg+xml' }],
+  ]),
+]);
 const apiProxy = { '^/api/': { target: `http://127.0.0.1:${process.env.BACKEND_PORT || 8000}`, changeOrigin: true } };
 
 export default defineConfig({
@@ -11,14 +19,18 @@ export default defineConfig({
   plugins: [{
     name: 'local-architecture-reference',
     configureServer(server) {
-      server.middlewares.use('/reference/hero.webp', (_request, response) => {
-        if (!existsSync(heroReference)) { response.statusCode = 404; response.end(); return; }
-        response.setHeader('Content-Type', 'image/webp');
-        response.end(readFileSync(heroReference));
+      server.middlewares.use((request, response, next) => {
+        const reference = references.get(request.url?.split('?')[0]);
+        if (!reference) { next(); return; }
+        if (!existsSync(reference.path)) { response.statusCode = 404; response.end(); return; }
+        response.setHeader('Content-Type', reference.type);
+        response.end(readFileSync(reference.path));
       });
     },
     generateBundle() {
-      if (existsSync(heroReference)) this.emitFile({ type: 'asset', fileName: 'reference/hero.webp', source: readFileSync(heroReference) });
+      for (const [url, reference] of references) {
+        if (existsSync(reference.path)) this.emitFile({ type: 'asset', fileName: url.slice(1), source: readFileSync(reference.path) });
+      }
     },
   }],
   root: fileURLToPath(new URL('./src', import.meta.url)),

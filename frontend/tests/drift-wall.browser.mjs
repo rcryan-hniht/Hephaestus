@@ -1,5 +1,7 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 
 const browser = await chromium.launch({ headless: true, args: ['--enable-unsafe-swiftshader'] });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
@@ -19,7 +21,7 @@ try {
       }
       return [...keys];
     });
-    assert.equal(visible.length, 6, `The frame crops sample pairs: ${visible.join(', ')}`);
+    assert.equal(visible.length, 3, `The frame crops sample pairs: ${visible.join(', ')}`);
   }
   await wall.evaluate(async root => {
     await Promise.all([...new Set([...root.querySelectorAll('img')].map(image => image.src))].map(async src => { const image = new Image(); image.src = src; await image.decode(); }));
@@ -27,7 +29,10 @@ try {
   assert.equal(await wall.locator('.drift-wall__col').count(), 5);
   assert.equal(await wall.locator('button, a, [tabindex]').count(), 0, 'Repeated tiles must not duplicate keyboard controls');
   const items = await wall.locator('.drift-wall__tile').evaluateAll(nodes => [...new Set(nodes.map(node => `${node.dataset.project}:${node.dataset.kind}`))]);
-  assert.equal(items.length, 6);
+  assert.equal(items.length, 3);
+  assert.equal(await wall.locator('img[data-kind=model]').count(), 0);
+  assert.equal(await page.locator('#landing-canvas').isVisible(), false, 'CubeCasa gallery must not display the prepared demo behind its drawings');
+  assert.equal(await wall.locator('img').evaluateAll(nodes => nodes.every(image => new URL(image.src).pathname.startsWith('/samples/'))), true);
   await checkVisiblePairs();
   assert.ok(await wall.locator('.drift-wall__tile').count() < 100);
   const track = wall.locator('.drift-wall__track').first();
@@ -43,9 +48,19 @@ try {
       if (x > bounds.left && x < bounds.right && y > bounds.top && y < bounds.bottom && document.elementFromPoint(x, y)?.closest('.drift-wall__tile') === tile) return { x, y };
     }
   });
-  assert.ok(hit, 'A sample tile must remain clickable'); await page.mouse.click(hit.x, hit.y);
+  assert.ok(hit, 'A sample tile must remain clickable');
+  const submission = page.waitForResponse(response => response.url().endsWith('/api/jobs') && response.status() === 202);
+  await page.mouse.click(hit.x, hit.y);
+  const job = await (await submission).json();
+  assert.equal(job.source_kind, 'svg');
+  const vector = await readFile(new URL('../../assets/cubicasa/13852/source.svg', import.meta.url));
+  assert.equal(job.source_hash, createHash('sha256').update(vector).digest('hex'));
   assert.equal(await page.locator('#workspace').isVisible(), true);
-  assert.equal(await page.locator('#project-name').textContent(), 'A Modest Home');
+  await page.locator('#api-questions').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#project-name').textContent(), 'CubeCasa 13852.svg');
+  assert.equal(await page.locator('#question-meters_per_unit').inputValue(), '');
+  assert.equal(await page.locator('#question-floor_height').inputValue(), '');
+  assert.equal(await page.locator('#model-label').isVisible(), false);
   await page.locator('#back-home').click();
   await page.locator('[data-chapter="0"]').first().click(); await wall.waitFor({ state: 'hidden' });
   await page.locator('[data-chapter="2"]').click();
@@ -65,6 +80,12 @@ try {
   assert.equal(await fallback.locator('#drift-wall img[data-kind="drawing"]').count() > 0, true);
   assert.equal(await fallback.locator('#drift-wall img[data-kind="model"]').count(), 0);
   await fallback.locator('#work-list .work-open').nth(1).click();
-  assert.equal(await fallback.locator('#workspace-error').isVisible(), true);
-  console.log('PASS: DriftWall real sample drawings/models, drift, reduced motion, exact project action, stable copies, mobile and WebGL fallback');
+  await fallback.locator('#api-questions').waitFor({ state: 'visible' });
+  assert.equal(await fallback.locator('#model-label').isVisible(), false);
+  await fallback.locator('#back-home').click();
+  await fallback.route('**/samples/13852/source.svg', route => route.fulfill({ status: 404, body: '' }));
+  await fallback.locator('#work-list .work-open').nth(1).click();
+  await fallback.waitForFunction(() => document.getElementById('drawing-message').textContent.includes('SVG is unavailable'));
+  assert.equal(await fallback.locator('#retry-job').isVisible(), false);
+  console.log('PASS: CubeCasa PNG drawings, paired SVG questions, drift, reduced motion, exact sample action, stable copies and mobile');
 } finally { await browser.close(); }

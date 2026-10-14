@@ -23,7 +23,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
   function canEditBackend() { return model?.backend && model.job_id === api.job?.id && ['ready', 'failed'].includes(api.job.state) && !apiBusy; }
   function apiError(error) {
     message(error.message); $('drawing-message').dataset.error = 'true'; status(`Drawing request failed${model ? ' · Model retained' : ''}`);
-    $('retry-job').hidden = false; $('retry-job').textContent = 'Reconnect / refresh';
+    $('retry-job').hidden = !lastFile && !api.job; $('retry-job').textContent = 'Reconnect / refresh';
     $('drawing-message').focus({ preventScroll: true }); historyState();
   }
   async function apiAction(action, payload) {
@@ -238,6 +238,20 @@ export function createWorkspace({ reducedMotion, onClose }) {
     closeDrawers();
   }
 
+  async function loadDatasetSample(sample) {
+    cancel('Loading paired CubeCasa SVG. Scale and height need confirmation.');
+    lastFile = null;
+    const current = ticket; $('retry-job').hidden = true;
+    $('file-name').textContent = sample.name; status('Loading sample drawing');
+    try {
+      const response = await fetch(sample.source);
+      if (!response.ok) throw new Error('The local CubeCasa sample SVG is unavailable. Restore its assets or upload your own drawing.');
+      const drawing = await response.blob();
+      if (current !== ticket) return;
+      await receiveFile(new File([drawing], `${sample.name}.svg`, { type: 'image/svg+xml' }));
+    } catch (error) { if (current === ticket) apiError(error); }
+  }
+
   async function receiveFile(file) {
     if (!file) return;
     cancel(''); lastFile = file; const current = ticket;
@@ -423,7 +437,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     $('workspace-error').hidden = false; $('export-model').disabled = true;
   });
   return {
-    open, loadSample,
+    open, loadSample, loadDatasetSample,
     render(delta) { if (active && view && !document.hidden) view.render({ active: true, delta }); },
     motionChanged() { if (view) view.controls.enableDamping = !reducedMotion.matches; },
     dispose() { void api.stop(); ticket++; worker?.terminate(); events.abort(); view?.dispose(); if (imageURL) URL.revokeObjectURL(imageURL); },

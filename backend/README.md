@@ -30,6 +30,16 @@ running a different local API port. For Vercel/Render, set the public frontend
 build variable `VITE_API_BASE_URL` to the backend origin and add the frontend
 origin to backend `HEPHAESTUS_CORS_ORIGINS`. Keep the API key backend-only.
 
+Selected Works uses local CubeCasa validation samples `7813`, `13852` and
+`14175`. The original `F1_scaled.png` files and paired `model.svg` files are
+copied unchanged to ignored `assets/cubicasa/<id>/drawing.png` and `source.svg`.
+Vite serves and bundles those selected assets when present. Missing assets show
+an unavailable state without substituting generated drawings or models.
+Opening a sample submits its paired SVG and asks for missing scale/height and
+opening parameters. No model assumptions are applied and no hosted PNG request
+is sent when opening these vector samples. PNG and SVG coordinates remain
+separate; a paired filename does not establish their geometric registration.
+
 Browser integration checks use private temporary jobs and no live AI requests.
 Start `backend/.venv/bin/python backend/tests/browser_server.py` from the root,
 then `BACKEND_PORT=8765 bun run dev --host 127.0.0.1 --port 4174` in `frontend/`.
