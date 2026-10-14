@@ -1,5 +1,32 @@
 import { sceneToModel } from './backend-model.js';
 
+// These hashes identify the two original CubeCasa images, independent of upload names.
+const sampleHashes = ['8487017eb625ded98ba1b76eaa4d4def465e20c8a3552ff84b3bf6768c8f1777', '1e7d942a4878dc47b38a1da7e85cd11fd7a700bafe1c94169f23cd66cd565dd2'];
+
+export function sampleFloorSuggestions(floors) {
+  if (floors.length !== 2) return null;
+  const suggestions = [];
+  for (const [i, floor] of floors.entries()) {
+    const job = floor.job, proposal = floor.latest?.proposal;
+    if (floor.number !== i + 1 || job?.source_kind !== 'png' || job.source_hash !== sampleHashes[i]
+      || !['needs_information', 'ready'].includes(job.state) || proposal?.source_kind !== 'png'
+      || proposal.job_id !== job.id || proposal.source_hash !== job.source_hash || proposal.coordinate_frame?.unit !== 'pixel') return null;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity;
+    for (const wall of proposal.components.filter(c => c.type === 'wall')) {
+      for (const [x, y] of wall.polygon) {
+        if (![x, y].every(Number.isFinite)) return null;
+        minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x);
+      }
+    }
+    const scale = 20 / (maxX - minX), origin = proposal.coordinate_frame.origin || [0, 0];
+    if (![minX, minY, scale, ...origin].every(Number.isFinite) || scale < 1e-8 || scale > 1000 || origin.length !== 2) return null;
+    suggestions.push({ parameters: { meters_per_unit: scale, floor_height: i ? 3.6 : 6.4,
+      slab_thickness: .2, door_height: 2.1, window_height: 1.2, window_sill: .9 },
+      offsetX: (origin[0] - minX) * scale, offsetY: (origin[1] - minY) * scale });
+  }
+  return suggestions;
+}
+
 export function groupFloorFiles(files) {
   if (!files.length || files.length > 16 || files.reduce((size, file) => size + file.size, 0) > 40 * 1024 * 1024) throw new Error('Select up to 16 drawings, 40 MB total.');
   const groups = new Map();

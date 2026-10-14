@@ -1,7 +1,7 @@
 import { SceneView } from './scene.js';
 import { API_BASE, apiRequest, createJobClient } from './api.js';
 import { sceneToModel, sourceDescription, offsetProposal } from './backend-model.js';
-import { groupFloorFiles, assembleFloors } from './floors.js';
+import { groupFloorFiles, assembleFloors, sampleFloorSuggestions } from './floors.js';
 import { sampleModel, reconstructDrawing, typeNames, drawingBounds } from './model.js';
 
 export function createWorkspace({ reducedMotion, onClose }) {
@@ -169,7 +169,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     building = null;
     void singleApi.stop(); floors.forEach(f => { void f.client.stop(); });
     floors = []; api = singleApi; drafts = singleDrafts; arrangementConfirmed = false;
-    $('floor-sources').hidden = true; $('floor-alignment').hidden = true;
+    $('floor-sources').hidden = true; $('floor-alignment').hidden = true; $('sample-preset').hidden = true;
     proposal = null; sourceJob = null; apiBusy = false; drafts.clear(); fillSuggestions = false;
     $('api-questions').hidden = true; $('proposal-edit').hidden = true; $('toggle-source').hidden = true;
     $('cancel-job').hidden = true; $('continue-build').disabled = true;
@@ -285,6 +285,8 @@ export function createWorkspace({ reducedMotion, onClose }) {
     for (const floor of floors) $('floor-status-' + floor.number).textContent = `F${floor.number} · ${floor.error ? 'Request failed; select this floor to retry' : stageNames[floor.job?.state] || 'Reading drawing'}`;
     $('floor-alignment').querySelector('button').disabled = apiBusy || floors.some(f => f.job?.state !== 'ready');
     $('source-floor').disabled = apiBusy;
+    $('sample-preset').hidden = !sampleFloorSuggestions(floors);
+    $('use-sample-suggestions').disabled = apiBusy || !floors.some(f => f.job?.state === 'needs_information');
   }
   async function publishBuilding() {
     if (!building || !arrangementConfirmed || floors.some(f => f.job?.state !== 'ready')) return;
@@ -492,7 +494,27 @@ export function createWorkspace({ reducedMotion, onClose }) {
   listen($('file-input'), 'change', e => { void receiveFiles([...e.target.files]); e.target.value = ''; });
   listen($('source-floor'), 'change', event => activateFloor(floors.find(f => f.number === Number(event.target.value))));
   listen($('source-drawing'), 'change', event => { const floor = floors.find(f => f.client === api); if (floor) void displayFloorDrawing(floor, event.target.value); });
-  listen($('floor-alignment'), 'input', () => { arrangementConfirmed = false; });
+  listen($('use-sample-suggestions'), 'click', () => {
+    const suggestions = sampleFloorSuggestions(floors); if (!suggestions || apiBusy) return;
+    $('api-questions').querySelectorAll('input').forEach(input => drafts.set(input.name, input.type === 'checkbox' ? input.checked : input.value));
+    for (const [i, floor] of floors.entries()) {
+      const suggestion = suggestions[i];
+      if (floor.job.state === 'needs_information') {
+        for (const [key, value] of Object.entries(suggestion.parameters)) {
+          if (floor.job.parameters[key] == null && !floor.drafts.get(key)) floor.drafts.set(key, String(value));
+        }
+      }
+      const scale = Number(floor.job.parameters.meters_per_unit ?? floor.drafts.get('meters_per_unit'));
+      for (const [axis, value] of [['x', suggestion.offsetX], ['y', suggestion.offsetY]]) {
+        const input = $(`floor-${floor.number}-${axis}`);
+        if (!input.dataset.edited && Number.isFinite(scale) && scale > 0) input.value = value * scale / suggestion.parameters.meters_per_unit;
+      }
+    }
+    $('api-questions').querySelectorAll('input[type=number]').forEach(input => { if (input.value === '') input.value = drafts.get(input.name) ?? ''; });
+    arrangementConfirmed = false;
+    message('Sample suggestions filled for both floors. Your entries are preserved. Review each drawing, then confirm its parameters and the alignment.');
+  });
+  listen($('floor-alignment'), 'input', event => { arrangementConfirmed = false; event.target.dataset.edited = 'true'; });
   listen($('floor-alignment'), 'submit', async event => {
     event.preventDefault();
     if (!building) return;
