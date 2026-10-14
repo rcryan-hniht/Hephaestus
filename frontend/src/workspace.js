@@ -3,6 +3,7 @@ import { API_BASE, apiRequest, createJobClient } from './api.js';
 import { sceneToModel, sourceDescription, offsetProposal } from './backend-model.js';
 import { groupFloorFiles, assembleFloors, sampleFloorSuggestions } from './floors.js';
 import { sampleModel, reconstructDrawing, typeNames, drawingBounds } from './model.js';
+import villaPreset from './villa-preset.json';
 
 export function createWorkspace({ reducedMotion, onClose }) {
   const $ = id => document.getElementById(id);
@@ -281,11 +282,28 @@ export function createWorkspace({ reducedMotion, onClose }) {
     } catch (error) { if (current === ticket) apiError(error); }
   }
 
+  async function loadVillaPreset() {
+    message('Loading the four Villa V2 drawings. Confirm their parameters before building.');
+    const current = ticket;
+    try {
+      const files = await Promise.all(villaPreset.floors.map(async floor => {
+        const response = await fetch(`/presets/modern-villa/F${floor.number}.svg`);
+        if (!response.ok) throw new Error('The villa preset drawing is unavailable. Retry or upload the SVG files.');
+        return new File([await response.blob()], `F${floor.number}.svg`, { type: 'image/svg+xml' });
+      }));
+      if (current === ticket) await receiveFiles(files);
+    } catch (error) { if (current === ticket) apiError(error); }
+  }
+
   function renderFloorStatus() {
     for (const floor of floors) $('floor-status-' + floor.number).textContent = `F${floor.number} · ${floor.error ? 'Request failed; select this floor to retry' : stageNames[floor.job?.state] || 'Reading drawing'}`;
     $('floor-alignment').querySelector('button').disabled = apiBusy || floors.some(f => f.job?.state !== 'ready');
     $('source-floor').disabled = apiBusy;
-    $('sample-preset').hidden = !sampleFloorSuggestions(floors);
+    const suggestions = sampleFloorSuggestions(floors);
+    $('sample-preset').hidden = !suggestions;
+    if (suggestions) $('sample-preset-note').textContent = suggestions[0].description
+      || 'CubeCasa samples 1 + 2 · Suggested study: 20 m wide; F1 height 6.4 m + F2 height 3.6 m. Door and slab values are editable assumptions.';
+    $('use-sample-suggestions').textContent = suggestions?.[0].name ? 'Use villa parameters' : 'Use sample suggestions';
     $('use-sample-suggestions').disabled = apiBusy || !floors.some(f => f.job?.state === 'needs_information');
   }
   async function publishBuilding() {
@@ -362,6 +380,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
           if (current !== ticket) return;
           entry.latest = update; entry.job = update.job; entry.error = null;
           if (update.scene) entry.scene = update.scene;
+          if (update.job.state === 'ready') entry.presetComponents = null;
           if (api === entry.client) await updateJob(update);
           renderFloorStatus(); publishBuilding();
         },
@@ -471,7 +490,8 @@ export function createWorkspace({ reducedMotion, onClose }) {
   listen($('api-questions'), 'submit', event => {
     event.preventDefault();
     const values = Object.fromEntries([...$('api-questions').querySelectorAll('input')].map(i => [i.name, i.type === 'checkbox' ? i.checked : Number(i.value)]));
-    void apiAction('answers', { values });
+    const floor = floors.find(f => f.client === api);
+    void apiAction('answers', { values, component_values: floor?.presetComponents || {} });
   });
   listen($('toggle-source'), 'click', () => { if (sourceOutlines) showSource(); else drawSource(); });
   listen($('candidate-select'), 'change', () => {
@@ -503,6 +523,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
         for (const [key, value] of Object.entries(suggestion.parameters)) {
           if (floor.job.parameters[key] == null && !floor.drafts.get(key)) floor.drafts.set(key, String(value));
         }
+        floor.presetComponents = { ...suggestion.componentValues, ...floor.presetComponents };
       }
       const scale = Number(floor.job.parameters.meters_per_unit ?? floor.drafts.get('meters_per_unit'));
       for (const [axis, value] of [['x', suggestion.offsetX], ['y', suggestion.offsetY]]) {
@@ -512,7 +533,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     }
     $('api-questions').querySelectorAll('input[type=number]').forEach(input => { if (input.value === '') input.value = drafts.get(input.name) ?? ''; });
     arrangementConfirmed = false;
-    message('Sample suggestions filled for both floors. Your entries are preserved. Review each drawing, then confirm its parameters and the alignment.');
+    message(`Sample suggestions filled for ${floors.length} floors. Your entries are preserved. Review the preset's component heights, then confirm each floor and the alignment.`);
   });
   listen($('floor-alignment'), 'input', event => { arrangementConfirmed = false; event.target.dataset.edited = 'true'; });
   listen($('floor-alignment'), 'submit', async event => {
@@ -535,6 +556,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
   listen($('drop-zone'), 'drop', e => { e.preventDefault(); $('drop-zone').classList.remove('is-over'); void receiveFiles([...e.dataTransfer.files]); });
   listen($('back-home'), 'click', () => { active = false; root.hidden = true; closeDrawers(); onClose(); });
   for (const id of ['load-sample', 'empty-sample']) listen($(id), 'click', () => loadSample());
+  listen($('load-villa-preset'), 'click', () => { void loadVillaPreset(); });
   listen($('plan-svg'), 'click', e => {
     if (!previewTracksModel || !e.target.dataset.id) return;
     if (view) view.select(e.target.dataset.id);

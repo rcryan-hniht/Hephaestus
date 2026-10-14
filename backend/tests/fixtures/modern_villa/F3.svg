@@ -1,164 +1,147 @@
 <?xml version='1.0' encoding='utf-8'?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1840" viewBox="0 0 1400 1840" role="img">
-  <title>Modern Villa / F3 / WORK / WELLNESS</title>
-  <desc>Synthetic architectural test drawing: three storeys and an open roof terrace. Semantic footprints support Hephaestus SVG reconstruction. Stair treads are 2D annotations only.</desc>
-  <rect x="0" y="0" width="1400" height="1840" fill="#fafafa" />
-  <text x="140" y="65" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">HEPHAESTUS / SYNTHETIC TEST INPUT</text>
-  <text x="140" y="115" fill="#222" font-family="Arial, sans-serif" font-size="36" text-anchor="start">F3 / WORK / WELLNESS</text>
-  <text x="140" y="157" fill="#666" font-family="Arial, sans-serif" font-size="22" text-anchor="start">Modern villa / 10.00 m x 14.00 m / SVG source geometry</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1840" viewBox="0 0 1400 1840">
+  <title>Modern Villa V2 / F3</title>
+  <desc>Synthetic stepped villa input. Three storeys, terraces, a recessed roof pavilion and a raised thin roof canopy. Component heights require explicit preset confirmation. Stair geometry and glazing are not inferred.</desc>
+  <rect width="1400" height="1840" fill="#fafafa" />
+  <text x="140" y="62" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">HEPHAESTUS / MODERN VILLA V2 / SYNTHETIC INPUT</text>
+  <text x="140" y="110" fill="#333" font-family="Arial, sans-serif" font-size="30" text-anchor="start">F3 / SETBACK LOUNGE / SKY GARDEN</text>
+  <text x="140" y="151" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">10.00 m x 14.00 m design envelope / common source coordinates</text>
   <g id="Floor-3" class="Floorplan" transform="translate(140 240)">
-    <g id="F3-left-rear" class="Space HOME_OFFICE">
-      <rect x="20" y="20" width="380" height="580" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
-      <text x="210.0" y="304.0" fill="#222" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">HOME OFFICE</text>
-      <text x="210.0" y="334.0" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">22.04 m²</text>
+    <g id="F3-facade-1" class="Wall Facade">
+      <polygon points="180.000,200.000 180.000,1100.000 200.000,1100.000 200.000,1080.000 200.000,220.000 200.000,200.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-left-front" class="Space MULTIPURPOSE">
-      <rect x="20" y="915" width="380" height="465" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
-      <text x="210.0" y="1141.5" fill="#222" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">MULTIPURPOSE</text>
-      <text x="210.0" y="1171.5" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">17.67 m²</text>
+    <g id="F3-facade-2" class="Wall Facade">
+      <polygon points="200.000,1100.000 900.000,1100.000 900.000,200.000 200.000,200.000 200.000,220.000 880.000,220.000 880.000,1080.000 200.000,1080.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-right-rear" class="Space GYM_/_STUDIO">
-      <rect x="415" y="20" width="565" height="580" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
-      <text x="697.5" y="304.0" fill="#222" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">GYM / STUDIO</text>
-      <text x="697.5" y="334.0" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">32.77 m²</text>
+    <g id="F3-office-divider" class="Wall Partition">
+      <polygon points="500.000,575.000 515.000,575.000 515.000,220.000 500.000,220.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-right-front" class="Space MEDIA_LOUNGE">
-      <rect x="415" y="915" width="565" height="465" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
-      <text x="697.5" y="1141.5" fill="#222" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">MEDIA LOUNGE</text>
-      <text x="697.5" y="1171.5" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">26.27 m²</text>
+    <g id="F3-office-south" class="Wall Partition">
+      <polygon points="515.000,590.000 515.000,575.000 200.000,575.000 200.000,590.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-hall" class="Space HALL">
-      <rect x="415" y="615" width="275" height="285" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
-      <text x="552.5" y="751.5" fill="#222" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">HALL</text>
-      <text x="552.5" y="781.5" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">7.84 m²</text>
+    <g id="F3-studio-south" class="Wall Partition">
+      <polygon points="880.000,575.000 515.000,575.000 515.000,590.000 880.000,590.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-bath" class="Space BATHROOM">
-      <rect x="705" y="615" width="275" height="285" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
-      <text x="842.5" y="751.5" fill="#222" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">BATHROOM</text>
-      <text x="842.5" y="781.5" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">7.84 m²</text>
+    <g id="F3-bath-west" class="Wall Partition">
+      <polygon points="245.000,610.000 245.000,855.000 260.000,855.000 260.000,610.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-landing-back" class="Space Stair_landing">
-      <rect x="20" y="615" width="380" height="35" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    <g id="F3-bath-east" class="Wall Partition">
+      <polygon points="470.000,610.000 470.000,855.000 485.000,855.000 485.000,610.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-landing-left" class="Space Stair_landing">
-      <rect x="20" y="650" width="60" height="200" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    <g id="F3-lounge-north" class="Wall Partition">
+      <polygon points="515.000,870.000 515.000,855.000 200.000,855.000 200.000,870.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-landing-right" class="Space Stair_landing">
-      <rect x="330" y="650" width="70" height="200" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    <g id="F3-core-west" class="Wall Partition">
+      <polygon points="515.000,585.000 515.000,865.000 530.000,865.000 530.000,585.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-landing-front" class="Space Stair_landing">
-      <rect x="20" y="850" width="380" height="50" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    <g id="F3-core-east" class="Wall Partition">
+      <polygon points="730.000,585.000 730.000,865.000 745.000,865.000 745.000,585.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-north" class="Wall External">
-      <rect x="0" y="0" width="1000" height="20" fill="#222" stroke="#222" stroke-width="1" />
+    <g id="F3-core-north" class="Wall Partition">
+      <polygon points="530.000,585.000 530.000,600.000 730.000,600.000 730.000,585.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-south" class="Wall External">
-      <rect x="0" y="1380" width="1000" height="20" fill="#222" stroke="#222" stroke-width="1" />
+    <g id="F3-core-south" class="Wall Partition">
+      <polygon points="530.000,850.000 530.000,865.000 730.000,865.000 730.000,850.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-west" class="Wall External">
-      <rect x="0" y="20" width="20" height="1360" fill="#222" stroke="#222" stroke-width="1" />
+    <g id="F3-parapet-1" class="Wall Terrace_Parapet">
+      <polygon points="20.000,1400.000 20.000,1380.000 20.000,20.000 20.000,0.000 0.000,0.000 0.000,1400.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-east" class="Wall External">
-      <rect x="980" y="20" width="20" height="1360" fill="#222" stroke="#222" stroke-width="1" />
+    <g id="F3-parapet-2" class="Wall Terrace_Parapet">
+      <polygon points="1000.000,1400.000 1000.000,1100.000 900.000,1100.000 880.000,1100.000 880.000,1120.000 980.000,1120.000 980.000,1380.000 20.000,1380.000 20.000,1400.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="900.000,0.000 20.000,0.000 20.000,20.000 880.000,20.000 880.000,200.000 900.000,200.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-spine" class="Wall Internal">
-      <rect x="400" y="20" width="15" height="1360" fill="#222" stroke="#222" stroke-width="1" />
+    <g id="F3-interior-slab-1" class="Space Interior">
+      <polygon points="515.000,575.000 880.000,575.000 880.000,220.000 515.000,220.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
     </g>
-    <g id="F3-left-cross-rear" class="Wall Internal">
-      <rect x="20" y="600" width="380" height="15" fill="#222" stroke="#222" stroke-width="1" />
+    <g id="F3-interior-slab-2" class="Space Interior">
+      <polygon points="200.000,575.000 500.000,575.000 500.000,220.000 200.000,220.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
     </g>
-    <g id="F3-left-cross-front" class="Wall Internal">
-      <rect x="20" y="900" width="380" height="15" fill="#222" stroke="#222" stroke-width="1" />
+    <g id="F3-interior-slab-3" class="Space Interior">
+      <polygon points="245.000,855.000 245.000,610.000 260.000,610.000 260.000,855.000 470.000,855.000 470.000,610.000 485.000,610.000 485.000,855.000 515.000,855.000 515.000,590.000 200.000,590.000 200.000,855.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
     </g>
-    <g id="F3-right-cross-rear" class="Wall Internal">
-      <rect x="415" y="600" width="565" height="15" fill="#222" stroke="#222" stroke-width="1" />
+    <g id="F3-interior-slab-4" class="Space Interior">
+      <polygon points="880.000,1080.000 880.000,590.000 745.000,590.000 745.000,865.000 730.000,865.000 530.000,865.000 515.000,865.000 515.000,870.000 200.000,870.000 200.000,1080.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
     </g>
-    <g id="F3-right-cross-front" class="Wall Internal">
-      <rect x="415" y="900" width="565" height="15" fill="#222" stroke="#222" stroke-width="1" />
+    <g id="F3-terrace-slab-1" class="Space Outdoor_Terrace">
+      <polygon points="180.000,1100.000 180.000,200.000 200.000,200.000 880.000,200.000 880.000,20.000 20.000,20.000 20.000,1380.000 980.000,1380.000 980.000,1120.000 880.000,1120.000 880.000,1100.000 200.000,1100.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
     </g>
-    <g id="F3-bath-west" class="Wall Internal">
-      <rect x="690" y="615" width="15" height="285" fill="#222" stroke="#222" stroke-width="1" />
+    <g id="F3-core-post-1" class="Column Core_Post">
+      <polygon points="515.000,600.000 515.000,625.000 490.000,625.000 490.000,600.000" fill="#b8926a" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-nw" class="Column">
-      <rect x="20" y="20" width="25" height="25" fill="#c45c3d" stroke="#222" stroke-width="1" />
+    <g id="F3-core-post-2" class="Column Core_Post">
+      <polygon points="775.000,600.000 775.000,625.000 750.000,625.000 750.000,600.000" fill="#b8926a" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-ne" class="Column">
-      <rect x="955" y="20" width="25" height="25" fill="#c45c3d" stroke="#222" stroke-width="1" />
+    <g id="F3-core-post-3" class="Column Core_Post">
+      <polygon points="515.000,865.000 515.000,890.000 490.000,890.000 490.000,865.000" fill="#b8926a" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-sw" class="Column">
-      <rect x="20" y="1355" width="25" height="25" fill="#c45c3d" stroke="#222" stroke-width="1" />
+    <g id="F3-core-post-4" class="Column Core_Post">
+      <polygon points="775.000,865.000 775.000,890.000 750.000,890.000 750.000,865.000" fill="#b8926a" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-se" class="Column">
-      <rect x="955" y="1355" width="25" height="25" fill="#c45c3d" stroke="#222" stroke-width="1" />
+    <g id="F3-office" class="Door Opening">
+      <polygon points="380.000,575.000 380.000,590.000 280.000,590.000 280.000,575.000" fill="#fafafa" stroke="#b25b3d" stroke-width="1" />
     </g>
-    <g id="F3-stair-study-opening" class="Door">
-      <rect x="180" y="600" width="90" height="15" fill="#fafafa" stroke="#c45c3d" stroke-width="1" />
+    <g id="F3-studio" class="Door Opening">
+      <polygon points="860.000,575.000 860.000,590.000 760.000,590.000 760.000,575.000" fill="#fafafa" stroke="#b25b3d" stroke-width="1" />
     </g>
-    <g id="F3-stair-front-opening" class="Door">
-      <rect x="180" y="900" width="90" height="15" fill="#fafafa" stroke="#c45c3d" stroke-width="1" />
+    <g id="F3-lounge" class="Door Opening">
+      <polygon points="400.000,855.000 400.000,870.000 300.000,870.000 300.000,855.000" fill="#fafafa" stroke="#b25b3d" stroke-width="1" />
     </g>
-    <g id="F3-stair-hall-opening" class="Door">
-      <rect x="400" y="720" width="15" height="100" fill="#fafafa" stroke="#c45c3d" stroke-width="1" />
+    <g id="F3-bath" class="Door Opening">
+      <polygon points="485.000,680.000 485.000,770.000 470.000,770.000 470.000,680.000" fill="#fafafa" stroke="#b25b3d" stroke-width="1" />
     </g>
-    <g id="F3-primary-hall-opening" class="Door">
-      <rect x="500" y="600" width="100" height="15" fill="#fafafa" stroke="#c45c3d" stroke-width="1" />
+    <g id="F3-stair-entry" class="Door Opening">
+      <polygon points="680.000,850.000 680.000,865.000 580.000,865.000 580.000,850.000" fill="#fafafa" stroke="#b25b3d" stroke-width="1" />
     </g>
-    <g id="F3-lounge-hall-opening" class="Door">
-      <rect x="500" y="900" width="100" height="15" fill="#fafafa" stroke="#c45c3d" stroke-width="1" />
+    <g id="F3-sky-garden" class="Door Opening">
+      <polygon points="640.000,1080.000 640.000,1100.000 500.000,1100.000 500.000,1080.000" fill="#fafafa" stroke="#b25b3d" stroke-width="1" />
     </g>
-    <g id="F3-bath-opening" class="Door">
-      <rect x="690" y="690" width="15" height="90" fill="#fafafa" stroke="#c45c3d" stroke-width="1" />
+    <g id="F3-front-left" class="Window Opening">
+      <polygon points="460.000,1080.000 460.000,1100.000 220.000,1100.000 220.000,1080.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
     </g>
-    <g id="F3-north-left-opening" class="Window">
-      <rect x="80" y="0" width="140" height="20" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    <g id="F3-front-right" class="Window Opening">
+      <polygon points="860.000,1080.000 860.000,1100.000 670.000,1100.000 670.000,1080.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
     </g>
-    <g id="F3-north-right-opening" class="Window">
-      <rect x="580" y="0" width="300" height="20" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    <g id="F3-west-rear" class="Window Opening">
+      <polygon points="200.000,300.000 200.000,550.000 180.000,550.000 180.000,300.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
     </g>
-    <g id="F3-west-rear-opening" class="Window">
-      <rect x="0" y="220" width="20" height="180" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    <g id="F3-west-front" class="Window Opening">
+      <polygon points="200.000,870.000 200.000,1040.000 180.000,1040.000 180.000,870.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
     </g>
-    <g id="F3-east-rear-opening" class="Window">
-      <rect x="980" y="160" width="20" height="280" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    <g id="F3-east-rear" class="Window Opening">
+      <polygon points="900.000,270.000 900.000,520.000 880.000,520.000 880.000,270.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
     </g>
-    <g id="F3-east-front-opening" class="Window">
-      <rect x="980" y="1040" width="20" height="220" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    <g id="F3-east-front" class="Window Opening">
+      <polygon points="900.000,860.000 900.000,1050.000 880.000,1050.000 880.000,860.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
     </g>
-    <g id="F3-south-left-opening" class="Window">
-      <rect x="80" y="1380" width="280" height="20" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    <g id="F3-north-left" class="Window Opening">
+      <polygon points="480.000,200.000 480.000,220.000 220.000,220.000 220.000,200.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
     </g>
-    <g id="F3-south-right-opening" class="Window">
-      <rect x="580" y="1380" width="300" height="20" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    <g id="F3-north-right" class="Window Opening">
+      <polygon points="840.000,200.000 840.000,220.000 540.000,220.000 540.000,200.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
     </g>
-    <g id="F3-west-front-opening" class="Window">
-      <rect x="0" y="1060" width="20" height="200" fill="#e1edf0" stroke="#6f939c" stroke-width="1" />
+    <g class="Annotation" fill="none" stroke="#888">
+      <rect x="530" y="600" width="200" height="250" stroke-dasharray="6 4" />
+      <line x1="545" x2="630" y1="629" y2="629" />
+      <line x1="545" x2="630" y1="648" y2="648" />
+      <line x1="545" x2="630" y1="667" y2="667" />
+      <line x1="545" x2="630" y1="686" y2="686" />
+      <line x1="545" x2="630" y1="705" y2="705" />
+      <line x1="545" x2="630" y1="724" y2="724" />
+      <line x1="545" x2="630" y1="743" y2="743" />
+      <line x1="545" x2="630" y1="762" y2="762" />
+      <line x1="545" x2="630" y1="781" y2="781" />
+      <line x1="545" x2="630" y1="800" y2="800" />
+      <line x1="545" x2="630" y1="819" y2="819" />
     </g>
-    <g id="F3-stair-annotation" class="Annotation" stroke="#888" fill="none">
-      <rect x="80" y="650" width="250" height="200" stroke-dasharray="6 4" stroke-width="2" />
-      <line x1="90" y1="674" x2="190" y2="674" stroke-width="1" />
-      <line x1="90" y1="693" x2="190" y2="693" stroke-width="1" />
-      <line x1="90" y1="712" x2="190" y2="712" stroke-width="1" />
-      <line x1="90" y1="731" x2="190" y2="731" stroke-width="1" />
-      <line x1="90" y1="750" x2="190" y2="750" stroke-width="1" />
-      <line x1="90" y1="769" x2="190" y2="769" stroke-width="1" />
-      <line x1="90" y1="788" x2="190" y2="788" stroke-width="1" />
-      <line x1="90" y1="807" x2="190" y2="807" stroke-width="1" />
-      <line x1="90" y1="826" x2="190" y2="826" stroke-width="1" />
-      <line x1="140" y1="825" x2="140" y2="675" stroke-width="2" />
-    </g>
-    <text x="250" y="740" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">UP</text>
+    <text x="682" y="733" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">UP</text>
+    <text x="350" y="415" fill="#333" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">HOME OFFICE</text>
+    <text x="697" y="408" fill="#333" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">STUDIO / GYM</text>
+    <text x="350" y="748" fill="#333" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">BATHROOM</text>
+    <text x="542" y="985" fill="#333" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">FAMILY LOUNGE</text>
+    <text x="410" y="1280" fill="#333" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">SKY GARDEN</text>
+    <text x="520" y="-24" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">Terrace parapets: 1.10 m</text>
   </g>
-  <g stroke="#666" fill="none" stroke-width="1">
-    <line x1="140" y1="204" x2="1140" y2="204" />
-    <line x1="140" y1="190" x2="140" y2="220" />
-    <line x1="1140" y1="190" x2="1140" y2="220" />
-    <line x1="1210" y1="240" x2="1210" y2="1640" />
-    <line x1="1196" y1="240" x2="1224" y2="240" />
-    <line x1="1196" y1="1640" x2="1224" y2="1640" />
-  </g>
-  <text x="640" y="195" fill="#666" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">10.00 m</text>
-  <text x="1240" y="940" fill="#666" font-family="Arial, sans-serif" font-size="22" text-anchor="start">14.00 m</text>
-  <text x="140" y="1710" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Scale: 100 SVG source units = 1.00 m / enter 0.01 meters per source unit</text>
-  <text x="140" y="1750" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Confirm floor height: 3.30 m / slab: 0.20 m / offsets X and Y: zero</text>
-  <text x="140" y="1790" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="start">Synthetic concept for software testing / 2D stair annotation / no inferred staircase mesh</text>
+  <text x="140" y="1708" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Scale: 100 SVG units = 1.00 m / confirm 0.01 meters per source unit</text>
+  <text x="140" y="1748" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Floor height: 3.30 m / slab: 0.20 m / offsets X and Y: zero</text>
+  <text x="140" y="1788" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="start">Use the Villa V2 preset for low parapets and the elevated roof canopy; confirm before building.</text>
 </svg>

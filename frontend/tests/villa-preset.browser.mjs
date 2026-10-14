@@ -1,0 +1,55 @@
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+
+const browser = await chromium.launch({ args: ['--enable-unsafe-swiftshader'] });
+try {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 }, reducedMotion: 'reduce' });
+  page.setDefaultTimeout(30000);
+  const answers = [];
+  page.on('request', request => {
+    if (request.url().endsWith('/answers') && request.method() === 'POST') answers.push(request.postDataJSON());
+  });
+  await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4176');
+  await page.locator('#explore-demo').click();
+  const submission = page.waitForResponse(response => response.url().endsWith('/api/buildings') && response.request().method() === 'POST');
+  await page.locator('#load-villa-preset').click();
+  const building = await (await submission).json();
+  assert.equal(building.floors.length, 4);
+  assert.ok(building.floors.every(floor => floor.job.source_kind === 'svg'));
+  await page.locator('#sample-preset').waitFor({ state: 'visible' });
+  await page.locator('#question-floor_height').fill('3.7');
+  await page.locator('#use-sample-suggestions').click();
+  assert.equal(await page.locator('#question-floor_height').inputValue(), '3.7', 'Preset must preserve user entries');
+  assert.equal(answers.length, 0, 'Preset values must await explicit confirmation');
+  await page.locator('#question-floor_height').fill('3.6');
+  for (let floor = 1; floor <= 4; floor++) {
+    await page.locator('#source-floor').selectOption(String(floor));
+    await page.locator('#api-questions').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('#question-meters_per_unit').inputValue(), '0.01');
+    await page.locator('#api-questions button[type=submit]').click();
+    await page.waitForFunction(number => document.getElementById(`floor-status-${number}`).textContent.includes('Ready'), floor);
+  }
+  assert.equal(answers.length, 4);
+  const canopyOverride = Object.values(answers[3].component_values).find(values => values.elevation === 3);
+  assert.deepEqual(canopyOverride, { height: .15, elevation: 3 });
+  const published = page.waitForResponse(response => response.url().endsWith(`/api/buildings/${building.id}/scene`) && response.status() === 200);
+  await page.locator('#floor-alignment button[type=submit]').click();
+  const scene = await (await published).json();
+  assert.deepEqual(scene.floors.map(floor => floor.transform[1]), [0, 3.6, 6.9, 10.2]);
+  const canopy = scene.components.find(c => c.source.element_id === 'F4-canopy');
+  assert.ok(Math.abs(canopy.elevation + canopy.height - 13.2) < 1e-8);
+  assert.ok(scene.components.some(c => c.source_floor === 4 && c.height === 1.1));
+  await page.waitForFunction(() => document.getElementById('project-name').textContent.includes('Building'));
+  assert.equal(await page.locator('#export-model').isEnabled(), true);
+  await page.locator('#fit-model').click();
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: '/tmp/hephaestus-villa-v2-workspace.png' });
+  const source = await page.locator('#drawing-image').getAttribute('src');
+  await page.route('**/presets/modern-villa/F2.svg', route => route.fulfill({ status: 404, body: '' }));
+  await page.locator('#load-villa-preset').click();
+  await page.waitForFunction(() => document.getElementById('drawing-message').textContent.includes('preset drawing is unavailable'));
+  assert.equal(await page.locator('#drawing-image').getAttribute('src'), source, 'Failed preset downloads must retain the drawing');
+  assert.ok((await page.locator('#project-name').textContent()).includes('Building'));
+  assert.equal(await page.locator('#export-model').isEnabled(), true, 'Failed preset downloads must retain the valid model');
+  console.log('PASS: four-drawing villa preset, preserved edits, explicit confirmation, source-bound canopy overrides and building assembly');
+} finally { await browser.close(); }

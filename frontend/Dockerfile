@@ -4,6 +4,7 @@ COPY frontend/package.json frontend/bun.lock ./
 RUN bun install --frozen-lockfile
 COPY frontend/vite.config.js ./
 COPY frontend/src ./src/
+COPY backend/tests/fixtures/modern_villa /app/backend/tests/fixtures/modern_villa
 RUN bun run build
 
 FROM nginxinc/nginx-unprivileged:alpine

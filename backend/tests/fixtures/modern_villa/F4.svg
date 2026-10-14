@@ -1,56 +1,89 @@
 <?xml version='1.0' encoding='utf-8'?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1840" viewBox="0 0 1400 1840" role="img">
-  <title>Modern Villa / F4 / ROOF TERRACE</title>
-  <desc>Synthetic architectural test drawing: three storeys and an open roof terrace. Semantic footprints support Hephaestus SVG reconstruction. Stair treads are 2D annotations only.</desc>
-  <rect x="0" y="0" width="1400" height="1840" fill="#fafafa" />
-  <text x="140" y="65" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">HEPHAESTUS / SYNTHETIC TEST INPUT</text>
-  <text x="140" y="115" fill="#222" font-family="Arial, sans-serif" font-size="36" text-anchor="start">F4 / ROOF TERRACE</text>
-  <text x="140" y="157" fill="#666" font-family="Arial, sans-serif" font-size="22" text-anchor="start">Modern villa / 10.00 m x 14.00 m / SVG source geometry</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1840" viewBox="0 0 1400 1840">
+  <title>Modern Villa V2 / F4</title>
+  <desc>Synthetic stepped villa input. Three storeys, terraces, a recessed roof pavilion and a raised thin roof canopy. Component heights require explicit preset confirmation. Stair geometry and glazing are not inferred.</desc>
+  <rect width="1400" height="1840" fill="#fafafa" />
+  <text x="140" y="62" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">HEPHAESTUS / MODERN VILLA V2 / SYNTHETIC INPUT</text>
+  <text x="140" y="110" fill="#333" font-family="Arial, sans-serif" font-size="30" text-anchor="start">F4 / ROOF TERRACE / PAVILION / CANOPY</text>
+  <text x="140" y="151" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">10.00 m x 14.00 m design envelope / common source coordinates</text>
   <g id="Floor-4" class="Floorplan" transform="translate(140 240)">
-    <g id="F4-terrace-rear" class="Space Outdoor_roof_terrace">
-      <rect x="20" y="20" width="960" height="630" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    <g id="F4-facade-1" class="Wall Facade">
+      <polygon points="430.000,430.000 430.000,910.000 450.000,910.000 450.000,890.000 450.000,450.000 450.000,430.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F4-terrace-left" class="Space Outdoor_roof_terrace">
-      <rect x="20" y="650" width="60" height="200" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    <g id="F4-facade-2" class="Wall Facade">
+      <polygon points="450.000,910.000 790.000,910.000 790.000,430.000 450.000,430.000 450.000,450.000 770.000,450.000 770.000,890.000 450.000,890.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F4-terrace-right" class="Space Outdoor_roof_terrace">
-      <rect x="330" y="650" width="650" height="200" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    <g id="F4-parapet-1" class="Wall Terrace_Parapet">
+      <polygon points="180.000,200.000 180.000,1100.000 200.000,1100.000 200.000,1080.000 200.000,220.000 200.000,200.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F4-terrace-front" class="Space Outdoor_roof_terrace">
-      <rect x="20" y="850" width="960" height="530" fill="#f0eeea" stroke="#d9d5cf" stroke-width="1" />
+    <g id="F4-parapet-2" class="Wall Terrace_Parapet">
+      <polygon points="200.000,1100.000 900.000,1100.000 900.000,200.000 200.000,200.000 200.000,220.000 880.000,220.000 880.000,1080.000 200.000,1080.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <text x="600" y="400" fill="#222" font-family="Arial, sans-serif" font-size="28" text-anchor="middle">OPEN ROOF TERRACE</text>
-    <text x="600" y="440" fill="#666" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">Low parapet / 1.10 m</text>
-    <text x="600" y="1160" fill="#222" font-family="Arial, sans-serif" font-size="24" text-anchor="middle">ROOF SLAB AT +10.20 m</text>
-    <g id="F4-north" class="Wall Parapet">
-      <rect x="0" y="0" width="1000" height="20" fill="#222" stroke="#222" stroke-width="1" />
+    <g id="F4-interior-slab-1" class="Space Interior">
+      <polygon points="450.000,890.000 530.000,890.000 530.000,850.000 530.000,600.000 530.000,450.000 450.000,450.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
     </g>
-    <g id="F4-south" class="Wall Parapet">
-      <rect x="0" y="1380" width="1000" height="20" fill="#222" stroke="#222" stroke-width="1" />
+    <g id="F4-interior-slab-2" class="Space Interior">
+      <polygon points="530.000,890.000 770.000,890.000 770.000,450.000 530.000,450.000 530.000,600.000 730.000,600.000 730.000,850.000 530.000,850.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
     </g>
-    <g id="F4-west" class="Wall Parapet">
-      <rect x="0" y="20" width="20" height="1360" fill="#222" stroke="#222" stroke-width="1" />
+    <g id="F4-terrace-slab-1" class="Space Outdoor_Terrace">
+      <polygon points="200.000,1080.000 430.000,1080.000 430.000,910.000 430.000,430.000 430.000,220.000 200.000,220.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
     </g>
-    <g id="F4-east" class="Wall Parapet">
-      <rect x="980" y="20" width="20" height="1360" fill="#222" stroke="#222" stroke-width="1" />
+    <g id="F4-terrace-slab-2" class="Space Outdoor_Terrace">
+      <polygon points="430.000,1080.000 880.000,1080.000 880.000,220.000 430.000,220.000 430.000,430.000 450.000,430.000 790.000,430.000 790.000,910.000 450.000,910.000 430.000,910.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
     </g>
-    <g id="F4-stair-annotation" class="Annotation" stroke="#888" fill="none">
-      <rect x="80" y="650" width="250" height="200" stroke-dasharray="6 4" stroke-width="2" />
+    <g id="F4-canopy" class="Space Roof_Canopy">
+      <polygon points="850.000,370.000 850.000,970.000 370.000,970.000 370.000,370.000" fill="none" stroke="#b8926a" stroke-width="1" stroke-dasharray="10 5" />
     </g>
-    <text x="205" y="735" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">STAIR</text>
-    <text x="205" y="765" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">VOID</text>
+    <g id="F4-canopy-post-1" class="Column Canopy_Post">
+      <polygon points="415.000,390.000 415.000,415.000 390.000,415.000 390.000,390.000" fill="#b8926a" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F4-canopy-post-2" class="Column Canopy_Post">
+      <polygon points="830.000,390.000 830.000,415.000 805.000,415.000 805.000,390.000" fill="#b8926a" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F4-canopy-post-3" class="Column Canopy_Post">
+      <polygon points="415.000,925.000 415.000,950.000 390.000,950.000 390.000,925.000" fill="#b8926a" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F4-canopy-post-4" class="Column Canopy_Post">
+      <polygon points="830.000,925.000 830.000,950.000 805.000,950.000 805.000,925.000" fill="#b8926a" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F4-pavilion-entry" class="Door Opening">
+      <polygon points="750.000,890.000 750.000,910.000 600.000,910.000 600.000,890.000" fill="#fafafa" stroke="#b25b3d" stroke-width="1" />
+    </g>
+    <g id="F4-pavilion-north" class="Window Opening">
+      <polygon points="770.000,430.000 770.000,450.000 450.000,450.000 450.000,430.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
+    </g>
+    <g id="F4-pavilion-front" class="Window Opening">
+      <polygon points="580.000,890.000 580.000,910.000 450.000,910.000 450.000,890.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
+    </g>
+    <g id="F4-pavilion-west" class="Window Opening">
+      <polygon points="450.000,480.000 450.000,860.000 430.000,860.000 430.000,480.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
+    </g>
+    <g id="F4-pavilion-east" class="Window Opening">
+      <polygon points="790.000,480.000 790.000,860.000 770.000,860.000 770.000,480.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
+    </g>
+    <g class="Annotation" fill="none" stroke="#888">
+      <rect x="530" y="600" width="200" height="250" stroke-dasharray="6 4" />
+      <line x1="545" x2="630" y1="629" y2="629" />
+      <line x1="545" x2="630" y1="648" y2="648" />
+      <line x1="545" x2="630" y1="667" y2="667" />
+      <line x1="545" x2="630" y1="686" y2="686" />
+      <line x1="545" x2="630" y1="705" y2="705" />
+      <line x1="545" x2="630" y1="724" y2="724" />
+      <line x1="545" x2="630" y1="743" y2="743" />
+      <line x1="545" x2="630" y1="762" y2="762" />
+      <line x1="545" x2="630" y1="781" y2="781" />
+      <line x1="545" x2="630" y1="800" y2="800" />
+      <line x1="545" x2="630" y1="819" y2="819" />
+      <rect x="370" y="370" width="480" height="600" stroke="#b8926a" stroke-width="3" stroke-dasharray="10 5" />
+    </g>
+    <text x="682" y="733" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">UP</text>
+    <text x="610" y="535" fill="#333" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">ROOF PAVILION</text>
+    <text x="275" y="530" fill="#333" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">TERRACE</text>
+    <text x="690" y="1035" fill="#333" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">TERRACE</text>
+    <text x="610" y="340" fill="#9b7448" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">CANOPY ABOVE / TOP +13.20 m</text>
+    <text x="520" y="-24" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">Terrace parapets: 1.10 m</text>
   </g>
-  <g stroke="#666" fill="none" stroke-width="1">
-    <line x1="140" y1="204" x2="1140" y2="204" />
-    <line x1="140" y1="190" x2="140" y2="220" />
-    <line x1="1140" y1="190" x2="1140" y2="220" />
-    <line x1="1210" y1="240" x2="1210" y2="1640" />
-    <line x1="1196" y1="240" x2="1224" y2="240" />
-    <line x1="1196" y1="1640" x2="1224" y2="1640" />
-  </g>
-  <text x="640" y="195" fill="#666" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">10.00 m</text>
-  <text x="1240" y="940" fill="#666" font-family="Arial, sans-serif" font-size="22" text-anchor="start">14.00 m</text>
-  <text x="140" y="1710" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Scale: 100 SVG source units = 1.00 m / enter 0.01 meters per source unit</text>
-  <text x="140" y="1750" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Confirm floor height: 1.10 m / slab: 0.20 m / offsets X and Y: zero</text>
-  <text x="140" y="1790" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="start">Synthetic concept for software testing / 2D stair annotation / no inferred staircase mesh</text>
+  <text x="140" y="1708" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Scale: 100 SVG units = 1.00 m / confirm 0.01 meters per source unit</text>
+  <text x="140" y="1748" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Floor height: 3.00 m / slab: 0.20 m / offsets X and Y: zero</text>
+  <text x="140" y="1788" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="start">Use the Villa V2 preset for low parapets and the elevated roof canopy; confirm before building.</text>
 </svg>

@@ -1,0 +1,109 @@
+{
+  "name": "Modern Villa V2",
+  "description": "Synthetic 10 \u00d7 14 m stepped villa \u00b7 three storeys + roof pavilion. Heights: 3.6 / 3.3 / 3.3 / 3.0 m; terrace walls 1.1 m; canopy top +13.2 m. Review and confirm each floor.",
+  "floors": [
+    {
+      "number": 1,
+      "source_hash": "0d864f8c8139ae03a24e2f60a8787d570927004377d9662b98d2badce1b8052c",
+      "parameters": {
+        "meters_per_unit": 0.01,
+        "floor_height": 3.6,
+        "slab_thickness": 0.2,
+        "door_height": 2.6,
+        "window_height": 3.2,
+        "window_sill": 0.15
+      },
+      "offsetX": 0,
+      "offsetY": 0,
+      "components": {}
+    },
+    {
+      "number": 2,
+      "source_hash": "83fbb32528058b2699cde09a332e9c7c82c33961f8a85e9652f40c9f620763b3",
+      "parameters": {
+        "meters_per_unit": 0.01,
+        "floor_height": 3.3,
+        "slab_thickness": 0.2,
+        "door_height": 2.6,
+        "window_height": 3.0,
+        "window_sill": 0.15
+      },
+      "offsetX": 0,
+      "offsetY": 0,
+      "components": {
+        "F2-parapet-1": {
+          "height": 1.1
+        },
+        "F2-parapet-2": {
+          "height": 1.1
+        }
+      }
+    },
+    {
+      "number": 3,
+      "source_hash": "26e84fa315a4ad763d63d008eb50a22fe466c2d5095e718734308564aa0f4711",
+      "parameters": {
+        "meters_per_unit": 0.01,
+        "floor_height": 3.3,
+        "slab_thickness": 0.2,
+        "door_height": 2.6,
+        "window_height": 3.0,
+        "window_sill": 0.15
+      },
+      "offsetX": 0,
+      "offsetY": 0,
+      "components": {
+        "F3-parapet-1": {
+          "height": 1.1
+        },
+        "F3-parapet-2": {
+          "height": 1.1
+        }
+      }
+    },
+    {
+      "number": 4,
+      "source_hash": "59db733a7904f85c161c3576646ae3ccf4815003fe106335c336fe1f35b768d0",
+      "parameters": {
+        "meters_per_unit": 0.01,
+        "floor_height": 3.0,
+        "slab_thickness": 0.2,
+        "door_height": 2.6,
+        "window_height": 2.6,
+        "window_sill": 0.15
+      },
+      "offsetX": 0,
+      "offsetY": 0,
+      "components": {
+        "F4-facade-1": {
+          "height": 2.85
+        },
+        "F4-facade-2": {
+          "height": 2.85
+        },
+        "F4-parapet-1": {
+          "height": 1.1
+        },
+        "F4-parapet-2": {
+          "height": 1.1
+        },
+        "F4-canopy": {
+          "height": 0.15,
+          "elevation": 3.0
+        },
+        "F4-canopy-post-1": {
+          "height": 2.85
+        },
+        "F4-canopy-post-2": {
+          "height": 2.85
+        },
+        "F4-canopy-post-3": {
+          "height": 2.85
+        },
+        "F4-canopy-post-4": {
+          "height": 2.85
+        }
+      }
+    }
+  ]
+}

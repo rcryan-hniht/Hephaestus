@@ -1,9 +1,28 @@
 import { sceneToModel } from './backend-model.js';
+import villaPreset from './villa-preset.json';
 
 // These hashes identify the two original CubeCasa images, independent of upload names.
 const sampleHashes = ['8487017eb625ded98ba1b76eaa4d4def465e20c8a3552ff84b3bf6768c8f1777', '1e7d942a4878dc47b38a1da7e85cd11fd7a700bafe1c94169f23cd66cd565dd2'];
 
 export function sampleFloorSuggestions(floors) {
+  if (floors.length === 4) {
+    const suggestions = [];
+    for (const [i, floor] of floors.entries()) {
+      const configuration = villaPreset.floors[i], job = floor.job, proposal = floor.latest?.proposal;
+      if (floor.number !== configuration.number || job?.source_kind !== 'svg' || job.source_hash !== configuration.source_hash
+        || !['needs_information', 'ready'].includes(job.state) || proposal?.source_kind !== 'svg'
+        || proposal.job_id !== job.id || proposal.source_hash !== job.source_hash) return null;
+      const componentValues = {};
+      for (const [element, values] of Object.entries(configuration.components)) {
+        const components = proposal.components.filter(c => c.source?.element_id === element);
+        if (!components.length) return null;
+        for (const component of components) componentValues[component.id] = { ...values };
+      }
+      suggestions.push({ name: villaPreset.name, description: villaPreset.description,
+        parameters: { ...configuration.parameters }, offsetX: configuration.offsetX, offsetY: configuration.offsetY, componentValues });
+    }
+    return suggestions;
+  }
   if (floors.length !== 2) return null;
   const suggestions = [];
   for (const [i, floor] of floors.entries()) {
