@@ -51,6 +51,7 @@ try {
   assert.equal(await heading.isVisible(), false);
   await page.locator('#back-home').click(); assert.equal(await heading.isVisible(), true);
   await page.locator('[data-chapter="1"]').click(); await page.locator('[data-chapter="0"]').first().click();
+  await heading.waitFor({ state: 'visible' });
   assert.equal(await heading.isVisible(), true);
   assert.deepEqual(errors, []);
   const fallback = await browser.newPage({ reducedMotion: 'reduce' });

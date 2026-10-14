@@ -4,6 +4,7 @@ import { projects, sampleModel, phaseAt } from './model.js';
 import { createWorkspace } from './workspace.js';
 import { createAntigravity } from './Antigravity.js';
 import { createMaskedHeading } from './MaskedHeading.js';
+import { createDriftWall } from './DriftWall.js';
 
 const $ = id => document.getElementById(id);
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -11,7 +12,7 @@ const events = new AbortController();
 const listen = (element, name, fn) => element.addEventListener(name, fn, { signal: events.signal });
 const frame = $('visual-frame'), canvas = $('landing-canvas'), copies = [...document.querySelectorAll('[data-copy]')];
 const particlesCanvas = $('antigravity-canvas');
-let antigravity;
+let antigravity, driftWall;
 let scene, sceneFailed = false, raf, previous = 0, currentProject = 0;
 let workspaceOpen = false, returnFocus, savedScroll = 0, chapter = 0, height = innerHeight, dirty = true;
 let lastWidth = 0, lastHeight = 0, lastOffset = scrollY;
@@ -60,7 +61,25 @@ projectModels.forEach((model, index) => {
 });
 function setProject(index) {
   currentProject = index; scene?.setModel(projectModels[index]);
+  driftWall?.select(index);
   document.querySelectorAll('.work-item').forEach((item, i) => item.dataset.active = String(i === index)); dirty = true;
+}
+function prepareWall() {
+  if (driftWall) return;
+  const items = [];
+  projectModels.forEach((model, project) => {
+    const drawing = $('work-list').children[project].querySelector('svg').cloneNode(true);
+    drawing.setAttribute('fill', 'none'); drawing.setAttribute('stroke', '#555'); drawing.setAttribute('stroke-width', '.13');
+    items.push({ project, kind: 'drawing', title: `${model.name} / Sample plan`, image: `data:image/svg+xml,${encodeURIComponent(new XMLSerializer().serializeToString(drawing))}` });
+    if (scene) {
+      scene.setModel(model); scene.render({ progress: 1 });
+      items.push({ project, kind: 'model', title: `${model.name} / Demo model`, image: canvas.toDataURL('image/png') });
+    }
+  });
+  scene?.setModel(projectModels[currentProject]);
+  items.sort((a, b) => a.kind === b.kind ? a.project - b.project : a.kind === 'drawing' ? -1 : 1);
+  driftWall = createDriftWall($('drift-wall'), { items, onSelect: openWorkspace });
+  driftWall.select(currentProject);
 }
 function showFallback() {
   scene?.dispose(); scene = null; sceneFailed = true;
@@ -169,10 +188,13 @@ function layout() {
   $('landing-error').hidden = !sceneFailed || modelWeight <= 0;
   $('reference-fallback').style.opacity = String(heroWeight);
   $('visual-label').textContent = heroWeight >= .5 ? 'ARCHITECTURE / A NEW PERSPECTIVE' : chapter === 1 ? 'CONSTRUCTION PROCESS DEMO' : `DEMO MODEL / ${projects[currentProject].name.toUpperCase()}`;
-  const interactive = chapter === 2 && mix === 0 && !!scene;
+  const worksWeight = from === 2 ? 1 - mix : next === 2 ? mix : 0;
+  if (worksWeight >= .5) $('visual-label').textContent = 'SELECTED WORKS / SAMPLE PLANS & MODELS';
+  if (worksWeight > 0) prepareWall();
+  $('drift-wall').hidden = worksWeight <= 0; $('drift-wall').style.opacity = String(worksWeight);
+  const interactive = chapter === 2 && mix === 0 && !!scene && !driftWall;
   $('open-preview').hidden = !interactive;
   canvas.tabIndex = interactive ? 0 : -1; canvas.classList.toggle('is-interactive', interactive);
-  const worksWeight = from === 2 ? 1 - mix : next === 2 ? mix : 0;
   const works = $('work-list');
   if (chapter !== 2 && works.contains(document.activeElement)) {
     (width <= 800 ? $('menu-toggle') : document.querySelector('[data-chapter="2"]')).focus({ preventScroll: true });
@@ -196,7 +218,7 @@ function layout() {
   else if (scene?.returnPose) { scene.morphHome(from === 2 ? 0 : 1); scene.returnPose = null; }
   const local = offset / height;
   const growth = from === 1 ? Math.min(1, .03 + (local - 1) / .4) : next === 1 ? Math.max(.03, 1 - mix) : 1;
-  return { progress: motion.matches ? 1 : growth, active: interactive, orbit: !motion.matches && interactive && !scene?.interacted, visible: modelWeight > 0 };
+  return { progress: motion.matches ? 1 : growth, active: interactive, orbit: !motion.matches && interactive && !scene?.interacted, visible: modelWeight > 0 && worksWeight < 1 };
 }
 let renderState = { progress: 1, active: false };
 function animate(time) {
@@ -205,12 +227,13 @@ function animate(time) {
   if (!workspaceOpen) {
     antigravity?.render(delta, motion.matches);
     if (dirty) { renderState = layout(); dirty = false; }
+    driftWall?.render(delta);
     if (!document.hidden && renderState.visible) scene?.render({ ...renderState, delta });
   } else workspace.render(delta);
   raf = requestAnimationFrame(animate);
 }
 document.fonts.ready.then(() => { fitIntro(); dirty = true; });
 raf = requestAnimationFrame(animate);
-function dispose() { cancelAnimationFrame(raf); events.abort(); maskedHeadings.forEach(heading => heading.dispose()); antigravity?.dispose(); scene?.dispose(); workspace.dispose(); }
+function dispose() { cancelAnimationFrame(raf); events.abort(); driftWall?.dispose(); maskedHeadings.forEach(heading => heading.dispose()); antigravity?.dispose(); scene?.dispose(); workspace.dispose(); }
 if (import.meta.hot) import.meta.hot.dispose(dispose);
 listen(window, 'pagehide', e => { if (!e.persisted) dispose(); });

@@ -1,0 +1,22 @@
+.drift-wall {
+  position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; z-index: 2;
+  perspective: var(--dw-perspective); perspective-origin: 50% 50%; background: #F0F0F0;
+  -webkit-mask-image: radial-gradient(ellipse 78% 82% at 50% 46%, #000 var(--dw-edge), transparent 100%), linear-gradient(to top, #000 var(--dw-edge), transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: radial-gradient(ellipse 78% 82% at 50% 46%, #000 var(--dw-edge), transparent 100%), linear-gradient(to top, #000 var(--dw-edge), transparent 100%);
+  mask-composite: intersect;
+}
+.drift-wall__plane { position: absolute; top: 50%; left: 50%; display: flex; transform-style: preserve-3d; transform-origin: 50% 50%; will-change: transform; }
+.drift-wall__col { position: relative; width: calc(var(--dw-tile-w) + var(--dw-gap)); flex: none; transform-style: preserve-3d; }
+.drift-wall__track { display: flex; flex-direction: column; will-change: transform; transform-style: preserve-3d; }
+.drift-wall__tile { position: relative; display: block; width: 100%; height: calc(var(--dw-tile-h) + var(--dw-gap)); flex: none; transform-style: preserve-3d; cursor: pointer; }
+.drift-wall__inner { position: absolute; inset: calc(var(--dw-gap) / 2); display: block; border-radius: var(--dw-radius); overflow: hidden; background: #FAFAFA; opacity: var(--dw-dim); transform: translateZ(0); pointer-events: none; transition: transform .42s cubic-bezier(.22, 1, .36, 1), opacity .42s; }
+.drift-wall__tile img { width: 100%; height: 100%; object-fit: contain; display: block; filter: grayscale(var(--dw-gray)) saturate(.92); user-select: none; -webkit-user-drag: none; }
+.drift-wall__overlay { position: absolute; inset: 0; background: var(--dw-overlay); opacity: .2; pointer-events: none; transition: opacity .42s; }
+.drift-wall__caption { position: absolute; bottom: 6px; left: 6px; right: 6px; padding: 4px; font: 8px/1.5 var(--mono); color: #333; background: #FAFAFAE8; }
+.drift-wall__tile.is-active .drift-wall__inner { opacity: 1; transform: translateZ(var(--dw-lift)); }
+.drift-wall__tile.is-active .drift-wall__overlay { opacity: 0; }
+.drift-wall__tile.is-selected .drift-wall__inner { outline: 1px solid #C45C3D80; outline-offset: -1px; }
+.drift-wall--reduced .drift-wall__plane, .drift-wall--reduced .drift-wall__track { will-change: auto; transform-style: flat; }
+.drift-wall--reduced .drift-wall__inner { transition: opacity .25s; }
+.drift-wall--reduced .drift-wall__tile.is-active .drift-wall__inner { transform: none; }
