@@ -2,6 +2,9 @@ dist
 .mcp.json
 node_modules
 /cubicasa5k/
+backend/data/
+*.pth
+*.pkl
 .env
 .env.*
 *.env

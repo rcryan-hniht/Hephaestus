@@ -14,6 +14,7 @@ class Settings:
     api_key: str | None = None
     base_url: str = "https://openrouter.ai/api/v1"
     model: str = "qwen/qwen2.5-vl-72b-instruct"
+    inference_engine: str = "cubicasa"
     max_upload_bytes: int = 10 * 1024 * 1024
     max_response_bytes: int = 2 * 1024 * 1024
     max_image_pixels: int = 20_000_000
@@ -44,6 +45,7 @@ class Settings:
             data_dir=Path(os.environ.get("HEPHAESTUS_DATA_DIR", str(cls.data_dir))),
             api_key=os.environ.get("OPENROUTER_API_KEY"),
             base_url=base,
+            inference_engine=os.environ.get("HEPHAESTUS_INFERENCE_ENGINE", "cubicasa"),
             cors_origins=tuple(
                 filter(
                     None,

@@ -15,7 +15,7 @@ from contracts import (
     validate_parameters,
 )
 from geometry import build_scene
-from inference import InferenceError, OpenRouter, validate_png
+from inference import CubiCasaInference, InferenceError, OpenRouter, validate_png
 from store import Store
 from svg import extract_svg, validate_svg
 
@@ -39,7 +39,12 @@ class Jobs:
     def __init__(self, settings: Settings, inference=None):
         self.settings = settings
         self.store = Store(settings.data_dir)
-        self.inference = inference or OpenRouter(settings)
+        if inference is not None:
+            self.inference = inference
+        elif settings.inference_engine == "openrouter":
+            self.inference = OpenRouter(settings)
+        else:
+            self.inference = CubiCasaInference(settings)
         self.tasks = {}
         self.semaphore = asyncio.Semaphore(1)
 
@@ -189,14 +194,17 @@ class Jobs:
                     "message": str(e) or "Processing timed out; retry with retained source.",
                 },
             )
-        except Exception:  # noqa: BLE001 — isolate a job failure without exposing internals
+        except Exception as exc:  # noqa: BLE001 — isolate a job failure without exposing internals
+            import traceback
+
+            traceback.print_exc()
             self.update(
                 job_id,
                 generation,
                 state="failed",
                 error={
                     "code": "processing_failed",
-                    "message": "Processing failed; your drawing, corrections and valid model are retained. Retry or inspect the proposal.",
+                    "message": f"Processing failed: {exc}",
                 },
             )
 

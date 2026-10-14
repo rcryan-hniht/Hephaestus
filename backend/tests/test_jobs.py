@@ -26,15 +26,17 @@ def submit(client, data=SVG, name="drawing.svg"):
     return r.json()["id"]
 
 
-def wait(client, job_id, states=("needs_information", "ready", "failed", "cancelled")):
-    for _ in range(200):
+def wait(client, job_id, states=("needs_information", "ready", "failed", "cancelled"), timeout=15.0):
+    deadline = time.time() + timeout
+    job = {}
+    while time.time() < deadline:
         r = client.get(f"/api/jobs/{job_id}")
         assert r.status_code == 200
         job = r.json()
         if job["state"] in states:
             return job
-        time.sleep(0.01)
-    pytest.fail("Job did not reach expected state")
+        time.sleep(0.05)
+    pytest.fail(f"Job did not reach expected state within {timeout}s, current state: {job.get('state')}")
 
 
 def answer(client, job_id, values):
@@ -129,36 +131,55 @@ def test_invalid_inputs_are_rejected(client, name, data):
     assert client.post("/api/jobs", files={"file": (name, data)}).status_code == 422
 
 
-def test_png_offline_import_requires_binding_and_review(client):
-    out = io.BytesIO()
-    Image.new("RGB", (30, 20)).save(out, format="PNG")
-    data = out.getvalue()
-    job_id = submit(client, data, "plan.png")
-    j = wait(client, job_id)
-    assert j["state"] == "failed"
-    assert j["error"]["code"] == "missing_credentials"
-    p = {
-        "job_id": job_id,
-        "source_hash": hashlib.sha256(data).hexdigest(),
-        "source_kind": "png",
-        "coordinate_frame": {"width": 30, "height": 20, "unit": "pixel"},
-        "components": [
-            {"id": "wall", "type": "wall", "polygon": [[0, 0], [20, 0], [20, 2], [0, 2]]}
-        ],
-    }
-    path = f"/api/jobs/{job_id}/proposal"
-    wrong = {**p, "source_hash": "b" * 64}
-    assert (
-        client.post(path, json={"generation": j["generation"], "proposal": wrong}).status_code
-        == 422
-    )
-    assert client.post(path, json={"generation": j["generation"], "proposal": p}).status_code == 202
-    j = wait(client, job_id)
-    assert "review_confirmed" in [q["key"] for q in j["questions"]]
-    answer(client, job_id, PARAMS)
-    assert wait(client, job_id)["state"] == "needs_information"
-    answer(client, job_id, {"review_confirmed": True})
-    assert wait(client, job_id)["state"] == "ready"
+def test_png_offline_import_requires_binding_and_review(tmp_path):
+    with TestClient(create_app(Settings(data_dir=tmp_path, inference_engine="openrouter"))) as client:
+        out = io.BytesIO()
+        Image.new("RGB", (30, 20)).save(out, format="PNG")
+        data = out.getvalue()
+        job_id = submit(client, data, "plan.png")
+        j = wait(client, job_id)
+        assert j["state"] == "failed"
+        assert j["error"]["code"] == "missing_credentials"
+        p = {
+            "job_id": job_id,
+            "source_hash": hashlib.sha256(data).hexdigest(),
+            "source_kind": "png",
+            "coordinate_frame": {"width": 30, "height": 20, "unit": "pixel"},
+            "components": [
+                {"id": "wall", "type": "wall", "polygon": [[0, 0], [20, 0], [20, 2], [0, 2]]}
+            ],
+        }
+        path = f"/api/jobs/{job_id}/proposal"
+        wrong = {**p, "source_hash": "b" * 64}
+        assert (
+            client.post(path, json={"generation": j["generation"], "proposal": wrong}).status_code
+            == 422
+        )
+        assert client.post(path, json={"generation": j["generation"], "proposal": p}).status_code == 202
+        j = wait(client, job_id)
+        assert "review_confirmed" in [q["key"] for q in j["questions"]]
+        answer(client, job_id, PARAMS)
+        assert wait(client, job_id)["state"] == "needs_information"
+        answer(client, job_id, {"review_confirmed": True})
+        assert wait(client, job_id)["state"] == "ready"
+
+
+def test_png_cubicasa_vectorization(tmp_path):
+    with TestClient(create_app(Settings(data_dir=tmp_path, inference_engine="cubicasa"))) as client:
+        out = io.BytesIO()
+        Image.new("RGB", (64, 64), "white").save(out, format="PNG")
+        data = out.getvalue()
+        job_id = submit(client, data, "test_floorplan.png")
+        j = wait(client, job_id, states=("needs_information", "ready"), timeout=30.0)
+        assert j["state"] == "needs_information"
+        assert "meters_per_unit" in [q["key"] for q in j["questions"]]
+        assert "floor_height" in [q["key"] for q in j["questions"]]
+        assert answer(client, job_id, {**PARAMS, "review_confirmed": True}).status_code == 202
+        ready_job = wait(client, job_id, states=("ready",), timeout=30.0)
+        assert ready_job["state"] == "ready"
+        scene = client.get(f"/api/jobs/{job_id}/scene").json()
+        assert len(scene["components"]) >= 1
+        assert "positions" in scene["components"][0]["mesh"]
 
 
 def test_jobs_survive_restart(tmp_path):

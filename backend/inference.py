@@ -1,5 +1,4 @@
-"""Bounded OpenRouter image inference; exact checkpoint only, no silent fallback."""
-
+import asyncio
 import base64
 import io
 import json
@@ -275,3 +274,39 @@ class OpenRouter:
             "AI output failed schema/source validation. Inspect attempts or import a corrected source-bound proposal.",
             attempts,
         )
+
+
+class CubiCasaInference:
+    """In-process CubiCasa5k PyTorch neural network vectorization."""
+
+    def __init__(self, settings: Settings, device: str = "cpu"):
+        self.settings = settings
+        self.device = device
+
+    async def extract(self, data: bytes, job_id: str, source_hash: str) -> ExtractionResult:
+        from vectorizer import vectorize_floorplan
+
+        start = time.monotonic()
+        proposal = await asyncio.to_thread(
+            vectorize_floorplan,
+            data,
+            job_id,
+            source_hash,
+            max_side=min(self.settings.max_image_side, 512),
+            threshold=0.4,
+            device=self.device,
+        )
+        latency = time.monotonic() - start
+        attempt = {
+            "attempt": 1,
+            "engine": "cubicasa5k-pytorch",
+            "requested_model": "CubiCasa5k-Hourglass",
+            "prompt_version": PROMPT_VERSION,
+            "schema_version": "hephaestus.scene.v1",
+            "image_resolution": [proposal.coordinate_frame.width, proposal.coordinate_frame.height],
+            "preprocessing": proposal.coordinate_frame.model_dump(mode="json"),
+            "latency_seconds": latency,
+            "valid": True,
+        }
+        return ExtractionResult(proposal, [attempt])
+

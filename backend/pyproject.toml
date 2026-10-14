@@ -12,7 +12,13 @@ dependencies = [
     "python-dotenv>=1.1",
     "python-multipart>=0.0.20",
     "shapely>=2.1",
+    "torch>=2.0",
+    "torchvision>=0.15",
+    "opencv-python-headless>=4.8",
+    "scipy>=1.10",
+    "gdown>=5.0",
     "ruff>=0.17.0",
+    "scikit-image>=0.20",
 ]
 
 [dependency-groups]
