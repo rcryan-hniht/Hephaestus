@@ -41,9 +41,11 @@ def valid_response():
 
 
 def test_missing_exact_model_never_calls_inference():
+    assert Settings().model == "qwen/qwen2.5-vl-72b-instruct"
+
     def handler(request):
         assert request.url.path == "/api/v1/models"
-        return httpx.Response(200, json={"data": [{"id": "qwen/qwen2.5-vl-72b-instruct"}]})
+        return httpx.Response(200, json={"data": [{"id": "qwen/qwen-2.5-vl-7b-instruct"}]})
 
     with pytest.raises(InferenceError) as err:
         run(handler)
@@ -94,7 +96,7 @@ def test_malformed_proposal_retries_are_retained_with_actual_provenance():
             )
         count += 1
         payload = json.loads(request.content)
-        assert payload["model"] == "qwen/qwen-2.5-vl-7b-instruct"
+        assert payload["model"] == Settings().model
         assert "test-secret" not in request.content.decode()
         return httpx.Response(
             200,

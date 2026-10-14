@@ -13,7 +13,7 @@ class Settings:
     data_dir: Path = Path(__file__).resolve().parent / "data"
     api_key: str | None = None
     base_url: str = "https://openrouter.ai/api/v1"
-    model: str = "qwen/qwen-2.5-vl-7b-instruct"
+    model: str = "qwen/qwen2.5-vl-72b-instruct"
     max_upload_bytes: int = 10 * 1024 * 1024
     max_response_bytes: int = 2 * 1024 * 1024
     max_image_pixels: int = 20_000_000

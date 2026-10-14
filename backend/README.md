@@ -17,8 +17,28 @@ uv run --directory backend --frozen --no-dev uvicorn main:app --host 127.0.0.1 -
 
 `http://localhost:8000/docs` provides the interactive API. `/health` and
 `/api/projects` retain their previous contracts. `./start.sh` runs the existing
-frontend and API together. The current frontend DXF workflow does not call
-these new PNG/SVG endpoints yet; use the API until that integration is added.
+frontend and API together. The workspace submits PNG/SVG jobs, shows actual
+processing stages, asks for missing parameters, and loads validated component
+meshes automatically. DXF reconstruction remains local; JPG is preview-only.
+The original drawing remains available alongside extracted outlines. Footprint
+and component edits, undo/redo, cancellation and retry use job generations;
+failed replacements retain the displayed model. Export GLB from the viewport or
+scene JSON with source evidence and confirmed parameter provenance.
+
+Vite dev and preview proxy `/api/` to `127.0.0.1:8000`; set `BACKEND_PORT` when
+running a different local API port. For Vercel/Render, set the public frontend
+build variable `VITE_API_BASE_URL` to the backend origin and add the frontend
+origin to backend `HEPHAESTUS_CORS_ORIGINS`. Keep the API key backend-only.
+
+Browser integration checks use private temporary jobs and no live AI requests.
+Start `backend/.venv/bin/python backend/tests/browser_server.py` from the root,
+then `BACKEND_PORT=8765 bun run dev --host 127.0.0.1 --port 4174` in `frontend/`.
+Run `node tests/workspace.browser.mjs` in `frontend/` for SVG reconstruction,
+correction recovery, history, export, failed PNG retention and mobile layout.
+For PNG, start the test server with `--mock-ai --port 8766`, use another Vite
+server with `BACKEND_PORT=8766` on port 4175, then run `node tests/png.browser.mjs`.
+The mock exercises OpenRouter request/response parsing without contacting a
+provider. `node tests/antigravity.browser.mjs` checks the decorative effect.
 
 The owner-readable repository `.env` supplies `OPENROUTER_API_KEY` and
 `OPENROUTER_BASE_URL=https://openrouter.ai/api/v1`. Keys are loaded only by the
@@ -27,11 +47,13 @@ artifact directory; default is `backend/data/`. `HEPHAESTUS_CORS_ORIGINS` is a
 comma-separated list of explicitly allowed browser origins, with localhost
 defaults. Run exactly one API process/worker per data directory.
 
-The exact requested checkpoint remains `qwen/qwen-2.5-vl-7b-instruct`
-(`Qwen/Qwen2.5-VL-7B-Instruct`). It was absent from the public catalog checked
-on 2026-10-13. The backend rechecks image support and exact availability before
-each PNG request. Unavailable models yield `model_unavailable`; no alternate
-checkpoint is substituted. No real hosted inference was run during development.
+The configured checkpoint is `qwen/qwen2.5-vl-72b-instruct`, explicitly selected
+by the owner on 2026-10-14 after the original 7B checkpoint was unavailable.
+The 72B identifier was present with image support in the public catalog checked
+that day. The backend still rechecks exact availability before every PNG request.
+Unavailable models yield `model_unavailable`; no fallback is substituted.
+Provenance records the requested and actual model for each attempt. No real
+hosted inference was run during development; browser PNG checks use fixtures.
 
 ## Docker
 
