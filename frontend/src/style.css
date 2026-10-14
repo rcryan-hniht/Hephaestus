@@ -28,13 +28,6 @@ a { color: inherit; text-decoration: none; }
 .button--primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 .button--dark { background: var(--headline); color: #fff; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; letter-spacing: -.8px; background: none; border: 0; padding: 0; }
-.nav { position: fixed; z-index: 20; top: 24px; left: 50%; transform: translateX(-50%); width: calc(100% - 112px); max-width: 1600px; min-height: 62px; display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 8px 9px 8px 24px; background: #fff; border: 1px solid var(--line); border-radius: 99px; box-shadow: 0 4px 22px #00000005; }
-.nav-links { display: flex; align-items: center; gap: 32px; }
-.nav-links a, .nav-links button { position: relative; padding: 10px 0; background: none; border: 0; font-size: 12px; color: var(--muted); }
-.nav-links a::after, .nav-links button::after { content: ''; position: absolute; left: 0; right: 0; bottom: 4px; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .35s; }
-.nav-links a:hover::after, .nav-links button:hover::after { transform: scaleX(1); }
-.nav-upload { border-radius: 40px; }
-.menu-toggle { display: none; }
 .story { position: relative; height: 400svh; }
 .chapter-anchor { position: absolute; pointer-events: none; }
 #hero { top: 0; } #manifesto { top: 100svh; } #works { top: 200svh; }
@@ -53,21 +46,31 @@ a { color: inherit; text-decoration: none; }
 .process { display: flex; flex-wrap: wrap; gap: 10px 18px; list-style: none; padding: 0; margin: 28px 0 0; counter-reset: steps; }
 .process li { font-size: 10px; color: var(--muted); counter-increment: steps; }
 .process li::before { content: '0' counter(steps); margin-right: 6px; font: 9px var(--mono); color: var(--accent); }
-/* Five words on one row contract into one position, then settle as a marker. */
-.morph-word { position: relative; height: 28px; margin-bottom: 22px; overflow: hidden; color: var(--text); }
-.morph-word span { position: absolute; left: 0; top: 0; font-size: clamp(28px, 3.3vw, 56px); line-height: 1; font-weight: 600; letter-spacing: .04em; transform-origin: left top; animation: word-converge 1.7s cubic-bezier(.22,1,.36,1) both; }
-.morph-word span:not(:first-child) { animation-name: word-merge; }
-@keyframes word-converge {
-  0%, 12% { transform: translateX(calc(var(--word) * var(--word-step, 60px))) scale(var(--start-scale, .2)) scaleX(1.35); letter-spacing: .18em; }
-  48% { transform: translateX(calc(var(--word) * var(--word-step, 60px) * .75)) scale(var(--start-scale, .2)); letter-spacing: .04em; }
-  76% { transform: translateX(0) scale(.48); }
-  100% { transform: translateX(0) scale(.32); }
+
+/* Prominent architectural brand title with SplitText support */
+.brand-title {
+  display: inline-block;
+  font-size: clamp(34px, 4.6vw, 72px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--headline);
+  margin-bottom: 24px;
+  text-transform: uppercase;
+  pointer-events: auto;
 }
-@keyframes word-merge {
-  0%, 12% { transform: translateX(calc(var(--word) * var(--word-step, 60px))) scale(var(--start-scale, .2)) scaleX(1.35); letter-spacing: .18em; opacity: .55; }
-  48% { transform: translateX(calc(var(--word) * var(--word-step, 60px) * .75)) scale(var(--start-scale, .2)); letter-spacing: .04em; opacity: .75; }
-  76% { transform: translateX(0) scale(.48); opacity: .4; }
-  100% { transform: translateX(0) scale(.32); opacity: 0; }
+.split-parent {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+.split-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+.split-char {
+  display: inline-block;
+  will-change: transform, opacity;
 }
 .visual-frame { position: absolute; left: 0; top: 0; width: 40vw; height: 65vh; overflow: hidden; border: 1px solid var(--line); border-radius: 2px; background: var(--canvas-bg); will-change: transform; isolation: isolate; }
 .visual-topline { position: absolute; left: 14px; top: 14px; right: 14px; z-index: 3; display: flex; justify-content: space-between; font: 9px var(--mono); color: #3e433a; pointer-events: none; }
@@ -178,6 +181,9 @@ canvas { display: block; width: 100%; height: 100%; }
 .panel small { font-size: 10px; color: var(--muted); line-height: 1.7; display: block; }
 .panel textarea { width: 100%; padding: 8px; margin-top: 7px; resize: vertical; font: 11px monospace; border: 1px solid var(--line); background: var(--panel-alt); }
 #api-questions { margin-top: 18px; }
+#floor-sources, #floor-alignment { margin-top: 18px; }
+.floor-offset { border-top: 1px solid var(--line); padding-top: 8px; }
+.floor-offset p { font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
 .question { border-top: 1px solid var(--line); padding: 8px 0; }
 .question .text-button { font-size: 11px; margin: 6px 10px 6px 0; }
 #drawing-message[data-error] { color: #9E3B25; }
@@ -254,26 +260,18 @@ canvas { display: block; width: 100%; height: 100%; }
 @media (max-width: 1100px) {
   .workspace-body { grid-template-columns: 220px minmax(0,1fr) 220px; }
   .panel { padding: 16px 12px; }
-  .nav { width: calc(100% - 64px); }
-  .nav-links { gap: 22px; }
   .work-item { grid-template-columns: 1fr 44px; }
   .work-item svg { display: none; }
   .hero-actions { gap: 16px; }
   .landing-action .button { gap: 12px; padding: 11px 15px; }
 }
 @media (max-width: 800px) {
-  .nav { width: calc(100% - 32px); top: 16px; padding-left: 17px; gap: 10px; min-height: 60px; }
   .brand { font-size: 17px; }.brand svg { width: 20px; }
-  .nav-upload { font-size: 10px; padding: 9px 12px; gap: 8px; }
-  .menu-toggle { display: block; margin-left: auto; min-height: 44px; border: 0; background: none; font-size: 11px; }
-  .nav-links { display: none; position: absolute; top: 70px; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 0; background: #fff; padding: 12px 22px; border: 1px solid var(--line); border-radius: 12px; }
-  .nav-links.is-open { display: flex; }
-  .nav-links a,.nav-links button { text-align: left; min-height: 44px; }
   .chapter-copy { width: 88vw; }
   .chapter-copy h1 { font-size: clamp(36px, 11vw, 60px); }
   .chapter-copy[data-copy="1"],.chapter-copy[data-copy="2"] { width: 88vw; }
   .chapter-copy[data-copy="1"] h2,.chapter-copy[data-copy="2"] h2 { font-size: clamp(32px, 8.8vw, 50px); }
-  .morph-word { height: 16px; margin-bottom: 10px; }
+  .brand-title { font-size: clamp(28px, 8vw, 48px); margin-bottom: 14px; }
   .chapter-description { margin-top: 12px; font-size: 11px; line-height: 1.65; }
   .eyebrow { font-size: 8px; margin-bottom: 10px; }
   .process { gap: 8px 12px; margin-top: 12px; }.process li { font-size: 9px; }
@@ -307,10 +305,9 @@ canvas { display: block; width: 100%; height: 100%; }
   .model-bottom>span { font-size: 10px; max-width: 150px; }.model-label { font-size: 9px; }
 }
 @media (max-height: 650px) {
-  .nav { top: 12px; min-height: 52px; padding-top: 4px; padding-bottom: 4px; }
   .chapter-copy h1 { font-size: 30px; }
   .chapter-copy[data-copy="1"] h2,.chapter-copy[data-copy="2"] h2 { font-size: 28px; }
-  .morph-word { height: 16px; margin-bottom: 12px; }.morph-word span { font-size: 34px; }
+  .brand-title { font-size: 28px; margin-bottom: 10px; }
   .chapter-description { margin-top: 12px; font-size: 11px; line-height: 1.5; }
   .eyebrow { font-size: 8px; margin-bottom: 8px; }.process { margin-top: 12px; }
   .landing-action { gap: 7px; }.landing-action .button,.demo-link { min-height: 38px; font-size: 10px; }
@@ -321,15 +318,7 @@ canvas { display: block; width: 100%; height: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-  .morph-word span { transform: scale(.32); }.morph-word span:not(:first-child) { display: none; }
   .chapter-copy,.visual-frame,.landing-action,.work-list { will-change: auto; }
 }
 
 .landing-action .slogan { position: absolute; top: 100%; left: 0; margin: 16px 0 0; }
-
-@media (max-width: 360px) {
-  .nav { padding-left: 12px; gap: 6px; }
-  .nav .brand { font-size: 14px; gap: 6px; }.nav .brand svg { width: 16px; }
-  .menu-toggle { padding: 6px 4px; font-size: 10px; min-width: 32px; }
-  .nav .nav-upload { font-size: 9px; gap: 5px; padding: 9px 8px; min-height: 44px; }
-}

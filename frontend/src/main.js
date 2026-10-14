@@ -6,19 +6,33 @@ import { createAntigravity } from './Antigravity.js';
 import { createMaskedHeading } from './MaskedHeading.js';
 import { createDriftWall } from './DriftWall.js';
 import { cubicasaSamples } from './cubicasa-samples.js';
+import { createSplitText } from './SplitText.js';
 
 const $ = id => document.getElementById(id);
+const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const events = new AbortController();
-const listen = (element, name, fn) => element.addEventListener(name, fn, { signal: events.signal });
+const listen = (element, name, fn, opts = {}) => element.addEventListener(name, fn, { signal: events.signal, ...opts });
 const frame = $('visual-frame'), canvas = $('landing-canvas'), copies = [...document.querySelectorAll('[data-copy]')];
 const particlesCanvas = $('antigravity-canvas');
-let antigravity, driftWall;
+let antigravity, driftWall, brandSplit;
 let scene, sceneFailed = false, raf, previous = 0, currentProject = 0;
 let workspaceOpen = false, returnFocus, savedScroll = 0, chapter = 0, height = innerHeight, dirty = true;
 let lastWidth = 0, lastHeight = 0, lastOffset = scrollY;
+let phase2Progress = 0, wheelLocked = false;
 const photo = $('hero-photograph');
 const maskedHeadings = [...document.querySelectorAll('h1 > span')].map(root => createMaskedHeading(root, { src: photo.getAttribute('src'), brightness: .65 }));
+
+if ($('hero-brand')) {
+  brandSplit = createSplitText($('hero-brand'), {
+    delay: 45,
+    duration: 1.15,
+    ease: 'cubic-bezier(0.16, 1, 0.3, 1)',
+    from: { opacity: 0, y: 40 },
+    to: { opacity: 1, y: 0 },
+  });
+}
+
 if ((navigator.hardwareConcurrency || 8) > 4 && (navigator.deviceMemory || 8) > 4) {
   try { antigravity = createAntigravity(particlesCanvas); } catch { particlesCanvas.hidden = true; }
 } else particlesCanvas.hidden = true;
@@ -35,16 +49,11 @@ function openWorkspace(sample) {
 document.querySelectorAll('[data-upload]').forEach(b => listen(b, 'click', () => { openWorkspace(); $('file-input').click(); }));
 document.querySelectorAll('[data-workspace]').forEach(b => listen(b, 'click', () => openWorkspace()));
 function goChapter(index) {
-  $('nav-links').classList.remove('is-open'); $('menu-toggle').setAttribute('aria-expanded', 'false');
-  window.scrollTo({ top: index * height, behavior: 'instant' }); dirty = true;
+  const target = index >= 3 ? 0 : index;
+  window.scrollTo({ top: target * height, behavior: 'smooth' }); dirty = true;
 }
-document.querySelectorAll('[data-chapter]').forEach(a => listen(a, 'click', e => { e.preventDefault(); goChapter(Number(a.dataset.chapter)); }));
-listen($('next-chapter'), 'click', () => goChapter(chapter === 2 ? 3 : chapter + 1));
+listen($('next-chapter'), 'click', () => goChapter(chapter === 2 ? 0 : chapter + 1));
 listen($('explore-demo'), 'click', () => openWorkspace(0));
-listen($('menu-toggle'), 'click', () => {
-  const open = !$('nav-links').classList.contains('is-open'); $('nav-links').classList.toggle('is-open', open); $('menu-toggle').setAttribute('aria-expanded', String(open));
-});
-listen($('nav-links'), 'keydown', e => { if (e.key === 'Escape') { $('nav-links').classList.remove('is-open'); $('menu-toggle').setAttribute('aria-expanded', 'false'); $('menu-toggle').focus(); } });
 const projectModels = projects.map((_, i) => sampleModel(i));
 cubicasaSamples.forEach((sample, index) => {
   const item = document.createElement('div'); item.className = 'work-item'; item.dataset.active = String(index === 0);
@@ -84,17 +93,25 @@ listen(photo, 'error', () => { photo.hidden = true; $('reference-fallback').hidd
 if (photo.complete && !photo.naturalWidth) { photo.hidden = true; $('reference-fallback').hidden = false; }
 listen($('open-preview'), 'click', () => openWorkspace(currentProject));
 listen(window, 'scroll', () => { dirty = true; });
-function fitIntro() {
-  const marker = document.querySelector('.morph-word'), word = marker.firstElementChild;
-  const fontSize = parseFloat(getComputedStyle(word).fontSize);
-  const safeWidth = word.offsetWidth + fontSize * .18 * word.textContent.length;
-  const scale = Math.min(.28, marker.clientWidth / (safeWidth * 1.35 * 5.25));
-  marker.style.setProperty('--start-scale', String(scale));
-  marker.style.setProperty('--word-step', `${(marker.clientWidth - safeWidth * scale * 1.35) / 4}px`);
-}
-fitIntro();
+listen(window, 'wheel', e => {
+  if (workspaceOpen) return;
+  if (Math.abs(e.deltaY) < 25) return;
+  if (wheelLocked) return;
+  const dir = e.deltaY > 0 ? 1 : -1;
+  const target = clamp(chapter + dir, 0, 2);
+  if (target !== chapter) {
+    e.preventDefault();
+    wheelLocked = true;
+    window.scrollTo({ top: target * height, behavior: 'smooth' });
+    setTimeout(() => { wheelLocked = false; }, 650);
+  } else if (chapter === 2 && dir === 1) {
+    e.preventDefault();
+    wheelLocked = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => { wheelLocked = false; }, 650);
+  }
+}, { passive: false });
 listen(window, 'resize', () => {
-  fitIntro();
   const progress = scrollY / height; height = innerHeight;
   $('story').style.height = `${height * 4}px`; document.querySelector('.story-sticky').style.height = `${height}px`;
   if (!workspaceOpen) window.scrollTo(0, progress * height);
@@ -116,8 +133,8 @@ function layout() {
   if (Math.abs(offset - lastOffset) > .5) document.body.dataset.scrollDirection = offset > lastOffset ? 'forward' : 'backward';
   lastOffset = offset;
   const margin = width * (mobile ? .06 : .075);
-  const navBottom = document.querySelector('.nav').getBoundingClientRect().bottom;
-  const top = navBottom + (mobile || compact ? 20 : 38), bottom = height - (compact ? 42 : mobile ? 48 : 72);
+  const top = mobile ? 32 : (compact ? 24 : Math.max(48, height * 0.075));
+  const bottom = height - (compact ? 42 : mobile ? 48 : 72);
   const action = $('landing-action');
   const slogan = action.querySelector('.slogan');
   slogan.style.visibility = chapter === 0 ? 'visible' : 'hidden';
@@ -185,7 +202,7 @@ function layout() {
   canvas.tabIndex = interactive ? 0 : -1; canvas.classList.toggle('is-interactive', interactive);
   const works = $('work-list');
   if (chapter !== 2 && works.contains(document.activeElement)) {
-    (width <= 800 ? $('menu-toggle') : document.querySelector('[data-chapter="2"]')).focus({ preventScroll: true });
+    $('next-chapter')?.focus({ preventScroll: true });
   }
   works.style.visibility = worksWeight > 0 ? 'visible' : 'hidden';
   works.style.opacity = String(worksWeight);
@@ -204,8 +221,7 @@ function layout() {
   annotation.style.opacity = String(heroWeight); annotation.style.top = `${Math.max(top, heroCopyY - 42)}px`;
   if (from === 2 && mix > 0) scene?.morphHome(mix);
   else if (scene?.returnPose) { scene.morphHome(from === 2 ? 0 : 1); scene.returnPose = null; }
-  const local = offset / height;
-  const growth = from === 1 ? Math.min(1, .03 + (local - 1) / .4) : next === 1 ? Math.max(.03, 1 - mix) : 1;
+  const growth = from === 1 ? phase2Progress : next === 1 ? Math.max(0, 1 - mix) : (from === 0 ? 0 : 1);
   return { progress: motion.matches ? 1 : growth, active: interactive, orbit: !motion.matches && interactive && !scene?.interacted, visible: modelWeight > 0 && worksWeight < 1 };
 }
 let renderState = { progress: 1, active: false };
@@ -213,6 +229,22 @@ function animate(time) {
   const delta = Math.min((time - (previous || time)) / 1000, .05); previous = time;
   maskedHeadings.forEach(heading => heading.render(delta));
   if (!workspaceOpen) {
+    if (chapter === 1) {
+      if (phase2Progress < 1) {
+        phase2Progress = Math.min(1, phase2Progress + delta * 0.65);
+        dirty = true;
+      }
+    } else if (chapter === 0) {
+      if (phase2Progress > 0) {
+        phase2Progress = 0;
+        dirty = true;
+      }
+    } else {
+      if (phase2Progress < 1) {
+        phase2Progress = 1;
+        dirty = true;
+      }
+    }
     antigravity?.render(delta, motion.matches);
     if (dirty) { renderState = layout(); dirty = false; }
     driftWall?.render(delta);
@@ -220,8 +252,16 @@ function animate(time) {
   } else workspace.render(delta);
   raf = requestAnimationFrame(animate);
 }
-document.fonts.ready.then(() => { fitIntro(); dirty = true; });
 raf = requestAnimationFrame(animate);
-function dispose() { cancelAnimationFrame(raf); events.abort(); driftWall?.dispose(); maskedHeadings.forEach(heading => heading.dispose()); antigravity?.dispose(); scene?.dispose(); workspace.dispose(); }
+function dispose() {
+  cancelAnimationFrame(raf);
+  events.abort();
+  brandSplit?.revert();
+  driftWall?.dispose();
+  maskedHeadings.forEach(heading => heading.dispose());
+  antigravity?.dispose();
+  scene?.dispose();
+  workspace.dispose();
+}
 if (import.meta.hot) import.meta.hot.dispose(dispose);
 listen(window, 'pagehide', e => { if (!e.persisted) dispose(); });

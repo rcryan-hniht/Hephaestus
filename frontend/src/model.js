@@ -38,7 +38,7 @@ export function phaseAt(offset, step, reduced = false) {
   const p = Math.max(0, offset / Math.max(1, step)) % 3;
   const chapter = Math.floor(p), fraction = p - chapter;
   if (reduced) return { chapter, next: (chapter + 1) % 3, mix: 0 };
-  const t = Math.min(1, Math.max(0, (fraction - .4) / .6));
+  const t = Math.min(1, Math.max(0, (fraction - .2) / .8));
   return { chapter, next: (chapter + 1) % 3, mix: t * t * (3 - 2 * t) };
 }
 

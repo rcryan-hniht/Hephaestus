@@ -15,17 +15,11 @@
   <a class="skip-link" href="#landing-action">Skip to main action</a>
   <div id="landing">
     <canvas id="antigravity-canvas" class="antigravity" aria-hidden="true"></canvas>
-    <nav class="nav" aria-label="Main navigation">
-      <a class="brand" href="#hero" data-chapter="0" aria-label="Hephaestus, home"><svg viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><path d="M5 27V5h6v8h10V5h6v22h-6v-8H11v8z" fill="currentColor"/></svg><span>hephaestus.</span></a>
-      <button id="menu-toggle" class="menu-toggle" aria-expanded="false" aria-controls="nav-links">Menu</button>
-      <div id="nav-links" class="nav-links"><a href="#manifesto" data-chapter="1">Idea</a><a href="#works" data-chapter="2">Works</a><button data-workspace>How it works</button></div>
-      <button class="button button--white button--primary nav-upload" data-upload>Upload drawing <span aria-hidden="true">↗</span></button>
-    </nav>
     <main id="story" class="story" aria-label="Explore Hephaestus">
       <div class="chapter-anchor" id="hero"></div><div class="chapter-anchor" id="manifesto"></div><div class="chapter-anchor" id="works"></div>
       <div class="story-sticky">
         <div class="chapter-copy" data-copy="0">
-          <div class="morph-word" aria-hidden="true"><span style="--word:0">HEPHAESTUS</span><span style="--word:1">HEPHAESTUS</span><span style="--word:2">HEPHAESTUS</span><span style="--word:3">HEPHAESTUS</span><span style="--word:4">HEPHAESTUS</span></div>
+          <div class="brand-title" id="hero-brand" aria-label="Hephaestus">HEPHAESTUS</div>
           <h1><span>From drawing.</span><span>To space.</span></h1>
           <p class="chapter-description">Your floor plan. A new dimension.<br />Explore the space before it is built.</p>
         </div>
@@ -48,13 +42,16 @@
     <header class="workspace-top"><button id="back-home" class="brand" aria-label="Back to landing">h.<span>hephaestus</span></button><div class="project-heading"><strong id="project-name">New drawing</strong><span id="processing-status" role="status" aria-live="polite">Ready for drawing</span></div><div class="top-actions"><button class="button" data-upload>Upload drawing</button><button id="export-model" class="button button--white" disabled>Export GLB ↗</button></div></header>
     <div class="workspace-body">
       <aside id="drawing-panel" class="panel drawing-panel" aria-label="Source drawing"><div class="panel-heading"><h2>Source drawing</h2><button class="drawer-close" data-close-drawer aria-label="Close drawing panel">×</button></div>
-        <div id="drop-zone" class="drop-zone"><span aria-hidden="true">＋</span><p>Drag drawing here</p><button class="button" data-upload>Select file</button><small>PNG · SVG · ASCII DXF · max 10 MB</small></div>
+        <div id="drop-zone" class="drop-zone"><span aria-hidden="true">＋</span><p>Drag drawings here</p><button class="button" data-upload>Select files</button><small>PNG · SVG · ASCII DXF · max 10 MB each</small></div>
         <p class="panel-note">PNG uses hosted AI; semantic SVG uses vector evidence. Confirm missing dimensions before building. JPG is preview-only; DXF supports closed structural contours up to 5 MB.</p>
+        <p class="panel-note">For a building, select F1.png + F1.svg, F2.png + F2.svg together. SVG is used when paired; PNG stays available for comparison. Up to 8 consecutive floors, 16 files and 40 MB total.</p>
         <p id="file-name" class="file-name">No drawing selected</p>
+        <div id="floor-sources" hidden><label>Source floor<select id="source-floor"></select></label><p id="source-files" class="panel-note"></p><label>Drawing to compare<select id="source-drawing"></select></label><small>PNG and SVG coordinates are independent. Confirm each floor's scale and alignment.</small></div>
         <div id="drawing-preview" class="drawing-preview" tabindex="0" aria-label="2D drawing. Use buttons below to zoom."><svg id="plan-svg" role="img" aria-label="Source floor plan" hidden></svg><img id="drawing-image" alt="Uploaded drawing" hidden /><span id="preview-empty">Floor plan will appear here.</span></div>
         <div class="preview-tools"><button id="plan-out" aria-label="Zoom out">−</button><button id="plan-fit">Fit</button><button id="plan-in" aria-label="Zoom in">＋</button></div>
         <button id="toggle-source" class="text-button" hidden>View extracted outlines</button>
         <form id="api-questions" hidden aria-label="Missing drawing information"></form>
+        <form id="floor-alignment" hidden aria-label="Floor alignment"><h3>Floor alignment</h3><p class="panel-note">Stack listed floors bottom to top using their confirmed heights. Offsets are measured from each drawing's source origin; missing floors are not inferred.</p><div id="floor-offsets"></div><button class="button button--white" type="submit" disabled>Confirm alignment and assemble</button></form>
         <form id="proposal-edit" hidden><label>Candidate footprint<select id="candidate-select"></select></label><label>Source coordinates [x, y]<textarea id="candidate-polygon" rows="4" required aria-describedby="candidate-note"></textarea></label><small id="candidate-note">Candidate geometry needs human review. Edit the polygon using the original image coordinates; AI confidence is not a measured probability.</small><button class="button" type="submit">Save footprint correction</button></form>
         <form id="drawing-settings"><label>Drawing unit<select id="drawing-unit"><option value="">Needs confirmation</option><option value="mm">Millimeters (mm)</option><option value="cm">Centimeters (cm)</option><option value="m">Meters (m)</option><option value="in">Inches (in)</option><option value="ft">Feet (ft)</option></select></label><label>Floor height (m)<input id="floor-height" type="number" min="0.1" max="100" step="0.1" value="3.2" required /></label><small id="settings-note">Height is an editable assumption. DXF currently supports single-level plans.</small><button id="continue-build" class="button button--white" type="submit" disabled>Confirm parameters</button></form>
         <div class="job-actions"><button id="cancel-job" class="button" hidden>Cancel processing</button><button id="retry-job" class="button" hidden>Retry</button></div>
@@ -81,7 +78,7 @@
       </aside>
     </div>
   </section>
-  <input id="file-input" class="sr-only" type="file" accept=".dxf,.svg,.png,.jpg,.jpeg" tabindex="-1" aria-label="Select drawing" />
+  <input id="file-input" class="sr-only" type="file" accept=".dxf,.svg,.png,.jpg,.jpeg" multiple tabindex="-1" aria-label="Select drawings" />
   <noscript><p class="noscript">Please enable JavaScript to explore 3D models and upload drawings. Contact studio@hephaestus.dev for support.</p></noscript>
   <script type="module" src="/main.js"></script>
 </body>

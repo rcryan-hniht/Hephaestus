@@ -2,6 +2,151 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { backendGeometry } from './backend-model.js';
 
+function createBlueprintTexture(model, origin, span) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 2048; canvas.height = 2048;
+  const ctx = canvas.getContext('2d');
+  const size = Math.max(span * 2.2, 16);
+  const toCanvas = (wx, wz) => [1024 + (wx / (size / 2)) * 1024, 1024 + (wz / (size / 2)) * 1024];
+
+  // Warm drafting paper background
+  ctx.fillStyle = '#fafaf7';
+  ctx.fillRect(0, 0, 2048, 2048);
+
+  // Outer drafting border
+  ctx.strokeStyle = '#cfcfc4'; ctx.lineWidth = 3;
+  ctx.strokeRect(36, 36, 1976, 1976);
+  ctx.lineWidth = 1;
+  ctx.strokeRect(48, 48, 1952, 1952);
+
+  // Fine 1-meter architectural grid
+  ctx.strokeStyle = '#ecece5'; ctx.lineWidth = 1;
+  const gridCount = Math.floor(size / 2);
+  for (let i = -gridCount; i <= gridCount; i++) {
+    const [gx] = toCanvas(i, 0); const [, gy] = toCanvas(0, i);
+    if (gx > 55 && gx < 1993) { ctx.beginPath(); ctx.moveTo(gx, 55); ctx.lineTo(gx, 1993); ctx.stroke(); }
+    if (gy > 55 && gy < 1993) { ctx.beginPath(); ctx.moveTo(55, gy); ctx.lineTo(1993, gy); ctx.stroke(); }
+  }
+
+  // Major 5-meter structural grid
+  ctx.strokeStyle = '#deded4'; ctx.lineWidth = 1.5;
+  for (let i = -gridCount; i <= gridCount; i += 5) {
+    const [gx] = toCanvas(i, 0); const [, gy] = toCanvas(0, i);
+    if (gx > 55 && gx < 1993) { ctx.beginPath(); ctx.moveTo(gx, 55); ctx.lineTo(gx, 1993); ctx.stroke(); }
+    if (gy > 55 && gy < 1993) { ctx.beginPath(); ctx.moveTo(55, gy); ctx.lineTo(1993, gy); ctx.stroke(); }
+  }
+
+  // Draw 2D architectural components
+  const floorComponents = model.components.filter(c => (c.floor ?? 0) === 0);
+
+  // Slabs
+  floorComponents.filter(c => c.type === 'slab').forEach(c => {
+    const pts = c.polygon.map(([x, z]) => toCanvas(x - origin.x, z - origin.z));
+    ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
+    ctx.closePath(); ctx.fillStyle = '#f0f0ea'; ctx.fill();
+    ctx.strokeStyle = '#b8b8ae'; ctx.lineWidth = 1.5; ctx.stroke();
+  });
+
+  // Walls with architectural pochè
+  floorComponents.filter(c => c.type === 'wall').forEach(c => {
+    const pts = c.polygon.map(([x, z]) => toCanvas(x - origin.x, z - origin.z));
+    ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
+    ctx.closePath(); ctx.fillStyle = '#dfdfd6'; ctx.fill();
+    ctx.strokeStyle = '#3e413a'; ctx.lineWidth = 2.5; ctx.stroke();
+  });
+
+  // Columns
+  floorComponents.filter(c => c.type === 'column').forEach(c => {
+    const pts = c.polygon.map(([x, z]) => toCanvas(x - origin.x, z - origin.z));
+    ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
+    ctx.closePath(); ctx.fillStyle = '#282b26'; ctx.fill();
+    ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2; ctx.stroke();
+  });
+
+  // Windows
+  floorComponents.filter(c => c.type === 'window').forEach(c => {
+    const pts = c.polygon.map(([x, z]) => toCanvas(x - origin.x, z - origin.z));
+    ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
+    ctx.closePath(); ctx.fillStyle = '#e4ecea'; ctx.fill();
+    ctx.strokeStyle = '#60726e'; ctx.lineWidth = 1.5; ctx.stroke();
+  });
+
+  // Room annotations
+  ctx.font = 'bold 20px sans-serif'; ctx.fillStyle = '#3a3d36'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('CENTRAL COURTYARD', 1024, 1024);
+  ctx.font = '13px monospace'; ctx.fillStyle = '#7a7d75';
+  ctx.fillText('±0.000 FL · OPEN AIR', 1024, 1050);
+
+  ctx.font = 'bold 17px sans-serif'; ctx.fillStyle = '#3a3d36';
+  ctx.fillText('LIVING SPACE', 1024, 720);
+  ctx.font = '12px monospace'; ctx.fillStyle = '#7a7d75';
+  ctx.fillText('38.4 m²', 1024, 740);
+
+  ctx.font = 'bold 17px sans-serif'; ctx.fillStyle = '#3a3d36';
+  ctx.fillText('GALLERY / STUDIO', 1024, 1320);
+  ctx.font = '12px monospace'; ctx.fillStyle = '#7a7d75';
+  ctx.fillText('32.0 m²', 1024, 1340);
+
+  // Exterior dimension lines & ticks
+  const halfW = (model.width || 12) / 2, halfD = (model.depth || 10) / 2;
+  const [bMinX, bMinZ] = toCanvas(-halfW, -halfD);
+  const [bMaxX, bMaxZ] = toCanvas(halfW, halfD);
+
+  const dimTopY = bMinZ - 36;
+  ctx.strokeStyle = '#6a6d65'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(bMinX, dimTopY); ctx.lineTo(bMaxX, dimTopY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bMinX - 7, dimTopY + 7); ctx.lineTo(bMinX + 7, dimTopY - 7); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bMaxX - 7, dimTopY + 7); ctx.lineTo(bMaxX + 7, dimTopY - 7); ctx.stroke();
+  ctx.font = '15px monospace'; ctx.fillStyle = '#2a2d26';
+  ctx.fillText(`${(model.width || 12).toFixed(2)} m`, (bMinX + bMaxX) / 2, dimTopY - 14);
+
+  const dimLeftX = bMinX - 36;
+  ctx.beginPath(); ctx.moveTo(dimLeftX, bMinZ); ctx.lineTo(dimLeftX, bMaxZ); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(dimLeftX - 7, bMinZ + 7); ctx.lineTo(dimLeftX + 7, dimMinY => dimLeftX - 7); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(dimLeftX - 7, bMaxZ + 7); ctx.lineTo(dimLeftX + 7, bMaxZ - 7); ctx.stroke();
+  ctx.save(); ctx.translate(dimLeftX - 16, (bMinZ + bMaxZ) / 2); ctx.rotate(-Math.PI / 2);
+  ctx.fillText(`${(model.depth || 10).toFixed(2)} m`, 0, 0); ctx.restore();
+
+  // Grid axis bubbles
+  const bubbleY = dimTopY - 50;
+  ['A', 'B', 'C', 'D'].forEach((axis, idx) => {
+    const ax = bMinX + (idx / 3) * (bMaxX - bMinX);
+    ctx.beginPath(); ctx.arc(ax, bubbleY, 16, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = '#444'; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.fillStyle = '#1a1a1a'; ctx.font = 'bold 14px sans-serif'; ctx.fillText(axis, ax, bubbleY);
+    ctx.setLineDash([3, 3]); ctx.strokeStyle = '#aaa';
+    ctx.beginPath(); ctx.moveTo(ax, bubbleY + 16); ctx.lineTo(ax, dimTopY); ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  // Architectural Title Block
+  ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#555850'; ctx.lineWidth = 1.5;
+  ctx.fillRect(1440, 1840, 530, 136); ctx.strokeRect(1440, 1840, 530, 136);
+  ctx.fillStyle = '#1a1a1a'; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText('HEPHAESTUS · ARCHITECTURAL RECONSTRUCTION', 1460, 1868);
+  ctx.font = '12px monospace'; ctx.fillStyle = '#666';
+  ctx.fillText(`PROJECT: ${(model.name || 'DEMO MODEL').toUpperCase()}`, 1460, 1892);
+  ctx.fillText('SHEET: F1 / DETAILED FLOOR PLAN · SCALE 1:100', 1460, 1914);
+  ctx.fillText('SOURCE: 2D TECHNICAL DRAWING TO 3D SPACE', 1460, 1936);
+
+  // North arrow
+  ctx.beginPath(); ctx.arc(1900, 110, 28, 0, Math.PI * 2);
+  ctx.strokeStyle = '#444'; ctx.lineWidth = 1.2; ctx.stroke();
+  ctx.fillStyle = '#222';
+  ctx.beginPath(); ctx.moveTo(1900, 88); ctx.lineTo(1893, 116); ctx.lineTo(1900, 111); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#222';
+  ctx.beginPath(); ctx.moveTo(1900, 88); ctx.lineTo(1907, 116); ctx.lineTo(1900, 111); ctx.closePath(); ctx.stroke();
+  ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('N', 1900, 78);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.anisotropy = 8;
+  return { texture, size };
+}
+
 export class SceneView {
   constructor(canvas, { reducedMotion = false, onSelect = () => {}, onMeasure = () => {} } = {}) {
     this.canvas = canvas;
@@ -68,6 +213,7 @@ export class SceneView {
   }
 
   clear() {
+    this.blueprintTexture?.dispose(); this.blueprintTexture = null;
     this.group.traverse(o => { o.geometry?.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => m.dispose()); });
     this.group.clear(); this.meshes = [];
   }
@@ -107,8 +253,18 @@ export class SceneView {
     const shadow = this.light.shadow.camera;
     Object.assign(shadow, { left: -this.span, right: this.span, top: this.span, bottom: -this.span, far: this.span * 6 }); shadow.updateProjectionMatrix();
     this.light.position.set(-this.span, this.span * 2, this.span);
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(this.span * 4, this.span * 4), new THREE.ShadowMaterial({ opacity: .09 }));
-    ground.rotation.x = -Math.PI / 2; ground.position.y = this.bounds.min.y - .04; ground.receiveShadow = true; ground.name = 'ground'; this.group.add(ground);
+
+    // Architectural detailed 2D drawing plane
+    const { texture: bpTexture, size: bpSize } = createBlueprintTexture(model, origin, this.span);
+    this.blueprintTexture = bpTexture;
+    const bpGeom = new THREE.PlaneGeometry(bpSize, bpSize);
+    const bpMat = new THREE.MeshBasicMaterial({ map: bpTexture, depthWrite: true });
+    const bpMesh = new THREE.Mesh(bpGeom, bpMat);
+    bpMesh.rotation.x = -Math.PI / 2; bpMesh.position.y = this.bounds.min.y - 0.005; bpMesh.name = 'blueprint';
+    this.group.add(bpMesh);
+
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(bpSize, bpSize), new THREE.ShadowMaterial({ opacity: .12 }));
+    ground.rotation.x = -Math.PI / 2; ground.position.y = this.bounds.min.y; ground.receiveShadow = true; ground.name = 'ground'; this.group.add(ground);
     this.controls.minDistance = this.span * .25; this.controls.maxDistance = this.span * 6;
     this.perspective.far = this.span * 20; this.orthographic.far = this.span * 20;
     this.setMode(this.mode); this.setVisibility(this.floor, this.hiddenTypes); this.setSection(this.sectionValue ?? 100);
@@ -190,6 +346,8 @@ export class SceneView {
         const rise = THREE.MathUtils.clamp((progress - start) / (1 - start), .001, 1);
         mesh.scale.y = rise;
         mesh.position.y = mesh.userData.backendGeometry ? 0 : mesh.userData.elevation * rise;
+        const edge = mesh.getObjectByName('edges');
+        if (edge) edge.material.opacity = 0.28 * Math.min(1, progress * 4);
         if (mesh.userData.selectionOnly) return;
         const baseOpacity = this.mode === 'transparent' ? .22 : mesh.userData.type === 'window' ? .5 : 1;
         mesh.material.opacity = baseOpacity * Math.min(1, progress * 5);
@@ -223,6 +381,8 @@ export class SceneView {
       ...(this.model.backend ? { schema_version: this.model.scene.schema_version, job_id: this.model.job_id,
         source_hash: this.model.source_hash, revision: this.model.scene.revision, parameters: this.model.scene.parameters,
         coordinate_frame: this.model.scene.coordinate_frame,
+        ...(this.model.multiFloor ? { alignment: this.model.scene.alignment, floors: this.model.scene.floors.map(f => ({ number: f.number, name: f.name, transform: f.transform, provenance: f.provenance, drawings: f.drawings,
+          job_id: f.scene.job_id, source_hash: f.scene.source_hash, revision: f.scene.revision, parameters: f.scene.parameters, coordinate_frame: f.scene.coordinate_frame })) } : {}),
         openings: this.model.components.filter(c => c.opening).map(({ mesh, selection_mesh, ...metadata }) => metadata) } : {}) };
     this.meshes.forEach(m => {
       if (m.userData.selectionOnly) return;
