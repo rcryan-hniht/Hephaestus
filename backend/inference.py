@@ -262,8 +262,6 @@ class OpenRouter:
                     raise ValueError("Proposal does not match original image dimensions")
                 proposal.coordinate_frame.preprocessing_transform = frame["preprocessing_transform"]
                 for index, component in enumerate(proposal.components):
-                    if component.source.element_id is None:
-                        component.source.element_id = component.id
                     component.id = f"{job_id}:f0:c{index}"
                 record["valid"] = True
                 attempts.append(record)

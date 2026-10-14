@@ -214,5 +214,5 @@ def test_null_source_annotations_preserve_image_geometry():
     result = run(handler)
     assert len(result.attempts) == 1
     assert result.proposal.components[0].polygon == [(1, 1), (10, 1), (10, 3), (1, 3)]
-    assert result.proposal.components[0].source.element_id == "wall-1"
+    assert result.proposal.components[0].source.element_id is None
     assert result.proposal.components[0].source.text is None
