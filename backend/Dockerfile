@@ -6,11 +6,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     HEPHAESTUS_DATA_DIR=/app/data
 WORKDIR /app/backend
 RUN apt-get update \
-    && apt-get install --yes --no-install-recommends blender \
+    && apt-get install --yes --no-install-recommends blender python3-numpy \
     && rm -rf /var/lib/apt/lists/*
 COPY backend/requirements.txt ./
 RUN uv venv .venv \
-    && uv pip install --python .venv/bin/python --require-hashes -r requirements.txt \
+    && uv pip install --no-cache --python .venv/bin/python --torch-backend cpu --require-hashes -r requirements.txt \
     && useradd --uid 10001 --create-home app \
     && mkdir /app/data \
     && chmod 700 /app/data \

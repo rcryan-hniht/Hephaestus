@@ -6,6 +6,9 @@ asks for missing essential information, and exports inspectable component
 meshes in a versioned scene JSON. It has no public-user authentication.
 
 Default PNG engine: local CubiCasa5K/PyTorch on CPU. SVG uses exact vector evidence.
+Linux dependencies use the official PyTorch CPU index to avoid unused CUDA
+libraries in local and Docker installs. Configure the PyTorch sources explicitly
+before installing a GPU runtime.
 OpenRouter is an optional comparison engine (`HEPHAESTUS_INFERENCE_ENGINE=openrouter`),
 using the explicitly selected `qwen/qwen2.5-vl-72b-instruct`.
 
@@ -50,7 +53,7 @@ From the repository root:
 
 ```sh
 uv venv backend/.venv --python 3.14
-uv pip install --python backend/.venv/bin/python -r backend/requirements.txt
+uv pip install --python backend/.venv/bin/python --torch-backend cpu -r backend/requirements.txt
 uv run --directory backend --frozen --no-dev uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
 ```
 
