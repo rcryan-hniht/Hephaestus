@@ -172,7 +172,7 @@ function layout() {
     { x: margin, y: manifestoActionY + actionHeight + 18, w: width * .88, h: Math.max(100, bottom - manifestoActionY - actionHeight - 18) },
     { x: margin, y: worksY, w: width * .88, h: worksFrameH },
   ] : [
-    { x: width * .55, y: top, w: width * .375, h: bottom - top },
+    { x: width * .55, y: top, w: width * .45, h: bottom - top },
     { x: width * .48, y: Math.max(top, height * .22), w: width * .445, h: Math.max(120, Math.min(height * .54, bottom - Math.max(top, height * .22))) },
     { x: margin, y: worksY, w: width * .525, h: worksFrameH },
   ];
@@ -180,7 +180,9 @@ function layout() {
   const w = lerp(a.w, b.w, mix), h = lerp(a.h, b.h, mix);
   frame.style.transform = `translate(${lerp(a.x, b.x, mix)}px,${lerp(a.y, b.y, mix)}px)`;
   frame.style.width = `${w}px`; frame.style.height = `${h}px`;
-  frame.style.borderRadius = `${lerp(from === 0 ? 2 : 6, next === 0 ? 2 : 6, mix)}px`;
+  const heroRadius = mobile ? 2 : 0;
+  frame.style.borderRadius = `${lerp(from === 0 ? heroRadius : 6, next === 0 ? heroRadius : 6, mix)}px`;
+  frame.style.borderRightWidth = `${lerp(from === 0 && !mobile ? 0 : 1, next === 0 && !mobile ? 0 : 1, mix)}px`;
   if (Math.abs(w - lastWidth) > .5 || Math.abs(h - lastHeight) > .5) { scene?.resize(); lastWidth = w; lastHeight = h; }
   copies.forEach((copy, i) => {
     const visible = i === chapter;
