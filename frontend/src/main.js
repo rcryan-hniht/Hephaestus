@@ -19,7 +19,7 @@ let antigravity, driftWall, brandSplit;
 let scene, sceneFailed = false, raf, previous = 0, currentProject = 0;
 let workspaceOpen = false, returnFocus, savedScroll = 0, chapter = 0, height = innerHeight, dirty = true;
 let lastWidth = 0, lastHeight = 0, lastOffset = scrollY;
-let phase2Progress = 0, wheelLocked = false;
+let phase2Progress = 0, wheelLocked = false, destination = 0, loopProgress = null, lastWheel = -Infinity;
 const photo = $('hero-photograph');
 const maskedHeadings = [...document.querySelectorAll('h1 > span')].map(root => createMaskedHeading(root, { src: photo.getAttribute('src'), brightness: .65 }));
 
@@ -37,7 +37,7 @@ if ((navigator.hardwareConcurrency || 8) > 4 && (navigator.deviceMemory || 8) > 
   try { antigravity = createAntigravity(particlesCanvas); } catch { particlesCanvas.hidden = true; }
 } else particlesCanvas.hidden = true;
 const workspace = createWorkspace({ reducedMotion: motion, onClose() {
-  workspaceOpen = false; $('landing').hidden = false; document.body.style.overflow = '';
+  workspaceOpen = false; wheelLocked = false; $('landing').hidden = false; document.body.style.overflow = '';
   window.scrollTo(0, savedScroll); returnFocus?.focus({ preventScroll: true }); dirty = true;
 } });
 function openWorkspace(sample) {
@@ -49,8 +49,16 @@ function openWorkspace(sample) {
 document.querySelectorAll('[data-upload]').forEach(b => listen(b, 'click', () => { openWorkspace(); $('file-input').click(); }));
 document.querySelectorAll('[data-workspace]').forEach(b => listen(b, 'click', () => openWorkspace()));
 function goChapter(index) {
-  const target = index >= 3 ? 0 : index;
-  window.scrollTo({ top: target * height, behavior: 'smooth' }); dirty = true;
+  if (wheelLocked || loopProgress !== null) return;
+  const target = ((index % 3) + 3) % 3;
+  if (target === chapter && Math.abs(scrollY - target * height) < 1) return;
+  destination = target; wheelLocked = true;
+  if (chapter === 2 && target === 0 && !motion.matches) loopProgress = 0;
+  else {
+    if (chapter === 2 && target === 0) lastOffset = 0;
+    window.scrollTo({ top: target * height, behavior: motion.matches ? 'instant' : 'smooth' });
+  }
+  dirty = true;
 }
 listen($('next-chapter'), 'click', () => goChapter(chapter === 2 ? 0 : chapter + 1));
 listen($('explore-demo'), 'click', () => openWorkspace(0));
@@ -94,39 +102,42 @@ if (photo.complete && !photo.naturalWidth) { photo.hidden = true; $('reference-f
 listen($('open-preview'), 'click', () => openWorkspace(currentProject));
 listen(window, 'scroll', () => { dirty = true; });
 listen(window, 'wheel', e => {
-  if (workspaceOpen) return;
-  if (Math.abs(e.deltaY) < 25) return;
-  if (wheelLocked) return;
+  if (workspaceOpen || e.ctrlKey || !e.deltaY || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+  e.preventDefault();
+  // Input timestamps keep delayed frames from turning a trackpad tail into a new gesture.
+  const now = e.timeStamp, continuing = now - lastWheel < 180;
+  lastWheel = now;
+  if (wheelLocked || continuing) return;
   const dir = e.deltaY > 0 ? 1 : -1;
-  const target = clamp(chapter + dir, 0, 2);
-  if (target !== chapter) {
-    e.preventDefault();
-    wheelLocked = true;
-    window.scrollTo({ top: target * height, behavior: 'smooth' });
-    setTimeout(() => { wheelLocked = false; }, 650);
-  } else if (chapter === 2 && dir === 1) {
-    e.preventDefault();
-    wheelLocked = true;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setTimeout(() => { wheelLocked = false; }, 650);
-  }
+  goChapter(chapter === 2 && dir === 1 ? 0 : clamp(chapter + dir, 0, 2));
 }, { passive: false });
+let touchStart;
+listen(window, 'touchstart', e => {
+  touchStart = !workspaceOpen && chapter === 2 && e.touches.length === 1 ? e.touches[0].clientY : undefined;
+}, { passive: true });
+listen(window, 'touchend', e => {
+  if (!workspaceOpen && touchStart !== undefined && touchStart - e.changedTouches[0].clientY > 40) goChapter(0);
+  touchStart = undefined;
+}, { passive: true });
+listen(window, 'touchcancel', () => { touchStart = undefined; }, { passive: true });
 listen(window, 'resize', () => {
   const progress = scrollY / height; height = innerHeight;
-  $('story').style.height = `${height * 4}px`; document.querySelector('.story-sticky').style.height = `${height}px`;
-  if (!workspaceOpen) window.scrollTo(0, progress * height);
+  $('story').style.height = `${height * 3}px`; document.querySelector('.story-sticky').style.height = `${height}px`;
+  if (!workspaceOpen) window.scrollTo({ top: (wheelLocked ? destination : progress) * height, behavior: 'instant' });
   dirty = true;
 });
 listen(motion, 'change', () => {
+  if (motion.matches && loopProgress !== null) {
+    loopProgress = null; lastOffset = 0; window.scrollTo({ top: 0, behavior: 'instant' });
+  }
   if (scene) scene.controls.enableDamping = !motion.matches;
   workspace.motionChanged(); dirty = true;
 });
-$('story').style.height = `${height * 4}px`; document.querySelector('.story-sticky').style.height = `${height}px`;
+$('story').style.height = `${height * 3}px`; document.querySelector('.story-sticky').style.height = `${height}px`;
 const lerp = (a, b, t) => a + (b - a) * t;
 function layout() {
   const width = innerWidth, compact = height < 620, mobile = width <= 800 && (!compact || width < height);
-  let offset = scrollY;
-  if (offset >= height * 3 - .5) { offset = Math.max(0, offset - height * 3); window.scrollTo(0, offset); }
+  const offset = loopProgress === null ? scrollY : (2 + loopProgress) * height;
   const { chapter: from, next, mix } = phaseAt(offset, height, motion.matches);
   chapter = mix >= .5 ? next : from;
   document.body.dataset.chapter = String(chapter);
@@ -229,6 +240,13 @@ function animate(time) {
   const delta = Math.min((time - (previous || time)) / 1000, .05); previous = time;
   maskedHeadings.forEach(heading => heading.render(delta));
   if (!workspaceOpen) {
+    if (loopProgress !== null) {
+      loopProgress = Math.min(1, loopProgress + delta / .65); dirty = true;
+      if (loopProgress === 1) {
+        loopProgress = null; lastOffset = 0; window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    }
+    if (wheelLocked && loopProgress === null && Math.abs(scrollY - destination * height) < 1) wheelLocked = false;
     if (chapter === 1) {
       if (phase2Progress < 1) {
         phase2Progress = Math.min(1, phase2Progress + delta * 0.65);

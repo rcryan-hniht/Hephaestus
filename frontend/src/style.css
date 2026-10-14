@@ -8,6 +8,7 @@
   --font: 'Poppins', sans-serif; --mono: ui-monospace, SFMono-Regular, monospace;
 }
 * { box-sizing: border-box; }
+html { scroll-snap-type: y mandatory; }
 body { margin: 0; background: var(--page); color: var(--text); font-family: var(--font); -webkit-font-smoothing: antialiased; }
 button, input, select { font: inherit; }
 button, a, input, select { -webkit-tap-highlight-color: transparent; }
@@ -28,8 +29,8 @@ a { color: inherit; text-decoration: none; }
 .button--primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 .button--dark { background: var(--headline); color: #fff; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; letter-spacing: -.8px; background: none; border: 0; padding: 0; }
-.story { position: relative; height: 400svh; }
-.chapter-anchor { position: absolute; pointer-events: none; }
+.story { position: relative; height: 300svh; }
+.chapter-anchor { position: absolute; width: 1px; height: 1px; pointer-events: none; scroll-snap-align: start; scroll-snap-stop: always; }
 #hero { top: 0; } #manifesto { top: 100svh; } #works { top: 200svh; }
 .story-sticky { position: sticky; top: 0; height: 100svh; overflow: hidden; isolation: isolate; }
 .chapter-copy { position: absolute; left: 0; top: 0; width: 40.5vw; pointer-events: none; will-change: transform; }
