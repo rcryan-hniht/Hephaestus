@@ -51,10 +51,10 @@ export function createJobClient({ onUpdate = () => {}, onError = () => {}, inter
       if (!job?.id || !Number.isInteger(job.generation) || !states.has(job.state)) throw new Error('Invalid drawing job returned by the API.');
       current = job;
       let proposal, scene;
-      if (['needs_information', 'ready'].includes(job.state)) {
+      if (['needs_information', 'ready'].includes(job.state) || (job.state === 'failed' && job.has_model)) {
         const result = await request(`${path(job)}/proposal`, { signal });
         proposal = result.proposal;
-        if (proposal?.job_id !== job.id) throw new Error('Drawing proposal does not match the current source.');
+        if (proposal?.job_id !== job.id || proposal.source_hash !== job.source_hash || result.generation !== job.generation) throw new Error('Drawing proposal does not match the current source or generation. Refresh the job.');
       }
       if (job.state === 'ready') {
         scene = await request(`${path(job)}/scene`, { signal });

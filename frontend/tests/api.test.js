@@ -16,7 +16,7 @@ describe('drawing jobs', () => {
       }
       if (url === '/api/jobs/j') return response(job('j', 'ready'));
       if (url.endsWith('/scene')) return response(scene('j'));
-      if (url.endsWith('/proposal')) return response({ proposal: { job_id: 'j', components: [] } });
+      if (url.endsWith('/proposal')) return response({ generation: 1, proposal: { job_id: 'j', source_hash: 'a'.repeat(64), components: [] } });
       throw new Error('Unexpected API request');
     } });
     await client.start(file());
@@ -28,7 +28,7 @@ describe('drawing jobs', () => {
     let state, values;
     const client = createJobClient({ interval: 0, onUpdate: update => { state = update.job.state; }, fetcher: async (url, options) => {
       if (url === '/api/jobs') return response(job('j', 'needs_information'), 202);
-      if (url.endsWith('/proposal')) return response({ proposal: { job_id: 'j' } });
+      if (url.endsWith('/proposal')) return response({ generation: state === 'needs_information' ? 2 : 1, proposal: { job_id: 'j', source_hash: 'a'.repeat(64) } });
       if (url.endsWith('/answers')) { values = JSON.parse(options.body); return response(job('j', 'ready', 2), 202); }
       if (url.endsWith('/scene')) return response(scene('j'));
       throw new Error('Unexpected polling after a terminal state');
@@ -66,7 +66,7 @@ describe('drawing jobs', () => {
     let modelUpdates = 0;
     const client = createJobClient({ onUpdate: update => { if (update.scene) modelUpdates++; }, fetcher: async url => {
       if (url === '/api/jobs') return response(job('j', 'ready'), 202);
-      if (url.endsWith('/proposal')) return response({ proposal: { job_id: 'j' } });
+      if (url.endsWith('/proposal')) return response({ generation: 1, proposal: { job_id: 'j', source_hash: 'a'.repeat(64) } });
       if (url.endsWith('/scene')) { entered(); return await new Promise(resolve => { resolveScene = resolve; }); }
       throw new Error('Unexpected request');
     } });
@@ -83,7 +83,7 @@ describe('drawing jobs', () => {
     const client = createJobClient({ onError: error => errors.push(error.message), fetcher: async url => {
       if (url === '/api/jobs') return response(job('j', 'ready'), 202);
       if (url.endsWith('/scene')) return response(scene('other'));
-      if (url.endsWith('/proposal')) return response({ proposal: { job_id: 'j' } });
+      if (url.endsWith('/proposal')) return response({ generation: 1, proposal: { job_id: 'j', source_hash: 'a'.repeat(64) } });
     } });
     await client.start(file());
     expect(errors[0]).toContain('source');
@@ -94,5 +94,16 @@ describe('drawing jobs', () => {
     const client = createJobClient({ onError: error => errors.push(error.message), fetcher: async () => response({ detail: 'Unsupported drawing' }, 422) });
     await client.start(file());
     expect(errors).toEqual(['Unsupported drawing']);
+  });
+
+  test.each(['hash', 'generation'])('rejects a proposal from another %s before publishing it', async mismatch => {
+    const delivered = [], errors = [];
+    const client = createJobClient({ onUpdate: update => delivered.push(update), onError: error => errors.push(error.message), fetcher: async url => {
+      if (url === '/api/jobs') return response(job('j', 'needs_information'), 202);
+      return response({ generation: mismatch === 'generation' ? 2 : 1, proposal: { job_id: 'j', source_hash: mismatch === 'hash' ? 'b'.repeat(64) : 'a'.repeat(64) } });
+    } });
+    await client.start(file());
+    expect(delivered).toEqual([]);
+    expect(errors[0]).toContain('source or generation');
   });
 });

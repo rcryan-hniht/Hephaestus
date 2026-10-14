@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { readFileSync, existsSync } from 'node:fs';
 
 const heroReference = fileURLToPath(new URL('../assets/cosmos_2096171389.webp', import.meta.url));
-const apiProxy = { '/api': { target: `http://127.0.0.1:${process.env.BACKEND_PORT || 8000}`, changeOrigin: true } };
+const apiProxy = { '^/api/': { target: `http://127.0.0.1:${process.env.BACKEND_PORT || 8000}`, changeOrigin: true } };
 
 export default defineConfig({
   server: { proxy: apiProxy },
