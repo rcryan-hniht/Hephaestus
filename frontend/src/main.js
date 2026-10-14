@@ -3,6 +3,7 @@ import { SceneView } from './scene.js';
 import { projects, sampleModel, phaseAt } from './model.js';
 import { createWorkspace } from './workspace.js';
 import { createAntigravity } from './Antigravity.js';
+import { createMaskedHeading } from './MaskedHeading.js';
 
 const $ = id => document.getElementById(id);
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -15,6 +16,7 @@ let scene, sceneFailed = false, raf, previous = 0, currentProject = 0;
 let workspaceOpen = false, returnFocus, savedScroll = 0, chapter = 0, height = innerHeight, dirty = true;
 let lastWidth = 0, lastHeight = 0, lastOffset = scrollY;
 const photo = $('hero-photograph');
+const maskedHeadings = [...document.querySelectorAll('h1 > span')].map(root => createMaskedHeading(root, { src: photo.getAttribute('src'), brightness: .65 }));
 if ((navigator.hardwareConcurrency || 8) > 4 && (navigator.deviceMemory || 8) > 4) {
   try { antigravity = createAntigravity(particlesCanvas); } catch { particlesCanvas.hidden = true; }
 } else particlesCanvas.hidden = true;
@@ -199,6 +201,7 @@ function layout() {
 let renderState = { progress: 1, active: false };
 function animate(time) {
   const delta = Math.min((time - (previous || time)) / 1000, .05); previous = time;
+  maskedHeadings.forEach(heading => heading.render(delta));
   if (!workspaceOpen) {
     antigravity?.render(delta, motion.matches);
     if (dirty) { renderState = layout(); dirty = false; }
@@ -208,6 +211,6 @@ function animate(time) {
 }
 document.fonts.ready.then(() => { fitIntro(); dirty = true; });
 raf = requestAnimationFrame(animate);
-function dispose() { cancelAnimationFrame(raf); events.abort(); antigravity?.dispose(); scene?.dispose(); workspace.dispose(); }
+function dispose() { cancelAnimationFrame(raf); events.abort(); maskedHeadings.forEach(heading => heading.dispose()); antigravity?.dispose(); scene?.dispose(); workspace.dispose(); }
 if (import.meta.hot) import.meta.hot.dispose(dispose);
 listen(window, 'pagehide', e => { if (!e.persisted) dispose(); });

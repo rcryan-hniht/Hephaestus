@@ -1,0 +1,11 @@
+.masked-heading { position: relative; width: 100%; margin: 0; padding: .06em 0; pointer-events: auto; -webkit-font-smoothing: antialiased; }
+.masked-heading__measure { color: inherit; }
+.masked-heading[data-ready="true"] .masked-heading__measure { color: transparent; }
+.masked-heading__word { display: inline-block; white-space: pre; }
+.masked-heading__baseline { display: inline-block; width: 0; height: 0; }
+.masked-heading__defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.masked-heading__reveal { position: absolute; inset: 0; display: none; pointer-events: none; }
+.masked-heading[data-ready="true"] .masked-heading__reveal { display: block; }
+.masked-heading__clip { position: absolute; inset: 0; display: block; overflow: hidden; }
+.masked-heading__media { position: absolute; inset: 0; display: block; will-change: transform; }
+.masked-heading__source { display: block; width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-drag: none; }
