@@ -43,6 +43,14 @@
     <div class="workspace-body">
       <aside id="drawing-panel" class="panel drawing-panel" aria-label="Source drawing"><div class="panel-heading"><h2>Source drawing</h2><button class="drawer-close" data-close-drawer aria-label="Close drawing panel">×</button></div>
         <div id="drop-zone" class="drop-zone"><span aria-hidden="true">＋</span><p>Drag drawings here</p><button class="button" data-upload>Select files</button><button id="load-villa-preset" class="text-button" type="button">Load villa preset ↗</button><small>PNG · SVG · ASCII DXF · max 10 MB each</small></div>
+        <div class="demo-presets">
+          <h3>Reference villas</h3>
+          <label for="demo-preset">Choose a design</label>
+          <select id="demo-preset" aria-describedby="preset-description"><option value="terrace">01 — Terrace Villa</option><option value="portal">02 — Portal Villa</option><option value="gable">03 — Gable Villa</option></select>
+          <p id="preset-description" class="panel-note"></p>
+          <button id="preview-preset" class="button button--white" type="button">Preview preset ↗</button>
+          <small>Prepared 3D demos · Approximate design dimensions</small>
+        </div>
         <p class="panel-note">PNG uses CubiCasa image analysis; semantic SVG uses vector evidence. Confirm missing dimensions before building. JPG is preview-only; DXF supports closed structural contours up to 5 MB.</p>
         <p class="panel-note">For a building, select F1.png + F1.svg, F2.png + F2.svg together. SVG is used when paired; PNG stays available for comparison. Up to 8 consecutive floors, 16 files and 40 MB total.</p>
         <p id="file-name" class="file-name">No drawing selected</p>

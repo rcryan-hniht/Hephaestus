@@ -2,6 +2,16 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { backendGeometry } from './backend-model.js';
 
+export function presetGeometry(component, origin) {
+  const minX = Math.min(...component.polygon.map(p => p[0])), minZ = Math.min(...component.polygon.map(p => p[1]));
+  const depth = Math.max(...component.polygon.map(p => p[1])) - minZ;
+  const profileHeight = Math.max(...component.profile.map(p => p[1]));
+  const shape = new THREE.Shape(component.profile.map(([x,y]) => new THREE.Vector2(x + minX - origin.x, y * component.height / profileHeight)));
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, steps: 1 });
+  geometry.translate(0, 0, minZ - origin.z);
+  return geometry;
+}
+
 function createBlueprintTexture(model, origin, span) {
   const canvas = document.createElement('canvas');
   canvas.width = 2048; canvas.height = 2048;
@@ -77,19 +87,19 @@ function createBlueprintTexture(model, origin, span) {
 
   // Room annotations
   ctx.font = 'bold 20px sans-serif'; ctx.fillStyle = '#3a3d36'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('CENTRAL COURTYARD', 1024, 1024);
+  ctx.fillText(model.demoPreset ? 'DESIGN STUDY' : 'CENTRAL COURTYARD', 1024, 1024);
   ctx.font = '13px monospace'; ctx.fillStyle = '#7a7d75';
-  ctx.fillText('±0.000 FL · OPEN AIR', 1024, 1050);
+  ctx.fillText(model.demoPreset ? 'APPROXIMATE DESIGN DIMENSIONS' : '±0.000 FL · OPEN AIR', 1024, 1050);
 
   ctx.font = 'bold 17px sans-serif'; ctx.fillStyle = '#3a3d36';
-  ctx.fillText('LIVING SPACE', 1024, 720);
+  ctx.fillText(model.demoPreset ? model.name.toUpperCase() : 'LIVING SPACE', 1024, 720);
   ctx.font = '12px monospace'; ctx.fillStyle = '#7a7d75';
-  ctx.fillText('38.4 m²', 1024, 740);
+  ctx.fillText(model.demoPreset ? 'PREPARED REFERENCE VILLA' : '38.4 m²', 1024, 740);
 
   ctx.font = 'bold 17px sans-serif'; ctx.fillStyle = '#3a3d36';
-  ctx.fillText('GALLERY / STUDIO', 1024, 1320);
+  ctx.fillText(model.demoPreset ? 'SCHEMATIC SITE PLAN' : 'GALLERY / STUDIO', 1024, 1320);
   ctx.font = '12px monospace'; ctx.fillStyle = '#7a7d75';
-  ctx.fillText('32.0 m²', 1024, 1340);
+  ctx.fillText(model.demoPreset ? 'NOT A RECONSTRUCTED DRAWING' : '32.0 m²', 1024, 1340);
 
   // Exterior dimension lines & ticks
   const halfW = (model.width || 12) / 2, halfD = (model.depth || 10) / 2;
@@ -127,11 +137,11 @@ function createBlueprintTexture(model, origin, span) {
   ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#555850'; ctx.lineWidth = 1.5;
   ctx.fillRect(1440, 1840, 530, 136); ctx.strokeRect(1440, 1840, 530, 136);
   ctx.fillStyle = '#1a1a1a'; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'left';
-  ctx.fillText('HEPHAESTUS · ARCHITECTURAL RECONSTRUCTION', 1460, 1868);
+  ctx.fillText(model.demoPreset ? 'HEPHAESTUS · ARCHITECTURAL DESIGN PRESET' : 'HEPHAESTUS · ARCHITECTURAL RECONSTRUCTION', 1460, 1868);
   ctx.font = '12px monospace'; ctx.fillStyle = '#666';
   ctx.fillText(`PROJECT: ${(model.name || 'DEMO MODEL').toUpperCase()}`, 1460, 1892);
-  ctx.fillText('SHEET: F1 / DETAILED FLOOR PLAN · SCALE 1:100', 1460, 1914);
-  ctx.fillText('SOURCE: 2D TECHNICAL DRAWING TO 3D SPACE', 1460, 1936);
+  ctx.fillText(model.demoPreset ? 'SHEET: SCHEMATIC SITE PLAN · METRIC DESIGN STUDY' : 'SHEET: F1 / DETAILED FLOOR PLAN · SCALE 1:100', 1460, 1914);
+  ctx.fillText(model.demoPreset ? 'SOURCE: DESIGNED FROM VISUAL REFERENCE' : 'SOURCE: 2D TECHNICAL DRAWING TO 3D SPACE', 1460, 1936);
 
   // North arrow
   ctx.beginPath(); ctx.arc(1900, 110, 28, 0, Math.PI * 2);
@@ -227,18 +237,24 @@ export class SceneView {
     for (const c of model.components) {
       let geometry, proxy = false;
       if (c.backendGeometry) ({ geometry, proxy } = backendGeometry(c, origin));
+      else if (model.demoPreset && c.profile) geometry = presetGeometry(c, origin);
       else {
         const shape = new THREE.Shape(c.polygon.map(([x, z]) => new THREE.Vector2(x - origin.x, -(z - origin.z))));
         geometry = new THREE.ExtrudeGeometry(shape, { depth: c.height, bevelEnabled: false, steps: 1 });
         geometry.rotateX(-Math.PI / 2);
       }
-      const color = { wall: '#dfdfd8', slab: '#c6c6bf', roof: '#e6e6df', column: '#f7f7f2', window: '#85928f', door: '#c45c3d' }[c.type];
+      const color = model.demoPreset && c.color || { wall: '#dfdfd8', slab: '#c6c6bf', roof: '#e6e6df', column: '#f7f7f2', window: '#85928f', door: '#c45c3d' }[c.type];
       const material = new THREE.MeshStandardMaterial({ color, roughness: .85, side: THREE.DoubleSide,
         transparent: proxy || c.type === 'window', opacity: proxy ? 0 : c.type === 'window' ? .5 : 1,
         colorWrite: !proxy, depthWrite: !proxy });
+      if (model.demoPreset) {
+        material.roughness = c.finish === 'metal' ? .35 : c.finish === 'glass' ? .15 : .85;
+        material.metalness = c.finish === 'metal' ? .35 : 0;
+        if (c.finish === 'light') material.emissive.set(c.color);
+      }
       const mesh = new THREE.Mesh(geometry, material);
       mesh.position.y = c.backendGeometry ? 0 : c.elevation;
-      mesh.castShadow = !proxy; mesh.receiveShadow = !proxy;
+      mesh.castShadow = !proxy && !(model.demoPreset && c.type === 'window'); mesh.receiveShadow = !proxy;
       const { mesh: _mesh, selection_mesh: _selection, ...metadata } = c;
       mesh.userData = { ...metadata, baseColor: color, sourceUnit: 'm', selectionOnly: proxy };
       mesh.name = c.id;
@@ -329,7 +345,7 @@ export class SceneView {
     this.selected = id; this.needsRender = true;
     this.meshes.forEach(m => {
       const selected = m.userData.id === id;
-      m.material.emissive.set(selected ? '#c45c3d' : '#000000');
+      m.material.emissive.set(selected ? '#c45c3d' : this.model.demoPreset && m.userData.finish === 'light' ? m.userData.color : '#000000');
       if (m.userData.selectionOnly) {
         m.material.colorWrite = selected; m.material.opacity = selected ? .16 : 0;
         m.children.forEach(edge => { edge.visible = selected; });
@@ -378,6 +394,7 @@ export class SceneView {
     const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
     const output = new THREE.Group(); output.name = this.model.name;
     output.userData = { sample: this.model.sample, unit: 'm', sourceOrigin: this.origin.toArray(), warnings: this.model.warnings,
+      ...(this.model.demoPreset ? { demoPreset: this.model.demoPreset } : {}),
       ...(this.model.backend ? { schema_version: this.model.scene.schema_version, job_id: this.model.job_id,
         source_hash: this.model.source_hash, revision: this.model.scene.revision, parameters: this.model.scene.parameters,
         coordinate_frame: this.model.scene.coordinate_frame,

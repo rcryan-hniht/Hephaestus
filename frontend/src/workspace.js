@@ -4,6 +4,7 @@ import { sceneToModel, sourceDescription, offsetProposal } from './backend-model
 import { groupFloorFiles, assembleFloors, sampleFloorSuggestions } from './floors.js';
 import { sampleModel, reconstructDrawing, typeNames, drawingBounds } from './model.js';
 import villaPreset from './villa-preset.json';
+import { demoPresets, demoPresetModel } from './demo-presets.js';
 
 export function createWorkspace({ reducedMotion, onClose }) {
   const $ = id => document.getElementById(id);
@@ -221,7 +222,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     });
     if (!component) { $('selection-info').textContent = 'Select a component to inspect dimensions and source.'; return; }
     const xs = component.polygon.map(p => p[0]), zs = component.polygon.map(p => p[1]);
-    $('selection-info').textContent = `${typeNames[component.type]} · Floor ${component.source_floor ?? component.floor + 1}\n${(Math.max(...xs) - Math.min(...xs)).toFixed(2)} × ${(Math.max(...zs) - Math.min(...zs)).toFixed(2)} × ${component.height.toFixed(2)} m\n${sourceDescription(component, model.name)}\n${model.backend ? `Validated drawing evidence. Parameters: ${Object.entries(componentScene(component).parameters).map(([k,v]) => `${k.replaceAll('_', ' ')}: ${v.value} (${v.provenance})`).join('; ')}${component.opening ? ' · Opening void, no inferred glazing or door leaf.' : ''}${model.multiFloor ? ' · Elevation edits are relative to this floor.' : ''}` : component.assumed ? 'Height / elevation: confirmed or editable assumption.' : 'Design dimensions of sample model.'}`;
+    $('selection-info').textContent = `${typeNames[component.type]} · Floor ${component.source_floor ?? component.floor + 1}\n${(Math.max(...xs) - Math.min(...xs)).toFixed(2)} × ${(Math.max(...zs) - Math.min(...zs)).toFixed(2)} × ${component.height.toFixed(2)} m\n${sourceDescription(component, model.name)}\n${model.backend ? `Validated drawing evidence. Parameters: ${Object.entries(componentScene(component).parameters).map(([k,v]) => `${k.replaceAll('_', ' ')}: ${v.value} (${v.provenance})`).join('; ')}${component.opening ? ' · Opening void, no inferred glazing or door leaf.' : ''}${model.multiFloor ? ' · Elevation edits are relative to this floor.' : ''}` : model.demoPreset ? 'Approximate design dimensions; editable assumptions.' : component.assumed ? 'Height / elevation: confirmed or editable assumption.' : 'Design dimensions of sample model.'}`;
     $('component-height').value = component.height; $('component-elevation').value = (component.local_elevation ?? component.elevation) + (model.backend && component.source_type === 'room' ? component.height : 0);
     $('component-height').max = model.backend ? 20 : 100; $('component-elevation').min = model.backend ? 0 : -100; $('component-elevation').max = model.backend ? 20 : 1000;
     historyState();
@@ -247,24 +248,27 @@ export function createWorkspace({ reducedMotion, onClose }) {
     const hasView = ensureView();
     if (hasView) { view.setModel(model, fit && active); pendingFit = fit && !active; }
     $('model-empty').hidden = true;
-    $('model-label').hidden = false; $('model-label').textContent = model.backend ? `RECONSTRUCTED ${model.multiFloor ? `${model.floors} FLOORS` : model.scene.source_kind.toUpperCase()} · ${model.name} · REVISION ${model.scene.revision}` : model.sample ? 'DEMO MODEL · METRIC UNITS' : 'PRELIMINARY DXF MODEL · VERIFY ASSUMPTIONS';
+    $('model-label').hidden = false; $('model-label').textContent = model.backend ? `RECONSTRUCTED ${model.multiFloor ? `${model.floors} FLOORS` : model.scene.source_kind.toUpperCase()} · ${model.name} · REVISION ${model.scene.revision}` : model.demoPreset ? `DESIGN PRESET · ${model.name.toUpperCase()} · METRIC UNITS` : model.sample ? 'DEMO MODEL · METRIC UNITS' : 'PRELIMINARY DXF MODEL · VERIFY ASSUMPTIONS';
     $('project-name').textContent = model.name;
     if (updateSource) $('file-name').textContent = model.sample ? `${model.name} / Sample design plan` : model.name;
     $('model-notes').textContent = model.warnings.join(' ');
-    $('component-select').replaceChildren(new Option('Select on model or drawing', ''), ...model.components.map((c, i) => new Option(`${typeNames[c.type]} ${i + 1} · Floor ${c.source_floor ?? c.floor + 1}`, c.id)));
+    $('component-select').replaceChildren(new Option('Select on model or drawing', ''), ...model.components.map((c, i) => new Option(`${c.label || `${typeNames[c.type]} ${i + 1}`} · Floor ${c.source_floor ?? c.floor + 1}`, c.id)));
     $('export-model').disabled = !hasView; $('export-scene').hidden = !model.backend;
     if (updateSource) { previewTracksModel = true; sourceOutlines = false; updatePlanForFloor(); }
     else if (sourceOutlines) drawSource();
-    $('drawing-settings').hidden = Boolean(model.backend);
+    $('drawing-settings').hidden = Boolean(model.backend || model.demoPreset);
     selectComponent(null); historyState();
     status(hasView ? model.sample ? 'Viewing demo model' : 'Ready · Verify assumptions' : '3D unavailable · 2D preview available');
     if (fit) root.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === 'perspective')));
   }
   function loadSample(index = 0) {
+    loadDemo(sampleModel(index));
+  }
+  function loadDemo(next) {
     cancel('Viewing sample project design plan.');
     $('drawing-settings').hidden = false;
     $('retry-job').hidden = true; $('drawing-unit').value = 'm';
-    applyModel(sampleModel(index));
+    applyModel(next);
     closeDrawers();
   }
 
@@ -557,6 +561,16 @@ export function createWorkspace({ reducedMotion, onClose }) {
   listen($('back-home'), 'click', () => { active = false; root.hidden = true; closeDrawers(); onClose(); });
   for (const id of ['load-sample', 'empty-sample']) listen($(id), 'click', () => loadSample());
   listen($('load-villa-preset'), 'click', () => { void loadVillaPreset(); });
+  function describePreset() {
+    const preset = demoPresets.find(p => p.id === $('demo-preset').value);
+    $('preset-description').textContent = `${preset.description} ${preset.dimensions}.`;
+  }
+  describePreset();
+  listen($('demo-preset'), 'change', describePreset);
+  listen($('preview-preset'), 'click', () => {
+    loadDemo(demoPresetModel($('demo-preset').value));
+    $('drawing-message').textContent = 'Prepared design from a visual reference. Orbit, inspect or export; dimensions are approximate.';
+  });
   listen($('plan-svg'), 'click', e => {
     if (!previewTracksModel || !e.target.dataset.id) return;
     if (view) view.select(e.target.dataset.id);
