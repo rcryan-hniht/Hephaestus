@@ -23,6 +23,7 @@ export default defineConfig({
   }],
   root: fileURLToPath(new URL('./src', import.meta.url)),
   build: {
+    chunkSizeWarningLimit: 1000,
     outDir: fileURLToPath(new URL('./dist', import.meta.url)),
     emptyOutDir: true,
   },
