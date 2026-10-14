@@ -1,6 +1,7 @@
 import { SceneView } from './scene.js';
 import { createJobClient } from './api.js';
 import { sceneToModel, sourceDescription, offsetProposal } from './backend-model.js';
+import { groupFloorFiles, assembleFloors } from './floors.js';
 import { sampleModel, reconstructDrawing, typeNames, drawingBounds } from './model.js';
 
 export function createWorkspace({ reducedMotion, onClose }) {
@@ -11,7 +12,9 @@ export function createWorkspace({ reducedMotion, onClose }) {
   let view, model, selected, parsed, worker, ticket = 0, lastFile, imageURL, active = false, planZoom = 1;
   let undo = [], redo = [];
   let previewTracksModel = true, proposal, sourceJob, sourceOutlines = false, pendingFit = false, apiBusy = false;
-  const drafts = new Map();
+  const singleDrafts = new Map();
+  let drafts = singleDrafts, floors = [], arrangementConfirmed = false;
+  let previewEpoch = 0;
   let fillSuggestions = false;
   const stageNames = { queued: 'Queued', extracting: 'Extracting drawing evidence', awaiting_ai_result: 'Waiting for hosted AI', validating: 'Validating geometry', building: 'Building model', needs_information: 'Confirm missing information', ready: 'Ready · Confirmed parameters', failed: 'Failed', cancelled: 'Cancelled' };
   const questionSpecs = {
@@ -20,8 +23,12 @@ export function createWorkspace({ reducedMotion, onClose }) {
     window_height: ['Window height (m)', .1, 10], window_sill: ['Window sill height (m)', 0, 10],
     review_confirmed: ['I reviewed and corrected the candidate footprints'],
   };
-  const api = createJobClient({ onUpdate: updateJob, onError: apiError });
-  function canEditBackend() { return model?.backend && model.job_id === api.job?.id && ['ready', 'failed'].includes(api.job.state) && !apiBusy; }
+  const singleApi = createJobClient({ onUpdate: updateJob, onError: apiError });
+  let api = singleApi;
+  function hasSourceModel() { return model?.backend && (model.job_id === api.job?.id || model.multiFloor && model.scene.floors.some(f => f.scene.job_id === api.job?.id)); }
+  function canEditBackend() { return hasSourceModel() && ['ready', 'failed'].includes(api.job.state) && !apiBusy; }
+  function canEditComponent() { return canEditBackend() && (!model.multiFloor || selected?.job_id === api.job.id); }
+  function componentScene(component) { return model.multiFloor ? model.scene.floors.find(f => f.scene.job_id === component.job_id).scene : model.scene; }
   function apiError(error) {
     message(error.message); $('drawing-message').dataset.error = 'true'; status(`Drawing request failed${model ? ' · Model retained' : ''}`);
     $('retry-job').hidden = !lastFile && !api.job; $('retry-job').textContent = 'Reconnect / refresh';
@@ -29,18 +36,20 @@ export function createWorkspace({ reducedMotion, onClose }) {
   }
   async function apiAction(action, payload) {
     if (apiBusy) return;
-    const drawingTicket = ticket;
+    const drawingTicket = ticket, client = api;
     if (action === 'proposal') { drafts.delete('review_confirmed'); const review = $('question-review_confirmed'); if (review) review.checked = false; }
     apiBusy = true; historyState();
+    if (floors.length) renderFloorStatus();
     $('api-questions').querySelectorAll('button').forEach(b => b.disabled = true);
     $('proposal-edit').querySelector('button').disabled = true;
-    try { await api.action(action, payload); }
+    try { await client.action(action, payload); }
     catch (error) { apiError(error); }
     finally {
-      if (drawingTicket !== ticket) return;
+      if (drawingTicket !== ticket || client !== api) return;
       apiBusy = false; historyState();
       $('api-questions').querySelectorAll('button').forEach(b => b.disabled = false);
       $('proposal-edit').querySelector('button').disabled = false;
+      if (floors.length) renderFloorStatus();
     }
   }
   function showSource() {
@@ -51,7 +60,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
   }
   function drawSource() {
     if (!proposal) return;
-    drawPlan(proposal.components.map(c => ({ ...c, type: c.type === 'room' ? 'slab' : c.type })), model?.job_id === sourceJob && api.job?.state === 'ready');
+    drawPlan(proposal.components.map(c => ({ ...c, type: c.type === 'room' ? 'slab' : c.type })), hasSourceModel() && api.job?.state === 'ready');
     sourceOutlines = true; $('toggle-source').textContent = 'View original drawing';
     if (selected) selectComponent(selected);
   }
@@ -68,7 +77,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
       input.type = q.key === 'review_confirmed' ? 'checkbox' : 'number';
       if (input.type === 'checkbox') input.checked = drafts.get(q.key) === true;
       else { input.min = spec[1]; input.max = spec[2]; input.step = 'any'; input.value = drafts.get(q.key) ?? ''; }
-      if (fillSuggestions && input.type !== 'checkbox' && Number.isFinite(job.suggestions[q.key]?.value)) input.value = job.suggestions[q.key].value;
+      if (fillSuggestions && input.type !== 'checkbox' && input.value === '' && Number.isFinite(job.suggestions[q.key]?.value)) input.value = job.suggestions[q.key].value;
       const note = document.createElement('small'); note.id = `note-${q.key}`; note.textContent = q.message;
       input.setAttribute('aria-describedby', note.id); label.append(input); row.append(label, note);
       if (q.key !== 'review_confirmed') {
@@ -88,12 +97,13 @@ export function createWorkspace({ reducedMotion, onClose }) {
     fillSuggestions = false;
     const useAll = document.createElement('button'); useAll.type = 'button'; useAll.className = 'button'; useAll.textContent = 'Use all suggestions';
     useAll.addEventListener('click', () => { fillSuggestions = true; void apiAction('answers', { unknown: job.questions.filter(q => q.key !== 'review_confirmed').map(q => q.key) }); });
-    const submit = document.createElement('button'); submit.type = 'submit'; submit.className = 'button button--white'; submit.textContent = 'Confirm and build'; form.append(useAll, submit);
+    const hint = document.createElement('small'); hint.textContent = 'Fill missing values only. Your entries and the footprint review checkbox are preserved.';
+    const submit = document.createElement('button'); submit.type = 'submit'; submit.className = 'button button--white'; submit.textContent = 'Confirm and build'; form.append(useAll, hint, submit);
   }
   async function updateJob({ job, proposal: nextProposal, scene }) {
     sourceJob = job.id;
     // SVG images are displayed only after the backend rejects active/external content.
-    if (job.source_kind === 'svg' && !imageURL && lastFile) {
+    if (job.source_kind === 'svg' && !imageURL && lastFile && (!floors.length || $('source-drawing').value === lastFile.name)) {
       imageURL = URL.createObjectURL(new Blob([lastFile], { type: 'image/svg+xml' })); $('drawing-image').src = imageURL; showSource();
     }
     if (nextProposal) {
@@ -107,7 +117,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     }
     renderQuestions(job);
     $('proposal-edit').hidden = !['needs_information', 'failed'].includes(job.state) || !proposal;
-    if (scene && (model?.job_id !== job.id || model.scene.revision !== scene.revision)) {
+    if (!floors.length && scene && (model?.job_id !== job.id || model.scene.revision !== scene.revision)) {
       const replacement = model?.job_id !== job.id;
       applyModel(sceneToModel(scene, job), { preserveSource: true, fit: replacement, clearHistory: replacement });
     }
@@ -118,6 +128,10 @@ export function createWorkspace({ reducedMotion, onClose }) {
     if (job.error) $('drawing-message').dataset.error = 'true';
     historyState();
     if (job.state === 'needs_information' && matchMedia('(max-width: 800px)').matches && active && !$('drawing-panel').classList.contains('is-open')) openDrawer('drawing-panel');
+    if (floors.length) {
+      renderFloorStatus();
+      if (job.state === 'ready') message('This floor is ready. Confirm the other floors and their alignment to assemble the building.');
+    }
   }
   function updateCandidate() {
     const c = proposal?.components.find(c => c.id === $('candidate-select').value);
@@ -149,7 +163,10 @@ export function createWorkspace({ reducedMotion, onClose }) {
     root.querySelectorAll('[data-drawer]').forEach(b => b.setAttribute('aria-expanded', 'false'));
   }
   function cancel(text = 'Processing cancelled. Current model retained.') {
-    ticket++; worker?.terminate(); worker = null; parsed = null; void api.stop();
+    ticket++; previewEpoch++; worker?.terminate(); worker = null; parsed = null;
+    void singleApi.stop(); floors.forEach(f => { void f.client.stop(); });
+    floors = []; api = singleApi; drafts = singleDrafts; arrangementConfirmed = false;
+    $('floor-sources').hidden = true; $('floor-alignment').hidden = true;
     proposal = null; sourceJob = null; apiBusy = false; drafts.clear(); fillSuggestions = false;
     $('api-questions').hidden = true; $('proposal-edit').hidden = true; $('toggle-source').hidden = true;
     $('cancel-job').hidden = true; $('continue-build').disabled = true;
@@ -158,7 +175,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
   function historyState() {
     $('undo').disabled = model?.backend ? !canEditBackend() || !api.job?.can_undo : !undo.length;
     $('redo').disabled = model?.backend ? !canEditBackend() || !api.job?.can_redo : !redo.length;
-    $('properties-form').querySelectorAll('input, button').forEach(el => el.disabled = Boolean(model?.backend && !canEditBackend()));
+    $('properties-form').querySelectorAll('input, button').forEach(el => el.disabled = Boolean(model?.backend && !canEditComponent()));
   }
   function resetPreviewZoom() {
     planZoom = 1;
@@ -183,6 +200,10 @@ export function createWorkspace({ reducedMotion, onClose }) {
     });
   }
   function selectComponent(component) {
+    if (component && model?.multiFloor) {
+      const floor = floors.find(f => f.job?.id === component.job_id);
+      if (floor && floor.client !== api && !apiBusy) activateFloor(floor);
+    }
     selected = component;
     $('component-select').value = component?.id || '';
     $('properties-form').hidden = !component;
@@ -196,8 +217,8 @@ export function createWorkspace({ reducedMotion, onClose }) {
     });
     if (!component) { $('selection-info').textContent = 'Select a component to inspect dimensions and source.'; return; }
     const xs = component.polygon.map(p => p[0]), zs = component.polygon.map(p => p[1]);
-    $('selection-info').textContent = `${typeNames[component.type]} · Floor ${component.floor + 1}\n${(Math.max(...xs) - Math.min(...xs)).toFixed(2)} × ${(Math.max(...zs) - Math.min(...zs)).toFixed(2)} × ${component.height.toFixed(2)} m\n${sourceDescription(component, model.name)}\n${model.backend ? `Validated drawing evidence. Parameters: ${Object.entries(model.scene.parameters).map(([k,v]) => `${k.replaceAll('_', ' ')}: ${v.value} (${v.provenance})`).join('; ')}${component.opening ? ' · Opening void, no inferred glazing or door leaf.' : ''}` : component.assumed ? 'Height / elevation: confirmed or editable assumption.' : 'Design dimensions of sample model.'}`;
-    $('component-height').value = component.height; $('component-elevation').value = component.elevation + (model.backend && component.source_type === 'room' ? component.height : 0);
+    $('selection-info').textContent = `${typeNames[component.type]} · Floor ${component.source_floor ?? component.floor + 1}\n${(Math.max(...xs) - Math.min(...xs)).toFixed(2)} × ${(Math.max(...zs) - Math.min(...zs)).toFixed(2)} × ${component.height.toFixed(2)} m\n${sourceDescription(component, model.name)}\n${model.backend ? `Validated drawing evidence. Parameters: ${Object.entries(componentScene(component).parameters).map(([k,v]) => `${k.replaceAll('_', ' ')}: ${v.value} (${v.provenance})`).join('; ')}${component.opening ? ' · Opening void, no inferred glazing or door leaf.' : ''}${model.multiFloor ? ' · Elevation edits are relative to this floor.' : ''}` : component.assumed ? 'Height / elevation: confirmed or editable assumption.' : 'Design dimensions of sample model.'}`;
+    $('component-height').value = component.height; $('component-elevation').value = (component.local_elevation ?? component.elevation) + (model.backend && component.source_type === 'room' ? component.height : 0);
     $('component-height').max = model.backend ? 20 : 100; $('component-elevation').min = model.backend ? 0 : -100; $('component-elevation').max = model.backend ? 20 : 1000;
     historyState();
     $('component-x').value = 0; $('component-z').value = 0;
@@ -213,7 +234,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     model = next;
     if (clearHistory) {
       undo = []; redo = [];
-      $('floor-select').replaceChildren(new Option('All floors', 'all'), ...Array.from({ length: model.floors }, (_, i) => new Option(`Floor ${i + 1}`, String(i))));
+      $('floor-select').replaceChildren(new Option('All floors', 'all'), ...Array.from({ length: model.floors }, (_, i) => new Option(`Floor ${model.multiFloor ? model.scene.floors[i].number : i + 1}`, String(i))));
       if (view) { view.floor = 'all'; view.hiddenTypes.clear(); }
       root.querySelectorAll('[data-type]').forEach(c => c.checked = true);
       $('section').value = 100; $('section-value').textContent = '100%';
@@ -222,11 +243,11 @@ export function createWorkspace({ reducedMotion, onClose }) {
     const hasView = ensureView();
     if (hasView) { view.setModel(model, fit && active); pendingFit = fit && !active; }
     $('model-empty').hidden = true;
-    $('model-label').hidden = false; $('model-label').textContent = model.backend ? `RECONSTRUCTED ${model.scene.source_kind.toUpperCase()} · ${model.name} · REVISION ${model.scene.revision}` : model.sample ? 'DEMO MODEL · METRIC UNITS' : 'PRELIMINARY DXF MODEL · VERIFY ASSUMPTIONS';
+    $('model-label').hidden = false; $('model-label').textContent = model.backend ? `RECONSTRUCTED ${model.multiFloor ? `${model.floors} FLOORS` : model.scene.source_kind.toUpperCase()} · ${model.name} · REVISION ${model.scene.revision}` : model.sample ? 'DEMO MODEL · METRIC UNITS' : 'PRELIMINARY DXF MODEL · VERIFY ASSUMPTIONS';
     $('project-name').textContent = model.name;
     if (updateSource) $('file-name').textContent = model.sample ? `${model.name} / Sample design plan` : model.name;
     $('model-notes').textContent = model.warnings.join(' ');
-    $('component-select').replaceChildren(new Option('Select on model or drawing', ''), ...model.components.map((c, i) => new Option(`${typeNames[c.type]} ${i + 1} · Floor ${c.floor + 1}`, c.id)));
+    $('component-select').replaceChildren(new Option('Select on model or drawing', ''), ...model.components.map((c, i) => new Option(`${typeNames[c.type]} ${i + 1} · Floor ${c.source_floor ?? c.floor + 1}`, c.id)));
     $('export-model').disabled = !hasView; $('export-scene').hidden = !model.backend;
     if (updateSource) { previewTracksModel = true; sourceOutlines = false; updatePlanForFloor(); }
     else if (sourceOutlines) drawSource();
@@ -255,6 +276,108 @@ export function createWorkspace({ reducedMotion, onClose }) {
       if (current !== ticket) return;
       await receiveFile(new File([drawing], `${sample.name}.svg`, { type: 'image/svg+xml' }));
     } catch (error) { if (current === ticket) apiError(error); }
+  }
+
+  function renderFloorStatus() {
+    for (const floor of floors) $('floor-status-' + floor.number).textContent = `F${floor.number} · ${floor.error ? 'Request failed; select this floor to retry' : stageNames[floor.job?.state] || 'Reading drawing'}`;
+    $('floor-alignment').querySelector('button').disabled = apiBusy || floors.some(f => f.job?.state !== 'ready');
+    $('source-floor').disabled = apiBusy;
+  }
+  function publishBuilding() {
+    if (!arrangementConfirmed || floors.some(f => f.job?.state !== 'ready')) return;
+    try {
+      const next = assembleFloors(floors);
+      const sameSources = model?.multiFloor && model.job_id === next.job_id;
+      if (sameSources && model.scene.revision === next.scene.revision && JSON.stringify(model.scene.floors.map(f => f.transform)) === JSON.stringify(next.scene.floors.map(f => f.transform))) return;
+      applyModel(next, { preserveSource: true, fit: !sameSources, clearHistory: !sameSources });
+      status(`Ready · ${next.floors} confirmed floors${view ? '' : ' · 3D unavailable'}`);
+      message('Building assembled from individually validated drawings and confirmed floor alignment.');
+    } catch (error) { apiError(error); }
+  }
+  async function displayFloorDrawing(floor, name) {
+    const epoch = ++previewEpoch, current = ticket;
+    const file = floor.files.find(f => f.name === name); if (!file) return;
+    if (imageURL) URL.revokeObjectURL(imageURL); imageURL = null;
+    $('drawing-image').removeAttribute('src'); $('drawing-image').hidden = true;
+    $('plan-svg').setAttribute('hidden', ''); $('preview-empty').hidden = false;
+    sourceOutlines = false; previewTracksModel = false;
+    // SVG previews are allowed only after successful source validation at submission.
+    if (/\.svg$/i.test(file.name) && !floor.job) return;
+    const url = URL.createObjectURL(file);
+    try {
+      if (/\.png$/i.test(file.name)) {
+        const probe = new Image(); probe.src = url; await probe.decode();
+        if (probe.naturalWidth * probe.naturalHeight > 20_000_000) throw new Error('PNG reference exceeds 20 megapixels.');
+      }
+      if (epoch !== previewEpoch || current !== ticket) { URL.revokeObjectURL(url); return; }
+      imageURL = url; $('drawing-image').src = url; showSource();
+      $('file-name').textContent = file.name; $('toggle-source').hidden = !proposal;
+    } catch (error) {
+      URL.revokeObjectURL(url);
+      if (epoch === previewEpoch && current === ticket) message(`Drawing preview unavailable: ${error.message}`);
+    }
+  }
+  function activateFloor(floor) {
+    if (apiBusy) return;
+    $('api-questions').querySelectorAll('input').forEach(input => drafts.set(input.name, input.type === 'checkbox' ? input.checked : input.value));
+    $('api-questions').replaceChildren();
+    api = floor.client; drafts = floor.drafts; fillSuggestions = false;
+    proposal = floor.latest?.proposal; sourceJob = floor.job?.id; lastFile = floor.file;
+    $('source-floor').value = String(floor.number);
+    $('source-drawing').replaceChildren(...floor.files.map(f => new Option(f.name, f.name)));
+    $('source-drawing').value = floor.file.name;
+    $('source-files').textContent = `Build source: ${floor.file.name}${/\.svg$/i.test(floor.file.name) ? ' · SVG vector evidence' : ' · PNG hosted AI'}. ${floor.files.length} drawing(s) retained.`;
+    $('file-name').textContent = floor.file.name; $('drawing-settings').hidden = true;
+    $('api-questions').hidden = true; $('proposal-edit').hidden = true; $('retry-job').hidden = true;
+    $('toggle-source').hidden = true; $('cancel-job').hidden = false;
+    selectComponent(null);
+    void displayFloorDrawing(floor, floor.file.name);
+    if (floor.latest) void updateJob(floor.latest);
+    else { status(`F${floor.number} · Reading drawing`); message('Preparing this floor. Other floors continue independently.'); }
+    if (floor.error) apiError(floor.error);
+    renderFloorStatus();
+  }
+  async function receiveFiles(files) {
+    if (!files.length) return;
+    if (files.length === 1) { await receiveFile(files[0]); return; }
+    let groups;
+    try { groups = groupFloorFiles(files); }
+    catch (error) { message(error.message); status('Check floor filenames · Current model retained'); return; }
+    cancel(''); const current = ticket;
+    floors = groups.map(floor => {
+      const entry = { ...floor, drafts: new Map() };
+      entry.client = createJobClient({
+        onUpdate: async update => {
+          if (current !== ticket) return;
+          entry.latest = update; entry.job = update.job; entry.error = null;
+          if (update.scene) entry.scene = update.scene;
+          if (api === entry.client) await updateJob(update);
+          renderFloorStatus(); publishBuilding();
+        },
+        onError: error => {
+          if (current !== ticket) return;
+          entry.error = error;
+          if (api === entry.client) apiError(error);
+          renderFloorStatus();
+        },
+      });
+      return entry;
+    });
+    $('source-floor').replaceChildren(...floors.map(f => new Option(`F${f.number}`, String(f.number))));
+    $('floor-sources').hidden = false; $('floor-alignment').hidden = false;
+    const offsets = $('floor-offsets'); offsets.replaceChildren();
+    for (const floor of floors) {
+      const row = document.createElement('div'); row.className = 'floor-offset';
+      const name = document.createElement('p'); name.id = `floor-status-${floor.number}`; row.append(name);
+      for (const [axis, title] of [['x', 'X'], ['y', 'Y plan']]) {
+        const label = document.createElement('label'); label.textContent = `F${floor.number} offset ${title} (m)`;
+        const input = document.createElement('input'); input.id = `floor-${floor.number}-${axis}`; input.type = 'number'; input.min = -1000; input.max = 1000; input.step = 'any'; input.required = true; input.value = 0;
+        label.append(input); row.append(label);
+      }
+      offsets.append(row);
+    }
+    activateFloor(floors[0]);
+    await Promise.all(floors.map(floor => floor.client.start(floor.file)));
   }
 
   async function receiveFile(file) {
@@ -344,12 +467,20 @@ export function createWorkspace({ reducedMotion, onClose }) {
     const url = URL.createObjectURL(new Blob([JSON.stringify(model.scene, null, 2)], { type: 'application/json' }));
     const link = document.createElement('a'); link.href = url; link.download = `${model.job_id}-revision-${model.scene.revision}.json`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
-  listen($('file-input'), 'change', e => { receiveFile(e.target.files[0]); e.target.value = ''; });
+  listen($('file-input'), 'change', e => { void receiveFiles([...e.target.files]); e.target.value = ''; });
+  listen($('source-floor'), 'change', event => activateFloor(floors.find(f => f.number === Number(event.target.value))));
+  listen($('source-drawing'), 'change', event => { const floor = floors.find(f => f.client === api); if (floor) void displayFloorDrawing(floor, event.target.value); });
+  listen($('floor-alignment'), 'input', () => { arrangementConfirmed = false; });
+  listen($('floor-alignment'), 'submit', event => {
+    event.preventDefault();
+    for (const floor of floors) { floor.offsetX = Number($(`floor-${floor.number}-x`).value); floor.offsetY = Number($(`floor-${floor.number}-y`).value); }
+    arrangementConfirmed = true; publishBuilding();
+  });
   listen($('cancel-job'), 'click', () => { if (api.job) void apiAction('cancel'); else cancel(); });
-  listen($('retry-job'), 'click', () => { if (!api.job) void receiveFile(lastFile); else if (['failed', 'cancelled'].includes(api.job.state)) void apiAction('retry'); else void api.refresh(); });
+  listen($('retry-job'), 'click', () => { if (!api.job) { if (floors.length) void api.start(lastFile); else void receiveFile(lastFile); } else if (['failed', 'cancelled'].includes(api.job.state)) void apiAction('retry'); else void api.refresh(); });
   listen($('drop-zone'), 'dragover', e => { e.preventDefault(); $('drop-zone').classList.add('is-over'); });
   listen($('drop-zone'), 'dragleave', () => $('drop-zone').classList.remove('is-over'));
-  listen($('drop-zone'), 'drop', e => { e.preventDefault(); $('drop-zone').classList.remove('is-over'); receiveFile(e.dataTransfer.files[0]); });
+  listen($('drop-zone'), 'drop', e => { e.preventDefault(); $('drop-zone').classList.remove('is-over'); void receiveFiles([...e.dataTransfer.files]); });
   listen($('back-home'), 'click', () => { active = false; root.hidden = true; closeDrawers(); onClose(); });
   for (const id of ['load-sample', 'empty-sample']) listen($(id), 'click', () => loadSample());
   listen($('plan-svg'), 'click', e => {
@@ -396,10 +527,10 @@ export function createWorkspace({ reducedMotion, onClose }) {
     const height = Number($('component-height').value), elevation = Number($('component-elevation').value), x = Number($('component-x').value), z = Number($('component-z').value);
     if (![height, elevation, x, z].every(Number.isFinite) || height < .01 || height > 100 || Math.abs(x) > 10000 || Math.abs(z) > 10000 || elevation < -100 || elevation > 1000) return;
     if (model.backend) {
-      if (!canEditBackend()) return;
+      if (!canEditComponent()) return;
       const component_values = { [selected.id]: { height, elevation } };
       if (x || z) {
-        try { await apiAction('proposal', { proposal: offsetProposal(proposal, selected.id, x, z, model.scene.parameters.meters_per_unit.value), component_values }); }
+        try { await apiAction('proposal', { proposal: offsetProposal(proposal, selected.id, x, z, componentScene(selected).parameters.meters_per_unit.value), component_values }); }
         catch (error) { apiError(error); }
       } else await apiAction('answers', { component_values });
       return;
@@ -445,6 +576,6 @@ export function createWorkspace({ reducedMotion, onClose }) {
     open, loadSample, loadDatasetSample,
     render(delta) { if (active && view && !document.hidden) view.render({ active: true, delta }); },
     motionChanged() { if (view) view.controls.enableDamping = !reducedMotion.matches; },
-    dispose() { void api.stop(); ticket++; worker?.terminate(); events.abort(); view?.dispose(); if (imageURL) URL.revokeObjectURL(imageURL); },
+    dispose() { void singleApi.stop(); floors.forEach(f => { void f.client.stop(); }); ticket++; previewEpoch++; worker?.terminate(); events.abort(); view?.dispose(); if (imageURL) URL.revokeObjectURL(imageURL); },
   };
 }

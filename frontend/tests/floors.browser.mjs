@@ -1,0 +1,80 @@
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+const browser = await chromium.launch({ headless: true, args: ['--enable-unsafe-swiftshader'] });
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+page.setDefaultTimeout(15000);
+const errors = []; page.on('pageerror', e => errors.push(e.message));
+try {
+ await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4174');
+ await page.locator('[data-upload]').first().click();
+ assert.equal(await page.locator('#file-input').getAttribute('multiple') !== null, true, 'batch file selection enabled');
+ const png = Buffer.from(await page.evaluate(() => { const c = document.createElement('canvas'); c.width = 20; c.height = 10; return c.toDataURL().split(',')[1]; }), 'base64');
+ const svg = await readFile(new URL('../../backend/tests/fixtures/known_rooms.svg', import.meta.url));
+ const jobs = []; page.on('response', async r => { if (r.url().endsWith('/api/jobs') && r.status() === 202) jobs.push(await r.json()); });
+ await page.locator('#file-input').setInputFiles([
+  { name:'F2.svg', mimeType:'image/svg+xml', buffer:svg }, { name:'F1_scaled.png', mimeType:'image/png', buffer:png },
+  { name:'F1.svg', mimeType:'image/svg+xml', buffer:svg }, { name:'F2_scaled.png', mimeType:'image/png', buffer:png },
+ ]);
+ await page.locator('#source-floor').waitFor({ state:'visible' });
+ assert.deepEqual(await page.locator('#source-floor option').allTextContents(), ['F1','F2']);
+ await page.locator('#api-questions').waitFor({ state:'visible' });
+ assert.match(await page.locator('#source-files').textContent(), /F1.svg/);
+ await page.locator('#source-drawing').selectOption('F1_scaled.png');
+ assert.equal(await page.locator('#drawing-image').isVisible(), true);
+ await page.locator('#source-drawing').selectOption('F1.svg');
+ for (const number of [1,2]) {
+  await page.locator('#source-floor').selectOption(String(number));
+  await page.locator('#api-questions').waitFor({ state:'visible' });
+  await page.locator('#question-meters_per_unit').fill('.01');
+  await page.getByRole('button',{name:'Use all suggestions', exact:true}).click();
+  await page.waitForFunction(() => document.getElementById('question-floor_height')?.value === '2.7');
+  await page.locator('#question-floor_height').fill(number === 1 ? '3' : '2.8');
+  await page.locator('#api-questions button[type=submit]').click();
+  await page.waitForFunction(() => document.getElementById('processing-status').textContent.includes('Ready'));
+ }
+ assert.equal(jobs.length,2, 'only vector build sources submitted');
+ assert.ok(jobs.every(j => j.source_kind === 'svg'));
+ assert.equal(await page.locator('#model-label').isVisible(),false, 'do not publish before alignment confirmation');
+ await page.locator('#floor-2-x').fill('1');
+ await page.locator('#floor-2-y').fill('.5');
+ await page.locator('#floor-alignment button[type=submit]').click();
+ await page.waitForFunction(() => document.getElementById('model-label').textContent.includes('2 FLOORS'));
+ assert.equal(await page.locator('#export-model').isEnabled(),true);
+ const jsonDownload = page.waitForEvent('download'); await page.locator('#export-scene').click();
+ const exported = JSON.parse(await readFile(await (await jsonDownload).path(),'utf8'));
+ assert.equal(exported.schema_version,'hephaestus.building.v1');
+ assert.equal(exported.floors.length,2);
+ assert.deepEqual(exported.floors[1].transform,[1,3,-.5]);
+ assert.equal(exported.floors[1].scene.parameters.floor_height.value,2.8);
+ const wall = exported.components.find(c => c.floor === 1 && c.type === 'wall');
+ assert.equal(wall.elevation,3);
+ const firstJob = exported.floors[0].scene.job_id, secondJob = exported.floors[1].scene.job_id;
+ await page.locator('#source-floor').selectOption('1');
+ await page.locator('#component-select').selectOption(wall.id);
+ assert.equal(await page.locator('#source-floor').inputValue(),'2','selection follows its source floor');
+ assert.equal(await page.locator('#component-elevation').inputValue(),'0','edits use floor-local elevation');
+ await page.locator('#component-height').fill('3.1');
+ await page.locator('#properties-form button').click();
+ await page.waitForFunction(() => document.getElementById('model-label').textContent.includes('1.2'));
+ assert.equal((await (await page.request.get(`${new URL(page.url()).origin}/api/jobs/${secondJob}/scene`)).json()).revision,2);
+ assert.equal((await (await page.request.get(`${new URL(page.url()).origin}/api/jobs/${firstJob}/scene`)).json()).revision,1);
+ await page.locator('#undo').click();
+ await page.waitForFunction(() => document.getElementById('model-label').textContent.includes('1.1'));
+ await page.locator('#redo').click();
+ await page.waitForFunction(() => document.getElementById('model-label').textContent.includes('1.2'));
+ const glbDownload = page.waitForEvent('download'); await page.locator('#export-model').click();
+ const binary = await readFile(await (await glbDownload).path());
+ assert.equal(binary.readUInt32LE(0),0x46546c67);
+ const gltf = JSON.parse(binary.subarray(20,20+binary.readUInt32LE(12)).toString());
+ assert.equal(gltf.nodes.find(n => n.extras?.schema_version === 'hephaestus.building.v1').extras.floors.length,2);
+ await page.locator('#file-input').setInputFiles([{name:'F1.svg',mimeType:'image/svg+xml',buffer:svg},{name:'F2.png',mimeType:'image/png',buffer:png}]);
+ await page.locator('#source-floor').selectOption('2');
+ await page.waitForFunction(() => document.getElementById('processing-status').textContent.includes('Failed'));
+ assert.match(await page.locator('#model-label').textContent(),/2 FLOORS/);
+ assert.equal(await page.locator('#export-model').isEnabled(),true);
+ await page.setViewportSize({ width:390,height:844 });
+ assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),true);
+ assert.deepEqual(errors,[]);
+ console.log('PASS: paired multi-file floors, suggestions, confirmed stacking, local edits/history, source metadata/export and failure retention');
+} finally { await browser.close(); }

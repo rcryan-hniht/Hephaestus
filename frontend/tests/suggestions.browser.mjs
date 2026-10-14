@@ -9,10 +9,11 @@ try {
  await page.locator('#file-input').setInputFiles(new URL('../../backend/tests/fixtures/known_rooms.svg', import.meta.url).pathname);
  await page.locator('#api-questions').waitFor({ state: 'visible' });
  await page.locator('#question-meters_per_unit').fill('.01');
+ await page.locator('#question-floor_height').fill('4');
  await page.getByRole('button', { name: 'Use all suggestions', exact: true }).click();
- await page.waitForFunction(() => document.getElementById('question-floor_height')?.value === '2.7');
+ await page.waitForFunction(() => document.getElementById('question-door_height')?.value === '2.1');
  assert.equal(await page.locator('#question-meters_per_unit').inputValue(), '.01');
- for (const [key,value] of Object.entries({ floor_height:'2.7', slab_thickness:'.2', door_height:'2.1', window_height:'1.2', window_sill:'.9' })) assert.equal(Number(await page.locator(`#question-${key}`).inputValue()), Number(value));
+ for (const [key,value] of Object.entries({ floor_height:'4', slab_thickness:'.2', door_height:'2.1', window_height:'1.2', window_sill:'.9' })) assert.equal(Number(await page.locator(`#question-${key}`).inputValue()), Number(value));
  assert.equal(await page.locator('#model-label').isVisible(), false);
  await page.locator('#api-questions button[type=submit]').click();
  await page.waitForFunction(() => document.getElementById('processing-status').textContent.startsWith('Ready ·'));

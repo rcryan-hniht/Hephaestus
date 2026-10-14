@@ -40,6 +40,29 @@ opening parameters. No model assumptions are applied and no hosted PNG request
 is sent when opening these vector samples. PNG and SVG coordinates remain
 separate; a paired filename does not establish their geometric registration.
 
+For a building, select multiple PNG/SVG files once: `F1.png`, `F1.svg`,
+`F2.png`, `F2.svg` (suffixes such as `F1_scaled.png` work). The workspace
+groups consecutive floor prefixes starting with F1 and uses one SVG per floor
+when available; otherwise it submits one PNG. Paired PNG files remain local
+comparison sources, not extra AI submissions. Duplicate build sources and
+missing floor numbers are rejected before submission. Limits: 8 floors,
+16 files, 10 MB per file and 40 MB total.
+
+Each floor keeps its own source-bound job, questions, corrections and history.
+`Use all suggestions` fills blank numeric fields in that floor in one action;
+it preserves typed values and never supplies scale or checks PNG footprint
+review. `Confirm and build` remains explicit. Confirm alignment after every
+floor is ready: drawings are normalized by their recorded source origin, moved
+by the editable X/Y plan offsets and stacked using confirmed floor heights.
+A failed, cancelled or incomplete floor cannot replace the valid building.
+
+The frontend exports `hephaestus.building.v1` JSON containing each original
+single-floor `hephaestus.scene.v1` scene, source hash, revision, drawings and
+confirmed transform, plus combined components in meters. GLB includes the
+per-floor source and transform metadata. Backend jobs remain single-floor;
+there is no new bulk inference endpoint. Grouping/alignment is held in the
+current workspace and exported JSON, and is not restored after page reload.
+
 Browser integration checks use private temporary jobs and no live AI requests.
 Start `backend/.venv/bin/python backend/tests/browser_server.py` from the root,
 then `BACKEND_PORT=8765 bun run dev --host 127.0.0.1 --port 4174` in `frontend/`.
