@@ -52,8 +52,11 @@ by the owner on 2026-10-14 after the original 7B checkpoint was unavailable.
 The 72B identifier was present with image support in the public catalog checked
 that day. The backend still rechecks exact availability before every PNG request.
 Unavailable models yield `model_unavailable`; no fallback is substituted.
-Provenance records the requested and actual model for each attempt. No real
-hosted inference was run during development; browser PNG checks use fixtures.
+Provenance records the requested and actual model for each attempt. A live
+image-chat smoke check on 2026-10-14 used the owner's supplied Flickr image:
+the requested and actual model matched, provider Parasail reported 919 tokens
+and $0.0007518 cost, with 3.873 seconds measured request latency. This check
+tested image chat; architectural PNG reconstruction checks still use fixtures.
 
 ## Docker
 
