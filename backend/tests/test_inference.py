@@ -188,3 +188,31 @@ def test_printed_square_meters_do_not_reject_an_image_proposal():
     assert result.attempts[0]["valid"] is True
     assert result.proposal.dimensions[0].unit == "m²"
     assert result.proposal.meters_per_unit is None
+
+
+def test_null_source_annotations_preserve_image_geometry():
+    def handler(request):
+        if request.url.path.endswith("/models"):
+            return httpx.Response(
+                200,
+                json={
+                    "data": [
+                        {"id": Settings().model, "architecture": {"input_modalities": ["image"]}}
+                    ]
+                },
+            )
+        p = valid_response()
+        p["components"][0]["source"] = None
+        return httpx.Response(
+            200,
+            json={
+                "model": Settings().model,
+                "choices": [{"finish_reason": "stop", "message": {"content": json.dumps(p)}}],
+            },
+        )
+
+    result = run(handler)
+    assert len(result.attempts) == 1
+    assert result.proposal.components[0].polygon == [(1, 1), (10, 1), (10, 3), (1, 3)]
+    assert result.proposal.components[0].source.element_id == "wall-1"
+    assert result.proposal.components[0].source.text is None

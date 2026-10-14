@@ -4,11 +4,11 @@ import math
 import re
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from shapely.geometry import Polygon
 
 SCHEMA_VERSION = "hephaestus.scene.v1"
-PROMPT_VERSION = "architectural-evidence.v2"
+PROMPT_VERSION = "architectural-evidence.v3"
 MAX_COMPONENTS = 2000
 MAX_VERTICES = 20000
 
@@ -44,6 +44,12 @@ class Component(StrictModel):
     source: SourceRef = Field(default_factory=SourceRef)
     confidence: float | None = Field(default=None, ge=0, le=1)
     uncertainty: str | None = Field(default=None, max_length=2000)
+
+    @field_validator("source", mode="before")
+    @classmethod
+    def absent_annotation(cls, value):
+        # Image polygons remain evidence even when no source annotation is readable.
+        return {} if value is None else value
 
     @model_validator(mode="after")
     def valid_polygon(self):

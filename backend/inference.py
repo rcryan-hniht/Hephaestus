@@ -22,6 +22,7 @@ Use ORIGINAL image pixel coordinates, x right/y down, floor 0. The supplied imag
 use the supplied transform to convert back to original coordinates. A model confidence is not
 a calibrated probability. Dimension values need visible text and reference endpoints. Scale is
 null unless explicit visible dimensions support it. Source references contain evidence only.
+Use an empty object {} for a component source when no annotation is readable, not null.
 Preserve printed room areas using square units (m², cm², mm², ft², in²). Area is not
 a length: set its reference to null and never derive meters_per_unit from an area label.
 """

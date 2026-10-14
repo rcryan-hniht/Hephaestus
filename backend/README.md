@@ -151,7 +151,7 @@ the caller; never accept a response for a different active drawing.
 ## Evidence and export contract
 
 The version is `hephaestus.scene.v1`; the PNG prompt version is
-`architectural-evidence.v2`. `contracts.py` defines the extraction JSON Schema,
+`architectural-evidence.v3`. `contracts.py` defines the extraction JSON Schema,
 also included in OpenAPI's proposal-import request. The proposal includes:
 
 - `job_id`, `source_hash`, `schema_version`, and `source_kind`.
