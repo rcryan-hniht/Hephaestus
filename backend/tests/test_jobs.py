@@ -131,6 +131,14 @@ def test_invalid_inputs_are_rejected(client, name, data):
     assert client.post("/api/jobs", files={"file": (name, data)}).status_code == 422
 
 
+def test_valid_jpg_upload_accepted(client):
+    out = io.BytesIO()
+    Image.new("RGB", (30, 20), "white").save(out, format="JPEG")
+    r = client.post("/api/jobs", files={"file": ("drawing.jpg", out.getvalue())})
+    assert r.status_code == 202
+    assert r.json()["source_kind"] == "png"
+
+
 def test_png_offline_import_requires_binding_and_review(tmp_path):
     with TestClient(create_app(Settings(data_dir=tmp_path, inference_engine="openrouter"))) as client:
         out = io.BytesIO()

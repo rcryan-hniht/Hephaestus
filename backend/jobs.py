@@ -94,9 +94,33 @@ class Jobs:
         if not data or len(data) > self.settings.max_upload_bytes:
             raise JobError(422, "Empty drawing or file exceeds configured limit")
         name = name.replace("\\", "/").split("/")[-1][:200]
-        kind = name.rsplit(".", 1)[-1].lower()
-        if kind not in ("png", "svg"):
-            raise JobError(422, "Supported input formats are PNG and SVG")
+        ext = name.rsplit(".", 1)[-1].lower() if "." in name else ""
+        if ext in ("jpg", "jpeg", "webp"):
+            try:
+                import io
+
+                from PIL import Image
+
+                with Image.open(io.BytesIO(data)) as img:
+                    if getattr(img, "n_frames", 1) != 1:
+                        raise ValueError("Only single-frame images are supported")
+                    bg = Image.new("RGB", img.size, "white")
+                    if img.mode in ("RGBA", "LA") or (
+                        img.mode == "P" and "transparency" in img.info
+                    ):
+                        bg.paste(img, mask=img.convert("RGBA").split()[3])
+                    else:
+                        bg.paste(img.convert("RGB"))
+                    out = io.BytesIO()
+                    bg.save(out, format="PNG")
+                    data = out.getvalue()
+                kind = "png"
+            except Exception as e:
+                raise JobError(422, f"Invalid image format: {e}") from e
+        elif ext in ("png", "svg"):
+            kind = ext
+        else:
+            raise JobError(422, "Supported input formats are PNG, JPG, and SVG")
         job_id = uuid.uuid4().hex
         source_hash = hashlib.sha256(data).hexdigest()
         try:

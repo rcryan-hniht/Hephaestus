@@ -43,11 +43,11 @@ class ExtractionResult:
 def validate_png(data: bytes, settings: Settings) -> tuple[int, int]:
     try:
         with Image.open(io.BytesIO(data)) as image:
-            if image.format != "PNG" or getattr(image, "n_frames", 1) != 1:
-                raise ValueError("Only single-frame PNG images are supported")
+            if getattr(image, "n_frames", 1) != 1:
+                raise ValueError("Only single-frame images are supported")
             width, height = image.size
             if width * height > settings.max_image_pixels or max(width, height) > 20000:
-                raise ValueError("PNG exceeds decoded image limits")
+                raise ValueError("Image exceeds decoded image limits")
             image.verify()
         with Image.open(io.BytesIO(data)) as image:
             image.load()
@@ -57,7 +57,7 @@ def validate_png(data: bytes, settings: Settings) -> tuple[int, int]:
         Image.DecompressionBombError,
         Image.DecompressionBombWarning,
     ) as e:
-        raise ValueError("Invalid PNG image") from e
+        raise ValueError("Invalid image") from e
     return width, height
 
 

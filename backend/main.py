@@ -4,6 +4,7 @@ import json
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, UploadFile
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from pydantic import Field
@@ -90,7 +91,19 @@ def create_app(settings: Settings | None = None, inference=None):
 
     @app.exception_handler(JobError)
     async def job_error(request, exc):
+        import logging
+
+        logging.getLogger("uvicorn.error").warning("JobError [%s]: %s", exc.status, exc)
         return JSONResponse(status_code=exc.status, content={"detail": str(exc)})
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error(request, exc):
+        import logging
+
+        logging.getLogger("uvicorn.error").warning(
+            "RequestValidationError on %s: %s", request.url.path, exc.errors()
+        )
+        return JSONResponse(status_code=422, content={"detail": exc.errors()})
 
     @app.get("/health")
     def health():
@@ -112,7 +125,7 @@ def create_app(settings: Settings | None = None, inference=None):
     @app.get("/api/capabilities")
     def capabilities():
         return {
-            "formats": ["png", "svg"],
+            "formats": ["png", "svg", "jpg", "jpeg"],
             "max_upload_bytes": settings.max_upload_bytes,
             "max_image_pixels": settings.max_image_pixels,
             "schema_version": "hephaestus.scene.v1",
