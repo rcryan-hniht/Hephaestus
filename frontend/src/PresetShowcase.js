@@ -26,7 +26,7 @@ export function createPresetShowcase({ view, canvas, snapshot, motion, onChange,
       snapshot.width = canvas.width; snapshot.height = canvas.height;
       context.drawImage(canvas, 0, 0);
       snapshot.hidden = false; snapshot.style.transform = 'none'; snapshot.style.opacity = '1';
-      transition = 0; canvas.style.transform = 'translateX(48px)'; canvas.style.opacity = '0';
+      transition = 0; canvas.style.opacity = '0';
     }
     index = next; elapsed = 0;
     view.setMode('solid'); view.setModel(models[index]); renderModel();
@@ -54,8 +54,8 @@ export function createPresetShowcase({ view, canvas, snapshot, motion, onChange,
       if (active && transition !== null) {
         transition = Math.min(1, transition + delta / .85);
         const eased = 1 - (1 - transition) ** 3;
-        snapshot.style.transform = `translateX(${-48 * eased}px)`; snapshot.style.opacity = String(1 - eased);
-        canvas.style.transform = `translateX(${48 * (1 - eased)}px)`; canvas.style.opacity = String(eased);
+        snapshot.style.opacity = String(1 - eased);
+        canvas.style.opacity = String(eased);
         if (transition === 1) finish();
       }
       renderModel();

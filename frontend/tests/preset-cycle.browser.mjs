@@ -22,7 +22,8 @@ try {
       return { name: showcase.name, mode: view.mode, scale: view.meshes.find(m => m.userData.type === 'wall').scale.y,
         angle: Math.atan2(offset.x, offset.z) * 180 / Math.PI,
         incomingX: new DOMMatrixReadOnly(getComputedStyle(canvas).transform).m41,
-        outgoingX: new DOMMatrixReadOnly(getComputedStyle(snapshot).transform).m41 };
+        outgoingX: new DOMMatrixReadOnly(getComputedStyle(snapshot).transform).m41,
+        incomingOpacity: Number(getComputedStyle(canvas).opacity), outgoingOpacity: Number(getComputedStyle(snapshot).opacity) };
     };
     const frames = [];
     showcase.render(0, true); frames.push(capture());
@@ -44,10 +45,12 @@ try {
   assert.ok(Math.abs(frames[1].angle - frames[0].angle - 6) < .01, 'Orbit six degrees per second');
   assert.ok(Math.abs(frames[4].angle - 9) < .01, 'Rotation continues through mode changes');
   assert.ok(Math.abs(frames[5].angle + 27) < .01, 'Next preset starts its own sweep');
-  assert.ok(frames[5].incomingX > 0 && frames[5].outgoingX < 0, 'Preset swipe moves from right to left');
+  assert.equal(frames[5].incomingX, 0, 'Incoming preset stays centered');
+  assert.equal(frames[5].outgoingX, 0, 'Outgoing preset stays centered');
+  assert.ok(frames[5].incomingOpacity > 0 && frames[5].incomingOpacity < 1 && frames[5].outgoingOpacity < 1, 'Presets fade without sliding');
   assert.deepEqual(frames.slice(0, 6).map(f => f.mode), ['solid', 'solid', 'solid', 'edges', 'transparent', 'solid']);
   assert.equal(frames[2].scale, 1, 'Construction completes during the first Solid phase');
-  assert.equal(frames[5].name, 'Terrace Villa', 'Switch at nine seconds, including the slide');
+  assert.equal(frames[5].name, 'Terrace Villa', 'Switch at nine seconds, including the fade');
   assert.ok(frames[5].scale <= .001, 'Construction restarts on every preset');
   assert.deepEqual(frames.slice(6, 9).map(f => f.name), ['Portal Villa', 'Gable Villa', '3F villa']);
   assert.deepEqual(frames[9], frames[8], 'Leaving Manifesto freezes the cycle');
