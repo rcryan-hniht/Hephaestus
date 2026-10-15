@@ -32,7 +32,7 @@
     <g id="F1-side-wall-8" class="Wall Side_wall">
       <polygon points="1430.000,1720.000 1410.000,1720.000 1410.000,1316.800 1410.000,1301.800 1410.000,870.000 1430.000,870.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F1-garage-door-9" class="Door Garage_door">
+    <g id="F1-front-window-9" class="Window Front_window">
       <polygon points="870.000,870.000 1360.000,870.000 1360.000,850.000 870.000,850.000" fill="#c45c3d" stroke="#333" stroke-width="1" />
     </g>
     <g id="F1-left-front-door" class="Door Front_door">

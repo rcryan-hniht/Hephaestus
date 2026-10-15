@@ -149,6 +149,10 @@ def test_villa_drawings_require_confirmation_and_build_source_bound_floors(
                     underside = 9.75 + 0.3 * (-z - 8.5) / 8.9
                     assert y <= underside + 1e-7, "No upper wall may protrude through the roof"
             ground = [c for c in scene["components"] if c["source_floor"] == 1]
+            window = next(c for c in ground if c["source"]["element_id"] == "F1-front-window-9")
+            assert window["type"] == "window" and window["opening"]
+            assert Polygon(window["polygon"]).bounds == pytest.approx((8.7, -8.7, 13.6, -8.5))
+            assert (window["height"], window["elevation"]) == pytest.approx((2.55, 0.15))
             assert not any(
                 c["source"]["element_id"] == "F1-garden-retaining-wall-10" for c in ground
             )

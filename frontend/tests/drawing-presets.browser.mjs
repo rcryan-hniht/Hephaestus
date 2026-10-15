@@ -99,6 +99,8 @@ try {
     if (id === 'gable') assert.ok(scene.components.some(c => c.type === 'roof' && c.roof_kind === 'gable'));
     await page.waitForFunction(() => document.getElementById('model-label').textContent.startsWith('RECONSTRUCTED'));
     if (id === 'terrace') {
+      assert.equal(await page.locator('#component-select option').nth(10).textContent(), 'Window 10 · Floor 1');
+      assert.ok(scene.components.some(c => c.source.element_id === 'F1-front-window-9' && c.type === 'window' && c.opening));
       assert.equal(scene.components.some(c => c.source.element_id === 'F1-garden-retaining-wall-10'), false);
       assert.ok(scene.components.some(c => c.source.element_id === 'F1-left-front-door' && c.opening));
       await page.locator('[data-view="elevation"]').click();

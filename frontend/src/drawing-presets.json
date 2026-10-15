@@ -2,13 +2,13 @@
   {
     "id": "terrace",
     "name": "Terrace Villa",
-    "description": "Synthetic stepped villa: connected ground floor with two front openings, two living floors, terrace parapets, a continuous shed roof and internal stairs connecting all three floors. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are omitted.",
+    "description": "Synthetic stepped villa: connected ground floor with a front window and doorway, two living floors, terrace parapets, a continuous shed roof and internal stairs connecting all three floors. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are omitted.",
     "folder": "terrace_villa",
     "url": "/presets/terrace-villa",
     "floors": [
       {
         "number": 1,
-        "source_hash": "ffca12a8d49dad67fdfa18b1d37b3b060fc5b881e9591459bfe4c007ce7edacb",
+        "source_hash": "0cef1189b6ea2975988e94d633049695a6c84d52726c995cd74786ce1169a14b",
         "parameters": {
           "meters_per_unit": 0.01,
           "floor_height": 3.2,
@@ -54,7 +54,7 @@
             "height": 3.2,
             "elevation": 0
           },
-          "F1-garage-door-9": {
+          "F1-front-window-9": {
             "height": 2.55,
             "elevation": 0.15
           },
