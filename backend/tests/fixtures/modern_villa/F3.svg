@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1840" viewBox="0 0 1400 1840">
-  <title>Modern Villa V2 / F3</title>
+  <title>3F villa / F3</title>
   <desc>Synthetic stepped villa input. Three storeys, terraces, a recessed roof pavilion and a raised thin roof canopy. Internal stair flights and landings connect all four supplied floors. Component heights require explicit preset confirmation. Glazing is omitted.</desc>
   <rect width="1400" height="1840" fill="#fafafa" />
-  <text x="140" y="62" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">HEPHAESTUS / MODERN VILLA V2 / SYNTHETIC INPUT</text>
+  <text x="140" y="62" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">HEPHAESTUS / 3F VILLA / SYNTHETIC INPUT</text>
   <text x="140" y="110" fill="#333" font-family="Arial, sans-serif" font-size="30" text-anchor="start">F3 / SETBACK LOUNGE / SKY GARDEN</text>
   <text x="140" y="151" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">10.00 m x 14.00 m design envelope / common source coordinates</text>
   <g id="Floor-3" class="Floorplan" transform="translate(140 240)">
@@ -160,5 +160,5 @@
   </g>
   <text x="140" y="1708" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Scale: 100 SVG units = 1.00 m / confirm 0.01 meters per source unit</text>
   <text x="140" y="1748" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Floor height: 3.30 m / slab: 0.20 m / offsets X and Y: zero</text>
-  <text x="140" y="1788" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="start">Use the Villa V2 preset for low parapets and the elevated roof canopy; confirm before building.</text>
+  <text x="140" y="1788" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="start">Use the 3F villa preset for low parapets and the elevated roof canopy; confirm before building.</text>
 </svg>

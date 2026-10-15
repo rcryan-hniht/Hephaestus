@@ -11,6 +11,7 @@ try {
   });
   await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4176');
   await page.locator('#explore-demo').click();
+  assert.equal(await page.locator('#drawing-preset option[value="modern"]').textContent(), '3F villa');
   const submission = page.waitForResponse(response => response.url().endsWith('/api/buildings') && response.request().method() === 'POST');
   await page.locator('#load-villa-preset').click();
   const building = await (await submission).json();
@@ -38,6 +39,8 @@ try {
   const canopy = scene.components.find(c => c.source.element_id === 'F4-canopy');
   assert.ok(Math.abs(canopy.elevation + canopy.height - 13.2) < 1e-8);
   assert.ok(scene.components.some(c => c.source_floor === 4 && c.height === 1.1));
+  assert.equal(scene.components.filter(c => c.source_floor === 4 && c.type === 'door').length, 1);
+  assert.deepEqual(scene.components.filter(c => c.source_floor === 4 && c.type === 'window').map(c => c.source.element_id), ['F4-pavilion-front']);
   await page.waitForFunction(() => document.getElementById('project-name').textContent.includes('Building'));
   assert.equal(await page.locator('#export-model').isEnabled(), true);
   await page.locator('#fit-model').click();

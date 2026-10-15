@@ -20,6 +20,7 @@ def test_modern_villa_inputs_build_setback_storeys_terraces_and_a_rooftop_canopy
     preset_path = Path(__file__).resolve().parents[2] / "frontend/src/villa-preset.json"
     assert preset_path.is_file(), "Villa preset parameters are missing"
     preset = json.loads(preset_path.read_text())
+    assert preset["name"] == "3F villa"
     with TestClient(create_app(Settings(data_dir=tmp_path))) as client:
         response = client.post(
             "/api/buildings",
@@ -69,6 +70,15 @@ def test_modern_villa_inputs_build_setback_storeys_terraces_and_a_rooftop_canopy
         assert response.status_code == 200, response.text
         scene = client.get(f"/api/buildings/{building['id']}/scene").json()
         assert [floor["transform"][1] for floor in scene["floors"]] == [0, 3.6, 6.9, 10.2]
+        assert (
+            len([c for c in scene["components"] if c["source_floor"] == 4 and c["type"] == "door"])
+            == 1
+        )
+        assert [
+            c["source"]["element_id"]
+            for c in scene["components"]
+            if c["source_floor"] == 4 and c["type"] == "window"
+        ] == ["F4-pavilion-front"]
         stairs = [c for c in scene["components"] if c["type"] == "stair"]
         assert [c["source_floor"] for c in stairs] == [1, 1, 2, 2, 3, 3]
         for stair in stairs:

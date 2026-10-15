@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1840" viewBox="0 0 1400 1840">
-  <title>Modern Villa V2 / F4</title>
+  <title>3F villa / F4</title>
   <desc>Synthetic stepped villa input. Three storeys, terraces, a recessed roof pavilion and a raised thin roof canopy. Internal stair flights and landings connect all four supplied floors. Component heights require explicit preset confirmation. Glazing is omitted.</desc>
   <rect width="1400" height="1840" fill="#fafafa" />
-  <text x="140" y="62" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">HEPHAESTUS / MODERN VILLA V2 / SYNTHETIC INPUT</text>
+  <text x="140" y="62" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">HEPHAESTUS / 3F VILLA / SYNTHETIC INPUT</text>
   <text x="140" y="110" fill="#333" font-family="Arial, sans-serif" font-size="30" text-anchor="start">F4 / ROOF TERRACE / PAVILION / CANOPY</text>
   <text x="140" y="151" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">10.00 m x 14.00 m design envelope / common source coordinates</text>
   <g id="Floor-4" class="Floorplan" transform="translate(140 240)">
@@ -49,17 +49,8 @@
     <g id="F4-pavilion-entry" class="Door Opening">
       <polygon points="750.000,890.000 750.000,910.000 600.000,910.000 600.000,890.000" fill="#fafafa" stroke="#b25b3d" stroke-width="1" />
     </g>
-    <g id="F4-pavilion-north" class="Window Opening">
-      <polygon points="770.000,430.000 770.000,450.000 450.000,450.000 450.000,430.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
-    </g>
     <g id="F4-pavilion-front" class="Window Opening">
       <polygon points="580.000,890.000 580.000,910.000 450.000,910.000 450.000,890.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
-    </g>
-    <g id="F4-pavilion-west" class="Window Opening">
-      <polygon points="450.000,480.000 450.000,860.000 430.000,860.000 430.000,480.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
-    </g>
-    <g id="F4-pavilion-east" class="Window Opening">
-      <polygon points="790.000,480.000 790.000,860.000 770.000,860.000 770.000,480.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
     </g>
     <g class="Annotation" fill="none" stroke="#888">
       <rect x="370" y="370" width="480" height="600" stroke="#b8926a" stroke-width="3" stroke-dasharray="10 5" />
@@ -73,5 +64,5 @@
   </g>
   <text x="140" y="1708" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Scale: 100 SVG units = 1.00 m / confirm 0.01 meters per source unit</text>
   <text x="140" y="1748" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Floor height: 3.00 m / slab: 0.20 m / offsets X and Y: zero</text>
-  <text x="140" y="1788" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="start">Use the Villa V2 preset for low parapets and the elevated roof canopy; confirm before building.</text>
+  <text x="140" y="1788" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="start">Use the 3F villa preset for low parapets and the elevated roof canopy; confirm before building.</text>
 </svg>
