@@ -30,8 +30,12 @@ try {
   const fontSize = await brand.evaluate(el => parseFloat(getComputedStyle(el).fontSize));
   assert.ok(fontSize >= 34, `Brand font size should be large, got ${fontSize}px`);
 
-  // 3. Phase 2 transition via next chapter or wheel
-  await page.locator('#next-chapter').click();
+  assert.equal(await page.locator('#visual-label, #next-chapter, #chapter-caption').count(), 0);
+  const descriptionSize = await page.locator('[data-copy="0"] .chapter-description').evaluate(el => parseFloat(getComputedStyle(el).fontSize));
+  assert.ok(descriptionSize >= 17, `Description should be enlarged, got ${descriptionSize}px`);
+
+  // 3. Phase 2 transition via keyboard
+  await page.keyboard.press('PageDown');
   await page.waitForFunction(() => document.body.dataset.chapter === '1');
 
   // Verify chapter 1 is active
@@ -43,12 +47,12 @@ try {
   await canvas.waitFor({ state: 'visible' });
   assert.equal(await canvas.isVisible(), true, 'Landing 3D canvas should be visible in Phase 2');
 
-  await page.waitForFunction(() => document.getElementById('visual-label').textContent.includes('3F VILLA'));
+  await page.waitForFunction(() => document.getElementById('landing-canvas').getAttribute('aria-label').toUpperCase().includes('3F VILLA'));
 
   // 4. Test workspace entry via "Upload your drawing" or "Explore a demo"
-  await page.locator('#next-chapter').click(); // to works
+  await page.keyboard.press('PageDown'); // to works
   await page.waitForTimeout(400);
-  await page.locator('#next-chapter').click(); // back to hero
+  await page.keyboard.press('Home'); // back to hero
   await page.waitForTimeout(400);
 
   const demoButton = page.locator('#explore-demo');
@@ -57,6 +61,24 @@ try {
 
   const workspaceVisible = await page.locator('#workspace').isVisible();
   assert.equal(workspaceVisible, true, 'Workspace should open on demo explore action');
+
+  for (const width of [375, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.reload();
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
+    const layout = await page.evaluate(() => ({
+      sloganBottom: document.querySelector('.slogan').getBoundingClientRect().bottom,
+      photoTop: document.getElementById('visual-frame').getBoundingClientRect().top,
+      descriptionSize: parseFloat(getComputedStyle(document.querySelector('.chapter-description')).fontSize),
+      overflow: document.documentElement.scrollWidth > innerWidth,
+    }));
+    assert.ok(layout.sloganBottom < layout.photoTop, `${width}px: enlarged slogan must stay above the photo after fonts load`);
+    assert.ok(layout.descriptionSize >= 16);
+    assert.equal(layout.overflow, false);
+  }
 
   assert.deepEqual(errors, []);
   console.log('✓ landing-ui browser test passed successfully');

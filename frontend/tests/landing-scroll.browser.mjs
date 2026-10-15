@@ -60,7 +60,7 @@ try {
     assert.equal(await page.evaluate(() => document.documentElement.scrollHeight - innerHeight), 1688);
     await page.keyboard.press('End');
     await at(2, 1688);
-    await page.locator('#next-chapter').click();
+    await page.mouse.wheel(0, 120);
     await at(0, 0);
     await page.keyboard.press('End');
     await at(2, 1688);

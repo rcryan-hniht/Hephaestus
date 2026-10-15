@@ -70,8 +70,8 @@ try {
   });
   await slow.goto(process.env.TEST_URL || 'http://127.0.0.1:4176');
   await slow.evaluate(() => window.scrollTo({ top: innerHeight, behavior: 'instant' }));
-  await slow.waitForFunction(() => document.getElementById('visual-label').textContent.includes('3F VILLA'));
-  await slow.waitForFunction(() => document.getElementById('visual-label').textContent.includes('TERRACE VILLA'), null, { timeout: 12000 });
+  await slow.waitForFunction(() => document.getElementById('landing-canvas').getAttribute('aria-label').toUpperCase().includes('3F VILLA'));
+  await slow.waitForFunction(() => document.getElementById('landing-canvas').getAttribute('aria-label').toUpperCase().includes('TERRACE VILLA'), null, { timeout: 12000 });
   await slow.close();
   console.log('PASS: full orbit, individual rise/sink, drawing-to-drawing fade, preset loop, wall-clock timing and reduced motion');
 } finally { await browser.close(); }

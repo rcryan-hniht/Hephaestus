@@ -61,7 +61,6 @@ function goChapter(index) {
   }
   dirty = true;
 }
-listen($('next-chapter'), 'click', () => goChapter(chapter === 2 ? 0 : chapter + 1));
 listen($('explore-demo'), 'click', () => openWorkspace(0));
 cubicasaSamples.forEach((sample, index) => {
   const item = document.createElement('div'); item.className = 'work-item'; item.dataset.active = String(index === 0);
@@ -104,6 +103,7 @@ listen(photo, 'error', () => { photo.hidden = true; $('reference-fallback').hidd
 if (photo.complete && !photo.naturalWidth) { photo.hidden = true; $('reference-fallback').hidden = false; }
 listen($('open-preview'), 'click', () => openWorkspace(0));
 listen(window, 'scroll', () => { dirty = true; });
+document.fonts.ready.then(() => { dirty = true; });
 listen(document, 'visibilitychange', () => { previous = 0; });
 listen(window, 'wheel', e => {
   if (workspaceOpen || e.ctrlKey || !e.deltaY || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
@@ -212,8 +212,7 @@ function layout() {
   $('preset-display').style.opacity = String(1 - worksWeight);
   $('landing-error').hidden = !sceneFailed || modelWeight <= 0 || worksWeight === 1;
   $('reference-fallback').style.opacity = String(heroWeight);
-  $('visual-label').textContent = heroWeight >= .5 ? 'ARCHITECTURE / A NEW PERSPECTIVE' : `PRESET SHOWCASE / ${showcase?.name.toUpperCase() || 'LOADING VILLAS'} / ${showcase?.modeLabel.toUpperCase() || 'SOLID'}`;
-  if (worksWeight >= .5) $('visual-label').textContent = 'CUBICASA5K / SOURCE DRAWINGS';
+  canvas.setAttribute('aria-label', `Prepared villa demonstration: ${showcase?.name || 'Loading villas'} / ${showcase?.modeLabel || 'Solid'}`);
   if (worksWeight > 0) prepareWall();
   $('drift-wall').hidden = worksWeight <= 0; $('drift-wall').style.opacity = String(worksWeight);
   const interactive = chapter === 2 && mix === 0 && !!scene && !driftWall;
@@ -221,7 +220,7 @@ function layout() {
   canvas.tabIndex = interactive ? 0 : -1; canvas.classList.toggle('is-interactive', interactive);
   const works = $('work-list');
   if (chapter !== 2 && works.contains(document.activeElement)) {
-    $('next-chapter')?.focus({ preventScroll: true });
+    $('explore-demo').focus({ preventScroll: true });
   }
   works.style.visibility = worksWeight > 0 ? 'visible' : 'hidden';
   works.style.opacity = String(worksWeight);
@@ -235,7 +234,6 @@ function layout() {
   ];
   action.style.transform = `translate(${lerp(actionPositions[from].x, actionPositions[next].x, mix)}px,${lerp(actionPositions[from].y, actionPositions[next].y, mix)}px)`;
   $('action-note').textContent = ['From floor plan to a new perspective.', 'Upload drawing. Confirm scale. Explore.', 'Scroll further to return where ideas begin.'][chapter];
-  $('chapter-caption').textContent = ['Beginning a space', 'From line to depth', 'Return to beginning'][chapter];
   const annotation = document.querySelector('.scene-annotation');
   annotation.style.opacity = String(heroWeight); annotation.style.top = `${Math.max(top, heroCopyY - 42)}px`;
   if (from === 2 && mix > 0) scene?.morphHome(mix);
