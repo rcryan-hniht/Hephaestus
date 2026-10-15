@@ -80,6 +80,16 @@ try {
     const scene = await (await assembled).json();
     assert.ok(scene.components.some(c => c.type === 'stair' && c.steps >= 2));
     assert.ok(scene.components.some(c => c.type === 'roof' && c.roof_thickness > 0));
+    if (id === 'portal') {
+      assert.equal(scene.components.some(c => c.source.element_id === 'F1-tall-white-frame-26'), false);
+      assert.equal(scene.components.filter(c => c.source.element_id === 'F2-portal-crown-32').length, 1);
+    }
+    if (id === 'gable') {
+      assert.ok(scene.components.some(c => c.source.element_id === 'F1-front-entry-door'));
+      for (const name of ['F3-front-gable-wall-6', 'F3-rear-gable-wall-3']) {
+        assert.equal(Math.max(...scene.components.find(c => c.source.element_id === name).mesh.positions.filter((_, i) => i % 3 === 1)), 10.3);
+      }
+    }
     assert.deepEqual(scene.components.filter(c => c.type === 'stair').map(c => c.source_floor), Array.from({ length: count - 1 }, (_, i) => i + 1));
     if (id === 'gable') assert.ok(scene.components.some(c => c.type === 'roof' && c.roof_kind === 'gable'));
     await page.waitForFunction(() => document.getElementById('model-label').textContent.startsWith('RECONSTRUCTED'));
@@ -123,6 +133,9 @@ try {
       await page.locator('#component-roof-thickness').fill('0.25');
       await page.locator('#properties-form button').click();
       await page.waitForFunction(() => document.getElementById('model-label').textContent.includes('REVISION 2.1.2'));
+      const updated = await (await page.request.get(`${new URL(page.url()).origin}/api/buildings/${building.id}/scene`)).json();
+      const gable = updated.components.find(c => c.source.element_id === 'F3-front-gable-wall-6');
+      assert.ok(Math.abs(Math.max(...gable.mesh.positions.filter((_, i) => i % 3 === 1)) - 10.25) < 1e-8, 'Gable walls follow edits to the roof underside');
       await page.locator('#component-select').selectOption(roof.id);
       assert.equal(await page.locator('#component-roof-thickness').inputValue(), '0.25');
       await page.locator('#floor-select').selectOption('all');

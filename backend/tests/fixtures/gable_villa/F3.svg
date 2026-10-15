@@ -21,13 +21,16 @@
       <polygon points="310.000,1730.000 1410.000,1730.000 1410.000,820.000 310.000,820.000" fill="#d9dde0" stroke="#333" stroke-width="1" />
       <text x="860.000" y="1275.000" font-family="Arial, sans-serif" font-size="18" fill="#333" text-anchor="middle">GABLE RIDGE</text>
     </g>
-    <g id="F3-attic-rear-knee-wall-3" class="Wall Attic_rear_knee_wall">
+    <g id="F3-front-gable-wall-6" class="Wall Gable" data-roof-ref="F3-gable-roof-2">
+      <polygon points="370,930 1350,930 1350,950 370,950" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F3-rear-gable-wall-3" class="Wall Gable" data-roof-ref="F3-gable-roof-2">
       <polygon points="370.000,1650.000 1350.000,1650.000 1350.000,1670.000 370.000,1670.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-attic-left-knee-wall-4" class="Wall Attic_left_knee_wall">
+    <g id="F3-attic-left-knee-wall-4" class="Wall Attic_left_knee_wall" data-roof-ref="F3-gable-roof-2">
       <polygon points="370.000,930.000 390.000,930.000 390.000,1650.000 370.000,1650.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-attic-right-knee-wall-5" class="Wall Attic_right_knee_wall">
+    <g id="F3-attic-right-knee-wall-5" class="Wall Attic_right_knee_wall" data-roof-ref="F3-gable-roof-2">
       <polygon points="1330.000,930.000 1350.000,930.000 1350.000,1650.000 1330.000,1650.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F3-stair-void">

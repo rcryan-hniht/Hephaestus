@@ -11,18 +11,45 @@
       <polygon points="365.000,926.000 1355.000,926.000 1355.000,946.000 365.000,946.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-interior-partition-2" class="Wall Interior_partition">
-      <polygon points="385.000,1303.800 385.000,1318.800 780.000,1318.800 780.000,1303.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="385,1303.8 385,1318.8 680,1318.8 680,1303.8" fill="#e8e4dc" stroke="#333" stroke-width="1" />
       <polygon points="940.000,1303.800 940.000,1318.800 980.000,1318.800 980.000,1303.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
       <polygon points="1335.000,1318.800 1335.000,1303.800 1140.000,1303.800 1140.000,1318.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
+    <g id="F2-bedroom-hall-wall" class="Wall Interior_partition">
+      <polygon points="680,1050 695,1050 695,1590 680,1590" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
     <g id="F2-interior-door-3" class="Door Interior_door">
-      <polygon points="690.000,1303.800 690.000,1318.800 600.000,1318.800 600.000,1303.800" fill="#c45c3d" stroke="#333" stroke-width="1" />
+      <polygon points="550,1303.8 640,1303.8 640,1318.8 550,1318.8" fill="#c45c3d" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F2-rear-room-4" class="Space Rear_room">
-      <polygon points="385.000,1318.800 385.000,1650.000 1335.000,1650.000 1335.000,1318.800 1140.000,1318.800 1140.000,1590.000 980.000,1590.000 980.000,1318.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    <g id="F2-front-bedroom-door" class="Door Interior_door">
+      <polygon points="680,1110 695,1110 695,1200 680,1200" fill="#c45c3d" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F2-living-room-5" class="Space Living_room">
-      <polygon points="1335.000,1303.800 1335.000,960.000 385.000,960.000 385.000,1303.800 980.000,1303.800 980.000,1020.000 1140.000,1020.000 1140.000,1303.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    <g id="F2-rear-bedroom-door" class="Door Interior_door">
+      <polygon points="680,1410 695,1410 695,1500 680,1500" fill="#c45c3d" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-right-landing-door" class="Door Interior_door">
+      <polygon points="1190,1303.8 1280,1303.8 1280,1318.8 1190,1318.8" fill="#c45c3d" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-rear-room-4" class="Space Rear_bedroom">
+      <polygon points="385,1318.8 680,1318.8 680,1650 385,1650" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-room-5" class="Space Front_bedroom">
+      <polygon points="385,1050 680,1050 680,1303.8 385,1303.8" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-front-landing" class="Space Stair_hall">
+      <polygon points="385,960 1335,960 1335,1050 1140,1050 1140,1020 980,1020 980,1050 385,1050" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-stair-hall" class="Space Stair_hall">
+      <polygon points="695,1050 980,1050 980,1590 695,1590" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-right-front-hall" class="Space Hall">
+      <polygon points="1140,1050 1335,1050 1335,1303.8 1140,1303.8" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-right-rear-hall" class="Space Hall">
+      <polygon points="1140,1318.8 1335,1318.8 1335,1650 1140,1650" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-rear-landing" class="Space Stair_hall">
+      <polygon points="695,1590 1140,1590 1140,1650 695,1650" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-wide-balcony-plate-6" class="Space Wide_balcony_plate">
       <polygon points="1335.000,1318.800 1140.000,1315.721 1140.000,1318.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
@@ -78,7 +105,19 @@
       <polygon points="1355.000,1650.000 1335.000,1650.000 1335.000,1318.800 1335.000,1303.800 1335.000,946.000 1355.000,946.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-facade-opening-23" class="Window Facade_opening">
-      <polygon points="410.000,946.000 1310.000,946.000 1310.000,926.000 410.000,926.000" fill="#9eb9c1" stroke="#333" stroke-width="1" />
+      <polygon points="455,926 610,926 610,946 455,946" fill="#9eb9c1" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-balcony-door" class="Door Balcony_entry">
+      <polygon points="745,926 835,926 835,946 745,946" fill="#c45c3d" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-front-right-window" class="Window Facade_opening">
+      <polygon points="1180,926 1300,926 1300,946 1180,946" fill="#9eb9c1" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-front-bedroom-window" class="Window Side_opening">
+      <polygon points="365,1110 385,1110 385,1240 365,1240" fill="#9eb9c1" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-rear-bedroom-window" class="Window Rear_opening">
+      <polygon points="455,1650 605,1650 605,1670 455,1670" fill="#9eb9c1" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-balcony-parapet-24" class="Wall Balcony_parapet">
       <polygon points="350.000,800.500 1370.000,800.500 1370.000,805.000 350.000,805.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />

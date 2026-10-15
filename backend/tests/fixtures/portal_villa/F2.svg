@@ -104,14 +104,7 @@
       <polygon points="935.000,895.000 930.500,895.000 930.500,780.000 935.000,780.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-portal-crown-32" class="Space Portal_crown">
-      <polygon points="285.000,1660.000 285.000,760.000 710.000,1000.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
-      <polygon points="285.000,1660.000 710.000,1000.000 710.000,1550.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
-      <polygon points="285.000,1660.000 710.000,1550.000 985.000,1660.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
-      <polygon points="985.000,1660.000 710.000,1550.000 870.000,1550.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
-      <polygon points="985.000,1660.000 870.000,1550.000 870.000,1000.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
-      <polygon points="985.000,1660.000 870.000,1000.000 985.000,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
-      <polygon points="985.000,760.000 870.000,1000.000 710.000,1000.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
-      <polygon points="985.000,760.000 710.000,1000.000 285.000,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="985.000,760.000 985.000,1660.000 285.000,1660.000 285.000,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-rear-wall-33" class="Wall Rear_wall">
       <polygon points="1040.000,1640.000 1400.000,1640.000 1400.000,1660.000 1040.000,1660.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />

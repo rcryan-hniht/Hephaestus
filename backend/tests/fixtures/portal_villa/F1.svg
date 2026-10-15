@@ -83,9 +83,6 @@
     <g id="F1-entry-door-25" class="Door Entry_door">
       <polygon points="735.000,892.000 850.000,892.000 850.000,872.000 735.000,872.000" fill="#c45c3d" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F1-tall-white-frame-26" class="Column Tall_white_frame">
-      <polygon points="1400.000,1660.000 1435.000,1660.000 1435.000,840.000 1400.000,840.000" fill="#b8926a" stroke="#333" stroke-width="1" />
-    </g>
     <g id="F1-portal-left-jamb-27" class="Column Portal_left_jamb">
       <polygon points="285.000,798.000 311.000,798.000 311.000,760.000 285.000,760.000" fill="#b8926a" stroke="#333" stroke-width="1" />
     </g>

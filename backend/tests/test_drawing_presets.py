@@ -102,7 +102,8 @@ def test_villa_drawings_require_confirmation_and_build_source_bound_floors(
                     if c["source_floor"] == floor
                     and c["type"] == "room"
                     and any(
-                        name in c["source"]["element_id"] for name in ["rear-room", "living-room"]
+                        name in c["source"]["element_id"]
+                        for name in ["rear-room", "living-room", "-hall", "-landing"]
                     )
                 ]
             )
@@ -113,6 +114,12 @@ def test_villa_drawings_require_confirmation_and_build_source_bound_floors(
                     and component["type"] == "wall"
                     or component["source_floor"] == floor + 1
                     and component["type"] == "room"
+                    and abs(
+                        component["elevation"]
+                        + component["height"]
+                        - scene["floors"][floor]["transform"][1]
+                    )
+                    < 1e-7
                 ):
                     assert footprint.intersection(Polygon(component["polygon"])).area < 1e-7, (
                         "Keep stair flights clear of walls and upper slabs"
@@ -121,9 +128,42 @@ def test_villa_drawings_require_confirmation_and_build_source_bound_floors(
                 scene["floors"][floor]["transform"][1]
             )
         assert roofs
+        if preset_id == "portal":
+            assert not any(
+                c["source"]["element_id"] == "F1-tall-white-frame-26" for c in scene["components"]
+            )
+            crown = next(
+                c for c in scene["components"] if c["source"]["element_id"] == "F2-portal-crown-32"
+            )
+            assert Polygon(crown["polygon"]).area == pytest.approx(63)
         if preset_id == "gable":
             assert roofs[0]["roof_kind"] == "gable"
             assert max(roofs[0]["mesh"]["positions"][1::3]) == pytest.approx(10.5)
+            for name in ["F3-front-gable-wall-6", "F3-rear-gable-wall-3"]:
+                wall = next(c for c in scene["components"] if c["source"]["element_id"] == name)
+                assert wall["roof_id"]
+                assert max(wall["mesh"]["positions"][1::3]) == pytest.approx(10.3)
+            assert any(
+                c["source"]["element_id"] == "F1-front-entry-door" and c["type"] == "door"
+                for c in scene["components"]
+            )
+            attic_job = building["floors"][2]["job"]["id"]
+            generation = client.get(f"/api/jobs/{attic_job}").json()["generation"]
+            assert (
+                client.post(
+                    f"/api/jobs/{attic_job}/answers",
+                    json={"generation": generation, "values": {"roof_thickness": 0.1}},
+                ).status_code
+                == 202
+            )
+            wait_for(client, attic_job, "ready")
+            thinner_roof = client.get(f"/api/jobs/{attic_job}/scene").json()
+            front = next(
+                c
+                for c in thinner_roof["components"]
+                if c["source"]["element_id"] == "F3-front-gable-wall-6"
+            )
+            assert max(front["mesh"]["positions"][1::3]) == pytest.approx(3.1)
         for component in stairs + roofs:
             ys = component["mesh"]["positions"][1::3]
             assert max(ys) == pytest.approx(component["elevation"] + component["height"])
