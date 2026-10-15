@@ -9,6 +9,8 @@ backend/data/
 .env.*
 *.env
 env/
+.venv
+__pycache__
 
 # Prohibited commit targets
 AGENTS.md
