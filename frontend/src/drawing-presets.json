@@ -345,13 +345,13 @@
   {
     "id": "portal",
     "name": "Portal Villa",
-    "description": "Synthetic two-storey villa: projecting frame, offset wings, balconies, a shed canopy and a five-step entry stair. Review suggested roof and stair dimensions. Timber fins, planting, finishes and glazing are omitted.",
+    "description": "Synthetic two-storey villa: projecting frame, offset wings, balconies, a shed canopy and an internal stair connecting both floors. Review suggested roof and stair dimensions. Timber fins, planting, finishes and glazing are omitted.",
     "folder": "portal_villa",
     "url": "/presets/portal-villa",
     "floors": [
       {
         "number": 1,
-        "source_hash": "f40fccd22999915975dc7f976682320695eedfac6ad4dd2153d98f4fab4d091d",
+        "source_hash": "33d1610f3089af3fb3beb5285bbe4d781f3d48439407238482ccf14ae811d8cc",
         "parameters": {
           "meters_per_unit": 0.01,
           "floor_height": 4.5,
@@ -359,8 +359,8 @@
           "door_height": 2.4,
           "window_height": 2.8,
           "window_sill": 0.15,
-          "stair_height": 0.9,
-          "stair_steps": 5
+          "stair_height": 3.6,
+          "stair_steps": 20
         },
         "offsetX": 0,
         "offsetY": 0,
@@ -477,15 +477,15 @@
             "height": 4.28,
             "elevation": 4.12
           },
-          "F1-exterior-stair-29": {
-            "height": 0.9,
-            "elevation": 0
+          "F1-interior-stair-29": {
+            "height": 3.6,
+            "elevation": 0.9
           }
         }
       },
       {
         "number": 2,
-        "source_hash": "abfab79713cec71e66bd69a09675d91444bb47d16a0b711a8f6d8d8c43d4a8b6",
+        "source_hash": "cec2bd122e92a6db9d28fee5774edb882e5377488d10fca1bb1eaacc75ed8d02",
         "parameters": {
           "meters_per_unit": 0.01,
           "floor_height": 4.3,
@@ -670,13 +670,13 @@
   {
     "id": "gable",
     "name": "Gable Villa",
-    "description": "Synthetic two-storey villa with attic floor, gable roof, broad balcony and six-step entry stair. Review suggested roof rise, thickness and stair dimensions. Triangular glazing, planting and finishes are omitted.",
+    "description": "Synthetic two-storey villa with attic floor, gable roof, broad balcony and internal stairs connecting all three floors. Review suggested roof rise, thickness and stair dimensions. Triangular glazing, planting and finishes are omitted.",
     "folder": "gable_villa",
     "url": "/presets/gable-villa",
     "floors": [
       {
         "number": 1,
-        "source_hash": "f0fb9283a13356e9df37e4fa80e4a1da3635870a96b59abaae8582dff73ad21c",
+        "source_hash": "b380ee92ce1ae1052da427c3b5ef04fce610d712290cf09920e437045bd3ac63",
         "parameters": {
           "meters_per_unit": 0.01,
           "floor_height": 4.2,
@@ -684,8 +684,8 @@
           "door_height": 2.4,
           "window_height": 2.8,
           "window_sill": 0.15,
-          "stair_height": 0.9,
-          "stair_steps": 6
+          "stair_height": 3.3,
+          "stair_steps": 19
         },
         "offsetX": 0,
         "offsetY": 0,
@@ -798,22 +798,24 @@
             "height": 3,
             "elevation": 1.02
           },
-          "F1-exterior-stair-28": {
-            "height": 0.9,
-            "elevation": 0
+          "F1-interior-stair-28": {
+            "height": 3.3,
+            "elevation": 0.9
           }
         }
       },
       {
         "number": 2,
-        "source_hash": "455061256b16782f08042b9ca5d3c260c0ffd19158c574d422f28f4fb0ee60b3",
+        "source_hash": "b3888274494d6cafe5d4c9a8688ca5900d489ad2939191cbb2aa531d4586e8e5",
         "parameters": {
           "meters_per_unit": 0.01,
           "floor_height": 3.1,
           "slab_thickness": 0.2,
           "door_height": 2.4,
           "window_height": 2.8,
-          "window_sill": 0.15
+          "window_sill": 0.15,
+          "stair_height": 3.1,
+          "stair_steps": 18
         },
         "offsetX": 0,
         "offsetY": 0,
@@ -933,12 +935,16 @@
           "F2-canopy-post-29": {
             "height": 2.95,
             "elevation": 0.0
+          },
+          "F2-interior-stair-30": {
+            "height": 3.1,
+            "elevation": 0
           }
         }
       },
       {
         "number": 3,
-        "source_hash": "eec85ec1065849a4f7ed5b368e32f401e5a5ade57917644f51d2608231e4208d",
+        "source_hash": "dd41d0050fce683286c5a72e4b6fdb40ec92db9716ffcba4252a65d3af7dc46e",
         "parameters": {
           "meters_per_unit": 0.01,
           "floor_height": 3.2,

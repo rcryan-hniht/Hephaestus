@@ -91,7 +91,7 @@ try {
     const scene = await (await assembled).json();
     assert.ok(scene.components.some(c => c.type === 'stair' && c.steps >= 2));
     assert.ok(scene.components.some(c => c.type === 'roof' && c.roof_thickness > 0));
-    if (id === 'terrace') assert.deepEqual(scene.components.filter(c => c.type === 'stair').map(c => c.source_floor), [1, 2]);
+    assert.deepEqual(scene.components.filter(c => c.type === 'stair').map(c => c.source_floor), Array.from({ length: count - 1 }, (_, i) => i + 1));
     if (id === 'gable') assert.ok(scene.components.some(c => c.type === 'roof' && c.roof_kind === 'gable'));
     await page.waitForFunction(() => document.getElementById('model-label').textContent.startsWith('RECONSTRUCTED'));
     assert.deepEqual(await page.evaluate(() => window.__blueprintTexts.filter(text =>
@@ -100,13 +100,11 @@ try {
     assert.equal(await page.locator('#export-model').isEnabled(), true);
     await page.locator('#fit-model').click();
     await page.screenshot({ path: `/tmp/hephaestus-drawing-preset-${id}.png` });
-    if (id === 'terrace') {
-      await page.locator('[data-type="wall"]').uncheck();
-      await page.locator('[data-type="roof"]').uncheck();
-      await page.screenshot({ path: '/tmp/hephaestus-terrace-interior-stairs.png' });
-      await page.locator('[data-type="wall"]').check();
-      await page.locator('[data-type="roof"]').check();
-    }
+    await page.locator('[data-type="wall"]').uncheck();
+    await page.locator('[data-type="roof"]').uncheck();
+    await page.screenshot({ path: `/tmp/hephaestus-${id}-interior-stairs.png` });
+    await page.locator('[data-type="wall"]').check();
+    await page.locator('[data-type="roof"]').check();
     await page.locator('#export-model').click();
     const downloaded = page.waitForEvent('download');
     await page.locator('[data-export="glb"]').click();
@@ -118,16 +116,16 @@ try {
     if (id === 'gable') {
       const stair = scene.components.find(c => c.type === 'stair');
       await page.locator('#component-select').selectOption(stair.id);
-      assert.equal(await page.locator('#component-steps').inputValue(), '6');
-      await page.locator('#component-steps').fill('8');
+      assert.equal(await page.locator('#component-steps').inputValue(), '19');
+      await page.locator('#component-steps').fill('21');
       await page.locator('#properties-form button').click();
       await page.waitForFunction(() => document.getElementById('model-label').textContent.includes('REVISION 2.1.1'));
       await page.locator('#component-select').selectOption(stair.id);
-      assert.equal(await page.locator('#component-steps').inputValue(), '8');
+      assert.equal(await page.locator('#component-steps').inputValue(), '21');
       await page.locator('#undo').click();
       await page.waitForFunction(() => document.getElementById('model-label').textContent.includes('REVISION 1.1.1'));
       await page.locator('#component-select').selectOption(stair.id);
-      assert.equal(await page.locator('#component-steps').inputValue(), '6');
+      assert.equal(await page.locator('#component-steps').inputValue(), '19');
       await page.locator('#redo').click();
       await page.waitForFunction(() => document.getElementById('model-label').textContent.includes('REVISION 2.1.1'));
       const roof = scene.components.find(c => c.type === 'roof');

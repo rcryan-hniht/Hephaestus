@@ -1,14 +1,21 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1960" viewBox="0 0 1720 1960">
   <title>Gable Villa / F3 / synthetic drawing</title>
-  <desc>Synthetic two-storey villa with attic floor, gable roof, broad balcony and six-step entry stair. Review suggested roof rise, thickness and stair dimensions. Triangular glazing, planting and finishes are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
+  <desc>Synthetic two-storey villa with attic floor, gable roof, broad balcony and internal stairs connecting all three floors. Review suggested roof rise, thickness and stair dimensions. Triangular glazing, planting and finishes are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
   <rect width="1720" height="1960" fill="#fafafa" />
   <text x="140" y="60" fill="#333" font-family="Arial, sans-serif" font-size="22">HEPHAESTUS / SYNTHETIC DRAWING PRESET</text>
   <text x="140" y="105" fill="#333" font-family="Arial, sans-serif" font-size="30">GABLE VILLA / F3</text>
   <text x="140" y="145" fill="#333" font-family="Arial, sans-serif" font-size="19">Suggested floor height 3.2 m / source scale 0.01 m per unit / review before building</text>
   <g id="Floor-3" class="Floorplan">
     <g id="F3-attic-plate-1" class="Space Attic_plate">
-      <polygon points="370.000,930.000 1350.000,930.000 1350.000,1670.000 370.000,1670.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="370.000,1670.000 370.000,930.000 780.000,1050.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="370.000,1670.000 780.000,1050.000 780.000,1590.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="370.000,1670.000 780.000,1590.000 940.000,1590.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="370.000,1670.000 940.000,1590.000 1350.000,1670.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="1350.000,1670.000 940.000,1590.000 940.000,1050.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="1350.000,1670.000 940.000,1050.000 1350.000,930.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="1350.000,930.000 940.000,1050.000 370.000,930.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="370.000,930.000 940.000,1050.000 780.000,1050.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F3-gable-roof-2" class="Roof Gable" data-direction="1,0">
       <polygon points="310.000,1730.000 1410.000,1730.000 1410.000,820.000 310.000,820.000" fill="#d9dde0" stroke="#333" stroke-width="1" />
@@ -23,8 +30,12 @@
     <g id="F3-attic-right-knee-wall-5" class="Wall Attic_right_knee_wall">
       <polygon points="1330.000,930.000 1350.000,930.000 1350.000,1650.000 1330.000,1650.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
+    <g id="F3-stair-void">
+      <polygon fill="none" stroke="#c45c3d" stroke-width="2" stroke-dasharray="8 5" points="940.000,1050.000 940.000,1590.000 780.000,1590.000 780.000,1050.000" />
+      <text x="860.0" y="1615.0" font-family="Arial, sans-serif" font-size="16" fill="#c45c3d" text-anchor="middle">STAIR VOID / FROM F2</text>
+    </g>
   </g>
   <text x="140" y="1780" fill="#666" font-family="Arial, sans-serif" font-size="18">Synthetic dimensions. Confirm floor and component heights, then confirm alignment.</text>
-  <text x="140" y="1820" fill="#666" font-family="Arial, sans-serif" font-size="16">Synthetic two-storey villa with attic floor, gable roof, broad balcony and six-step entry stair. Review sugges</text>
-  <text x="140" y="1844" fill="#666" font-family="Arial, sans-serif" font-size="16">ted roof rise, thickness and stair dimensions. Triangular glazing, planting and finishes are omitted.</text>
+  <text x="140" y="1820" fill="#666" font-family="Arial, sans-serif" font-size="16">Internal stairs connect F1 to F2 (19 steps) and F2 to F3 (18 steps), with open stairwells.</text>
+  <text x="140" y="1844" fill="#666" font-family="Arial, sans-serif" font-size="16">Review suggested roof and stair dimensions. Planting, finishes and glazing are omitted.</text>
 </svg>

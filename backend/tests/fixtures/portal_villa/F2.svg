@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1960" viewBox="0 0 1720 1960">
   <title>Portal Villa / F2 / synthetic drawing</title>
-  <desc>Synthetic two-storey villa: projecting frame, offset wings, balconies, a shed canopy and a five-step entry stair. Review suggested roof and stair dimensions. Timber fins, planting, finishes and glazing are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
+  <desc>Synthetic two-storey villa: projecting frame, offset wings, balconies, a shed canopy and an internal stair connecting both floors. Review suggested roof and stair dimensions. Timber fins, planting, finishes and glazing are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
   <rect width="1720" height="1960" fill="#fafafa" />
   <text x="140" y="60" fill="#333" font-family="Arial, sans-serif" font-size="22">HEPHAESTUS / SYNTHETIC DRAWING PRESET</text>
   <text x="140" y="105" fill="#333" font-family="Arial, sans-serif" font-size="30">PORTAL VILLA / F2</text>
@@ -11,16 +11,17 @@
       <polygon points="345.000,914.000 945.000,914.000 945.000,934.000 345.000,934.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-interior-partition-2" class="Wall Interior_partition">
-      <polygon points="365.000,1283.400 925.000,1283.400 925.000,1298.400 365.000,1298.400" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="365.000,1283.400 365.000,1298.400 710.000,1298.400 710.000,1283.400" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="925.000,1298.400 925.000,1283.400 870.000,1283.400 870.000,1298.400" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-interior-door-3" class="Door Interior_door">
       <polygon points="617.000,1298.400 707.000,1298.400 707.000,1283.400 617.000,1283.400" fill="#c45c3d" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-rear-room-4" class="Space Rear_room">
-      <polygon points="365.000,1298.400 925.000,1298.400 925.000,1620.000 365.000,1620.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="365.000,1298.400 365.000,1620.000 925.000,1620.000 925.000,1298.400 870.000,1298.400 870.000,1550.000 710.000,1550.000 710.000,1298.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-living-room-5" class="Space Living_room">
-      <polygon points="365.000,950.000 925.000,950.000 925.000,1283.400 365.000,1283.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="925.000,1283.400 925.000,950.000 365.000,950.000 365.000,1283.400 710.000,1283.400 710.000,1000.000 870.000,1000.000 870.000,1283.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-front-facade-6" class="Wall Front_facade">
       <polygon points="1040.000,966.000 1400.000,966.000 1400.000,986.000 1040.000,986.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
@@ -38,7 +39,8 @@
       <polygon points="1060.000,1000.000 1380.000,1000.000 1380.000,1317.800 1060.000,1317.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-11" class="Space Cantilever_balcony">
-      <polygon points="925.000,1298.400 365.000,1298.400 365.000,1283.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="925.000,1298.400 870.000,1296.927 870.000,1298.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="365.000,1283.400 365.000,1298.400 710.000,1298.400 710.000,1292.641" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-12" class="Space Cantilever_balcony">
       <polygon points="285.000,1660.000 365.000,1298.400 365.000,1620.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
@@ -47,7 +49,8 @@
       <polygon points="365.000,1283.400 285.000,1660.000 285.000,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-14" class="Space Cantilever_balcony">
-      <polygon points="925.000,1298.400 365.000,1283.400 925.000,1283.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="925.000,1298.400 925.000,1283.400 870.000,1283.400 870.000,1296.927" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="365.000,1283.400 710.000,1292.641 710.000,1283.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-15" class="Space Cantilever_balcony">
       <polygon points="285.000,1660.000 365.000,1283.400 365.000,1298.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
@@ -101,7 +104,14 @@
       <polygon points="935.000,895.000 930.500,895.000 930.500,780.000 935.000,780.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-portal-crown-32" class="Space Portal_crown">
-      <polygon points="285.000,760.000 985.000,760.000 985.000,1660.000 285.000,1660.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="285.000,1660.000 285.000,760.000 710.000,1000.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="285.000,1660.000 710.000,1000.000 710.000,1550.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="285.000,1660.000 710.000,1550.000 985.000,1660.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="985.000,1660.000 710.000,1550.000 870.000,1550.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="985.000,1660.000 870.000,1550.000 870.000,1000.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="985.000,1660.000 870.000,1000.000 985.000,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="985.000,760.000 870.000,1000.000 710.000,1000.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="985.000,760.000 710.000,1000.000 285.000,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-rear-wall-33" class="Wall Rear_wall">
       <polygon points="1040.000,1640.000 1400.000,1640.000 1400.000,1660.000 1040.000,1660.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
@@ -131,8 +141,12 @@
       <polygon points="1020.000,1680.000 1440.000,1680.000 1440.000,870.000 1020.000,870.000" fill="#d9dde0" stroke="#333" stroke-width="1" />
       <text x="1230.000" y="1275.000" font-family="Arial, sans-serif" font-size="18" fill="#333" text-anchor="middle">SHED / UP</text>
     </g>
+    <g id="F2-stair-void">
+      <polygon fill="none" stroke="#c45c3d" stroke-width="2" stroke-dasharray="8 5" points="870.000,1000.000 870.000,1550.000 710.000,1550.000 710.000,1000.000" />
+      <text x="790.0" y="1575.0" font-family="Arial, sans-serif" font-size="16" fill="#c45c3d" text-anchor="middle">STAIR VOID / FROM F1</text>
+    </g>
   </g>
   <text x="140" y="1780" fill="#666" font-family="Arial, sans-serif" font-size="18">Synthetic dimensions. Confirm floor and component heights, then confirm alignment.</text>
-  <text x="140" y="1820" fill="#666" font-family="Arial, sans-serif" font-size="16">Synthetic two-storey villa: projecting frame, offset wings, balconies, a shed canopy and a five-step entry sta</text>
-  <text x="140" y="1844" fill="#666" font-family="Arial, sans-serif" font-size="16">ir. Review suggested roof and stair dimensions. Timber fins, planting, finishes and glazing are omitted.</text>
+  <text x="140" y="1820" fill="#666" font-family="Arial, sans-serif" font-size="16">Internal stair connects F1 to F2 (20 steps), with an open stairwell.</text>
+  <text x="140" y="1844" fill="#666" font-family="Arial, sans-serif" font-size="16">Review suggested roof and stair dimensions. Planting, finishes and glazing are omitted.</text>
 </svg>

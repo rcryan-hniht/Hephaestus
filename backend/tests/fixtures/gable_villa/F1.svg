@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1960" viewBox="0 0 1720 1960">
   <title>Gable Villa / F1 / synthetic drawing</title>
-  <desc>Synthetic two-storey villa with attic floor, gable roof, broad balcony and six-step entry stair. Review suggested roof rise, thickness and stair dimensions. Triangular glazing, planting and finishes are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
+  <desc>Synthetic two-storey villa with attic floor, gable roof, broad balcony and internal stairs connecting all three floors. Review suggested roof rise, thickness and stair dimensions. Triangular glazing, planting and finishes are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
   <rect width="1720" height="1960" fill="#fafafa" />
   <text x="140" y="60" fill="#333" font-family="Arial, sans-serif" font-size="22">HEPHAESTUS / SYNTHETIC DRAWING PRESET</text>
   <text x="140" y="105" fill="#333" font-family="Arial, sans-serif" font-size="30">GABLE VILLA / F1</text>
@@ -11,7 +11,8 @@
       <polygon points="335.000,868.000 1385.000,868.000 1385.000,888.000 335.000,888.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F1-interior-partition-2" class="Wall Interior_partition">
-      <polygon points="355.000,1280.200 1365.000,1280.200 1365.000,1295.200 355.000,1295.200" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="355.000,1280.200 355.000,1295.200 980.000,1295.200 980.000,1280.200" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="1365.000,1295.200 1365.000,1280.200 1140.000,1280.200 1140.000,1295.200" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F1-interior-door-3" class="Door Interior_door">
       <polygon points="809.500,1295.200 899.500,1295.200 899.500,1280.200 809.500,1280.200" fill="#c45c3d" stroke="#333" stroke-width="1" />
@@ -88,12 +89,30 @@
     <g id="F1-facade-opening-27" class="Window Facade_opening">
       <polygon points="430.000,888.000 1290.000,888.000 1290.000,868.000 430.000,868.000" fill="#9eb9c1" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F1-exterior-stair-28" class="Stair Exterior_stair" data-direction="0,1" data-steps="6">
-      <polygon points="660.000,715.000 1060.000,715.000 1060.000,444.000 660.000,444.000" fill="#c8c8c3" stroke="#333" stroke-width="1" />
-      <text x="860.000" y="579.500" font-family="Arial, sans-serif" font-size="18" fill="#333" text-anchor="middle">6 steps / UP</text>
+    <g id="F1-interior-stair-28" class="Stair Interior_stair" data-direction="0,1" data-steps="19">
+      <polygon fill="#c8c8c3" stroke="#333" stroke-width="1" points="1120.000,1020.000 1120.000,1590.000 1000.000,1590.000 1000.000,1020.000" />
+      <line x1="1000" x2="1120" y1="1050.000" y2="1050.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1080.000" y2="1080.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1110.000" y2="1110.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1140.000" y2="1140.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1170.000" y2="1170.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1200.000" y2="1200.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1230.000" y2="1230.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1260.000" y2="1260.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1290.000" y2="1290.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1320.000" y2="1320.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1350.000" y2="1350.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1380.000" y2="1380.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1410.000" y2="1410.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1440.000" y2="1440.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1470.000" y2="1470.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1500.000" y2="1500.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1530.000" y2="1530.000" stroke="#666" stroke-width="1" />
+      <line x1="1000" x2="1120" y1="1560.000" y2="1560.000" stroke="#666" stroke-width="1" />
+      <text x="1060.0" y="1000" font-family="Arial, sans-serif" font-size="16" fill="#333" text-anchor="middle">19 steps / UP to F2</text>
     </g>
   </g>
   <text x="140" y="1780" fill="#666" font-family="Arial, sans-serif" font-size="18">Synthetic dimensions. Confirm floor and component heights, then confirm alignment.</text>
-  <text x="140" y="1820" fill="#666" font-family="Arial, sans-serif" font-size="16">Synthetic two-storey villa with attic floor, gable roof, broad balcony and six-step entry stair. Review sugges</text>
-  <text x="140" y="1844" fill="#666" font-family="Arial, sans-serif" font-size="16">ted roof rise, thickness and stair dimensions. Triangular glazing, planting and finishes are omitted.</text>
+  <text x="140" y="1820" fill="#666" font-family="Arial, sans-serif" font-size="16">Internal stairs connect F1 to F2 (19 steps) and F2 to F3 (18 steps), with open stairwells.</text>
+  <text x="140" y="1844" fill="#666" font-family="Arial, sans-serif" font-size="16">Review suggested roof and stair dimensions. Planting, finishes and glazing are omitted.</text>
 </svg>

@@ -86,40 +86,40 @@ def test_villa_drawings_require_confirmation_and_build_source_bound_floors(
         assert all(c["mesh"]["positions"] for c in scene["components"] if c["type"] == "wall")
         stairs = [c for c in scene["components"] if c["type"] == "stair"]
         roofs = [c for c in scene["components"] if c["type"] == "roof"]
-        assert [c["steps"] for c in stairs] == {"terrace": [18, 20], "portal": [5], "gable": [6]}[
-            preset_id
-        ]
-        if preset_id == "terrace":
-            assert [c["source_floor"] for c in stairs] == [1, 2]
-            for stair in stairs:
-                floor = stair["source_floor"]
-                footprint = Polygon(stair["polygon"])
-                rooms = unary_union(
-                    [
-                        Polygon(c["polygon"])
-                        for c in scene["components"]
-                        if c["source_floor"] == floor
-                        and c["type"] == "room"
-                        and any(
-                            name in c["source"]["element_id"]
-                            for name in ["rear-room", "living-room"]
-                        )
-                    ]
-                )
-                assert rooms.convex_hull.covers(footprint), "Stairs must stay indoors"
-                for component in scene["components"]:
-                    if (
-                        component["source_floor"] == floor
-                        and component["type"] == "wall"
-                        or component["source_floor"] == floor + 1
-                        and component["type"] == "room"
-                    ):
-                        assert footprint.intersection(Polygon(component["polygon"])).area < 1e-7, (
-                            "Keep stair flights clear of walls and upper slabs"
-                        )
-                assert max(stair["mesh"]["positions"][1::3]) == pytest.approx(
-                    scene["floors"][floor]["transform"][1]
-                )
+        assert [c["steps"] for c in stairs] == {
+            "terrace": [18, 20],
+            "portal": [20],
+            "gable": [19, 18],
+        }[preset_id]
+        assert [c["source_floor"] for c in stairs] == list(range(1, count))
+        for stair in stairs:
+            floor = stair["source_floor"]
+            footprint = Polygon(stair["polygon"])
+            rooms = unary_union(
+                [
+                    Polygon(c["polygon"])
+                    for c in scene["components"]
+                    if c["source_floor"] == floor
+                    and c["type"] == "room"
+                    and any(
+                        name in c["source"]["element_id"] for name in ["rear-room", "living-room"]
+                    )
+                ]
+            )
+            assert rooms.convex_hull.covers(footprint), "Stairs must stay indoors"
+            for component in scene["components"]:
+                if (
+                    component["source_floor"] == floor
+                    and component["type"] == "wall"
+                    or component["source_floor"] == floor + 1
+                    and component["type"] == "room"
+                ):
+                    assert footprint.intersection(Polygon(component["polygon"])).area < 1e-7, (
+                        "Keep stair flights clear of walls and upper slabs"
+                    )
+            assert max(stair["mesh"]["positions"][1::3]) == pytest.approx(
+                scene["floors"][floor]["transform"][1]
+            )
         assert roofs
         if preset_id == "gable":
             assert roofs[0]["roof_kind"] == "gable"
