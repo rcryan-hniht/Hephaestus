@@ -1,0 +1,973 @@
+[
+  {
+    "id": "terrace",
+    "name": "Terrace Villa",
+    "description": "Synthetic stepped villa: lower garage, two living floors, terrace parapets, shallow shed roofs and an 18-step garden stair. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are omitted.",
+    "folder": "terrace_villa",
+    "url": "/presets/terrace-villa",
+    "floors": [
+      {
+        "number": 1,
+        "source_hash": "d5efcc8440d7c4315c23a5bb14c6ad6e1ee69fdaa5cd3901b3da99679a14a912",
+        "parameters": {
+          "meters_per_unit": 0.01,
+          "floor_height": 3.2,
+          "slab_thickness": 0.2,
+          "door_height": 2.4,
+          "window_height": 2.8,
+          "window_sill": 0.15,
+          "stair_height": 3.2,
+          "stair_steps": 18
+        },
+        "offsetX": 0,
+        "offsetY": 0,
+        "components": {
+          "F1-front-facade-1": {
+            "height": 3.2,
+            "elevation": 0
+          },
+          "F1-interior-partition-2": {
+            "height": 3.2,
+            "elevation": 0
+          },
+          "F1-interior-door-3": {
+            "height": 2.4,
+            "elevation": 0
+          },
+          "F1-rear-room-4": {
+            "height": 0.2,
+            "elevation": 0
+          },
+          "F1-living-room-5": {
+            "height": 0.2,
+            "elevation": 0
+          },
+          "F1-rear-wall-6": {
+            "height": 3.2,
+            "elevation": 0
+          },
+          "F1-side-wall-7": {
+            "height": 3.2,
+            "elevation": 0
+          },
+          "F1-side-wall-8": {
+            "height": 3.2,
+            "elevation": 0
+          },
+          "F1-garage-door-9": {
+            "height": 2.55,
+            "elevation": 0.15
+          },
+          "F1-garden-retaining-wall-10": {
+            "height": 3.2,
+            "elevation": 0
+          },
+          "F1-raised-garden-terrace-11": {
+            "height": 0.22,
+            "elevation": 3.2
+          },
+          "F1-exterior-stair-12": {
+            "height": 3.2,
+            "elevation": 0
+          }
+        }
+      },
+      {
+        "number": 2,
+        "source_hash": "9bdd468dc5356c9882f2999bfdf9c2aeab6ade8da384a477e1c30708f362b2c2",
+        "parameters": {
+          "meters_per_unit": 0.01,
+          "floor_height": 3.55,
+          "slab_thickness": 0.2,
+          "door_height": 2.4,
+          "window_height": 2.8,
+          "window_sill": 0.15
+        },
+        "offsetX": 0,
+        "offsetY": 0,
+        "components": {
+          "F2-front-facade-1": {
+            "height": 3.45,
+            "elevation": 0.0
+          },
+          "F2-interior-partition-2": {
+            "height": 3.45,
+            "elevation": 0.0
+          },
+          "F2-interior-door-3": {
+            "height": 2.4,
+            "elevation": 0.0
+          },
+          "F2-rear-room-4": {
+            "height": 0.2,
+            "elevation": 0.0
+          },
+          "F2-living-room-5": {
+            "height": 0.2,
+            "elevation": 0.0
+          },
+          "F2-living-terrace-plate-6": {
+            "height": 0.32,
+            "elevation": 0.0
+          },
+          "F2-living-terrace-plate-7": {
+            "height": 0.32,
+            "elevation": 0.0
+          },
+          "F2-living-terrace-plate-8": {
+            "height": 0.32,
+            "elevation": 0.0
+          },
+          "F2-living-terrace-plate-9": {
+            "height": 0.32,
+            "elevation": 0.0
+          },
+          "F2-living-terrace-plate-10": {
+            "height": 0.32,
+            "elevation": 0.0
+          },
+          "F2-living-terrace-plate-11": {
+            "height": 0.32,
+            "elevation": 0.0
+          },
+          "F2-living-terrace-plate-12": {
+            "height": 0.32,
+            "elevation": 0.0
+          },
+          "F2-living-terrace-plate-13": {
+            "height": 0.32,
+            "elevation": 0.0
+          },
+          "F2-living-terrace-plate-14": {
+            "height": 0.32,
+            "elevation": 0.0
+          },
+          "F2-living-terrace-plate-15": {
+            "height": 0.32,
+            "elevation": 0.0
+          },
+          "F2-living-terrace-plate-16": {
+            "height": 0.32,
+            "elevation": 0.0
+          },
+          "F2-living-terrace-plate-17": {
+            "height": 0.32,
+            "elevation": 0.0
+          },
+          "F2-living-terrace-plate-18": {
+            "height": 0.32,
+            "elevation": 0.0
+          },
+          "F2-living-terrace-plate-19": {
+            "height": 0.32,
+            "elevation": 0.0
+          },
+          "F2-rear-wall-20": {
+            "height": 3.45,
+            "elevation": 0.0
+          },
+          "F2-side-wall-21": {
+            "height": 3.45,
+            "elevation": 0.0
+          },
+          "F2-side-wall-22": {
+            "height": 3.45,
+            "elevation": 0.0
+          },
+          "F2-facade-opening-23": {
+            "height": 3.1,
+            "elevation": 0.2
+          },
+          "F2-entrance-portal-24": {
+            "height": 3.45,
+            "elevation": 0.0
+          },
+          "F2-recessed-entry-door-25": {
+            "height": 2.85,
+            "elevation": 0.0
+          },
+          "F2-balcony-parapet-26": {
+            "height": 1.05,
+            "elevation": 0.0
+          },
+          "F2-balcony-parapet-27": {
+            "height": 1.05,
+            "elevation": 0.0
+          },
+          "F2-balcony-parapet-28": {
+            "height": 1.05,
+            "elevation": 0.0
+          }
+        }
+      },
+      {
+        "number": 3,
+        "source_hash": "bcd7e71c8ee248397833b24e323859ca9311ffe1fd4a050c89c91b1d7a0d38b8",
+        "parameters": {
+          "meters_per_unit": 0.01,
+          "floor_height": 3.45,
+          "slab_thickness": 0.2,
+          "door_height": 2.4,
+          "window_height": 2.8,
+          "window_sill": 0.15,
+          "roof_rise": 0.35,
+          "roof_thickness": 0.15
+        },
+        "offsetX": 0,
+        "offsetY": 0,
+        "components": {
+          "F3-front-facade-1": {
+            "height": 3.05,
+            "elevation": 0.0
+          },
+          "F3-interior-partition-2": {
+            "height": 3.05,
+            "elevation": 0.0
+          },
+          "F3-interior-door-3": {
+            "height": 2.4,
+            "elevation": 0.0
+          },
+          "F3-rear-room-4": {
+            "height": 0.2,
+            "elevation": 0.0
+          },
+          "F3-living-room-5": {
+            "height": 0.2,
+            "elevation": 0.0
+          },
+          "F3-upper-terrace-plate-6": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F3-upper-terrace-plate-7": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F3-upper-terrace-plate-8": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F3-upper-terrace-plate-9": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F3-upper-terrace-plate-10": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F3-upper-terrace-plate-11": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F3-upper-terrace-plate-12": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F3-upper-terrace-plate-13": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F3-upper-terrace-plate-14": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F3-upper-terrace-plate-15": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F3-upper-terrace-plate-16": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F3-upper-terrace-plate-17": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F3-upper-terrace-plate-18": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F3-upper-terrace-plate-19": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F3-rear-wall-20": {
+            "height": 3.05,
+            "elevation": 0.0
+          },
+          "F3-side-wall-21": {
+            "height": 3.05,
+            "elevation": 0.0
+          },
+          "F3-side-wall-22": {
+            "height": 3.05,
+            "elevation": 0.0
+          },
+          "F3-facade-opening-23": {
+            "height": 2.8,
+            "elevation": 0.15
+          },
+          "F3-balcony-parapet-24": {
+            "height": 1.05,
+            "elevation": 0.0
+          },
+          "F3-balcony-parapet-25": {
+            "height": 1.05,
+            "elevation": 0.0
+          },
+          "F3-balcony-parapet-26": {
+            "height": 1.05,
+            "elevation": 0.0
+          },
+          "F3-left-rooftop-upstand-27": {
+            "height": 3.45,
+            "elevation": 0.0
+          },
+          "F3-offset-left-roof-shed-28": {
+            "height": 0.3,
+            "elevation": 3.15
+          },
+          "F3-wide-floating-roof-shed-29": {
+            "height": 0.35,
+            "elevation": 3.0
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "portal",
+    "name": "Portal Villa",
+    "description": "Synthetic two-storey villa: projecting frame, offset wings, balconies, a shed canopy and a five-step entry stair. Review suggested roof and stair dimensions. Timber fins, planting, finishes and glazing are omitted.",
+    "folder": "portal_villa",
+    "url": "/presets/portal-villa",
+    "floors": [
+      {
+        "number": 1,
+        "source_hash": "f40fccd22999915975dc7f976682320695eedfac6ad4dd2153d98f4fab4d091d",
+        "parameters": {
+          "meters_per_unit": 0.01,
+          "floor_height": 4.5,
+          "slab_thickness": 0.2,
+          "door_height": 2.4,
+          "window_height": 2.8,
+          "window_sill": 0.15,
+          "stair_height": 0.9,
+          "stair_steps": 5
+        },
+        "offsetX": 0,
+        "offsetY": 0,
+        "components": {
+          "F1-front-facade-1": {
+            "height": 3.6,
+            "elevation": 0.9
+          },
+          "F1-interior-partition-2": {
+            "height": 3.6,
+            "elevation": 0.9
+          },
+          "F1-interior-door-3": {
+            "height": 2.4,
+            "elevation": 0.9
+          },
+          "F1-rear-room-4": {
+            "height": 0.2,
+            "elevation": 0.9
+          },
+          "F1-living-room-5": {
+            "height": 0.2,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-6": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-7": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-8": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-9": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-10": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-11": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-12": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-13": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-14": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-15": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-16": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-17": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-18": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-19": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-rear-wall-20": {
+            "height": 3.6,
+            "elevation": 0.9
+          },
+          "F1-side-wall-21": {
+            "height": 3.6,
+            "elevation": 0.9
+          },
+          "F1-side-wall-22": {
+            "height": 3.6,
+            "elevation": 0.9
+          },
+          "F1-stone-support-pier-23": {
+            "height": 3.6,
+            "elevation": 0.9
+          },
+          "F1-facade-opening-24": {
+            "height": 3.25,
+            "elevation": 1.05
+          },
+          "F1-entry-door-25": {
+            "height": 3.15,
+            "elevation": 0.9
+          },
+          "F1-tall-white-frame-26": {
+            "height": 7.9,
+            "elevation": 0.9
+          },
+          "F1-portal-left-jamb-27": {
+            "height": 3.9,
+            "elevation": 4.12
+          },
+          "F1-portal-right-jamb-28": {
+            "height": 4.28,
+            "elevation": 4.12
+          },
+          "F1-exterior-stair-29": {
+            "height": 0.9,
+            "elevation": 0
+          }
+        }
+      },
+      {
+        "number": 2,
+        "source_hash": "abfab79713cec71e66bd69a09675d91444bb47d16a0b711a8f6d8d8c43d4a8b6",
+        "parameters": {
+          "meters_per_unit": 0.01,
+          "floor_height": 4.3,
+          "slab_thickness": 0.2,
+          "door_height": 2.4,
+          "window_height": 2.8,
+          "window_sill": 0.15,
+          "roof_rise": 0.2,
+          "roof_thickness": 0.15
+        },
+        "offsetX": 0,
+        "offsetY": 0,
+        "components": {
+          "F2-front-facade-1": {
+            "height": 3.55,
+            "elevation": 0.0
+          },
+          "F2-interior-partition-2": {
+            "height": 3.55,
+            "elevation": 0.0
+          },
+          "F2-interior-door-3": {
+            "height": 2.4,
+            "elevation": 0.0
+          },
+          "F2-rear-room-4": {
+            "height": 0.2,
+            "elevation": 0.0
+          },
+          "F2-living-room-5": {
+            "height": 0.2,
+            "elevation": 0.0
+          },
+          "F2-front-facade-6": {
+            "height": 3.55,
+            "elevation": 0.0
+          },
+          "F2-interior-partition-7": {
+            "height": 3.55,
+            "elevation": 0.0
+          },
+          "F2-interior-door-8": {
+            "height": 2.4,
+            "elevation": 0.0
+          },
+          "F2-rear-room-9": {
+            "height": 0.2,
+            "elevation": 0.0
+          },
+          "F2-living-room-10": {
+            "height": 0.2,
+            "elevation": 0.0
+          },
+          "F2-cantilever-balcony-11": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F2-cantilever-balcony-12": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F2-cantilever-balcony-13": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F2-cantilever-balcony-14": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F2-cantilever-balcony-15": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F2-cantilever-balcony-16": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F2-cantilever-balcony-17": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F2-cantilever-balcony-18": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F2-cantilever-balcony-19": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F2-cantilever-balcony-20": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F2-cantilever-balcony-21": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F2-cantilever-balcony-22": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F2-cantilever-balcony-23": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F2-cantilever-balcony-24": {
+            "height": 0.38,
+            "elevation": 0.0
+          },
+          "F2-rear-wall-25": {
+            "height": 3.55,
+            "elevation": 0.0
+          },
+          "F2-side-wall-26": {
+            "height": 3.55,
+            "elevation": 0.0
+          },
+          "F2-side-wall-27": {
+            "height": 3.55,
+            "elevation": 0.0
+          },
+          "F2-facade-opening-28": {
+            "height": 3,
+            "elevation": 0.2
+          },
+          "F2-balcony-parapet-29": {
+            "height": 1.05,
+            "elevation": 0.0
+          },
+          "F2-balcony-parapet-30": {
+            "height": 1.05,
+            "elevation": 0.0
+          },
+          "F2-balcony-parapet-31": {
+            "height": 1.05,
+            "elevation": 0.0
+          },
+          "F2-portal-crown-32": {
+            "height": 0.45,
+            "elevation": 3.95
+          },
+          "F2-rear-wall-33": {
+            "height": 3.55,
+            "elevation": 0.0
+          },
+          "F2-side-wall-34": {
+            "height": 3.55,
+            "elevation": 0.0
+          },
+          "F2-side-wall-35": {
+            "height": 3.55,
+            "elevation": 0.0
+          },
+          "F2-facade-opening-36": {
+            "height": 3.1,
+            "elevation": 0.2
+          },
+          "F2-right-terrace-37": {
+            "height": 0.22,
+            "elevation": 0.0
+          },
+          "F2-balcony-parapet-38": {
+            "height": 1.05,
+            "elevation": 0.0
+          },
+          "F2-balcony-parapet-39": {
+            "height": 1.05,
+            "elevation": 0.0
+          },
+          "F2-balcony-parapet-40": {
+            "height": 1.05,
+            "elevation": 0.0
+          },
+          "F2-right-roof-canopy-shed-41": {
+            "height": 0.2,
+            "elevation": 3.6
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "gable",
+    "name": "Gable Villa",
+    "description": "Synthetic two-storey villa with attic floor, gable roof, broad balcony and six-step entry stair. Review suggested roof rise, thickness and stair dimensions. Triangular glazing, planting and finishes are omitted.",
+    "folder": "gable_villa",
+    "url": "/presets/gable-villa",
+    "floors": [
+      {
+        "number": 1,
+        "source_hash": "f0fb9283a13356e9df37e4fa80e4a1da3635870a96b59abaae8582dff73ad21c",
+        "parameters": {
+          "meters_per_unit": 0.01,
+          "floor_height": 4.2,
+          "slab_thickness": 0.2,
+          "door_height": 2.4,
+          "window_height": 2.8,
+          "window_sill": 0.15,
+          "stair_height": 0.9,
+          "stair_steps": 6
+        },
+        "offsetX": 0,
+        "offsetY": 0,
+        "components": {
+          "F1-front-facade-1": {
+            "height": 3.3,
+            "elevation": 0.9
+          },
+          "F1-interior-partition-2": {
+            "height": 3.3,
+            "elevation": 0.9
+          },
+          "F1-interior-door-3": {
+            "height": 2.4,
+            "elevation": 0.9
+          },
+          "F1-rear-room-4": {
+            "height": 0.2,
+            "elevation": 0.9
+          },
+          "F1-living-room-5": {
+            "height": 0.2,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-6": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-7": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-8": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-9": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-10": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-11": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-12": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-13": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-14": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-15": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-16": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-17": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-18": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-ground-floor-plate-19": {
+            "height": 0.22,
+            "elevation": 0.9
+          },
+          "F1-rear-wall-20": {
+            "height": 3.3,
+            "elevation": 0.9
+          },
+          "F1-side-wall-21": {
+            "height": 3.3,
+            "elevation": 0.9
+          },
+          "F1-side-wall-22": {
+            "height": 3.3,
+            "elevation": 0.9
+          },
+          "F1-stone-facade-pier-23": {
+            "height": 3.3,
+            "elevation": 0.9
+          },
+          "F1-stone-facade-pier-24": {
+            "height": 3.3,
+            "elevation": 0.9
+          },
+          "F1-stone-facade-pier-25": {
+            "height": 3.3,
+            "elevation": 0.9
+          },
+          "F1-stone-facade-pier-26": {
+            "height": 3.3,
+            "elevation": 0.9
+          },
+          "F1-facade-opening-27": {
+            "height": 3,
+            "elevation": 1.02
+          },
+          "F1-exterior-stair-28": {
+            "height": 0.9,
+            "elevation": 0
+          }
+        }
+      },
+      {
+        "number": 2,
+        "source_hash": "455061256b16782f08042b9ca5d3c260c0ffd19158c574d422f28f4fb0ee60b3",
+        "parameters": {
+          "meters_per_unit": 0.01,
+          "floor_height": 3.1,
+          "slab_thickness": 0.2,
+          "door_height": 2.4,
+          "window_height": 2.8,
+          "window_sill": 0.15
+        },
+        "offsetX": 0,
+        "offsetY": 0,
+        "components": {
+          "F2-front-facade-1": {
+            "height": 3.1,
+            "elevation": 0.0
+          },
+          "F2-interior-partition-2": {
+            "height": 3.1,
+            "elevation": 0.0
+          },
+          "F2-interior-door-3": {
+            "height": 2.4,
+            "elevation": 0.0
+          },
+          "F2-rear-room-4": {
+            "height": 0.2,
+            "elevation": 0.0
+          },
+          "F2-living-room-5": {
+            "height": 0.2,
+            "elevation": 0.0
+          },
+          "F2-wide-balcony-plate-6": {
+            "height": 0.3,
+            "elevation": 0.0
+          },
+          "F2-wide-balcony-plate-7": {
+            "height": 0.3,
+            "elevation": 0.0
+          },
+          "F2-wide-balcony-plate-8": {
+            "height": 0.3,
+            "elevation": 0.0
+          },
+          "F2-wide-balcony-plate-9": {
+            "height": 0.3,
+            "elevation": 0.0
+          },
+          "F2-wide-balcony-plate-10": {
+            "height": 0.3,
+            "elevation": 0.0
+          },
+          "F2-wide-balcony-plate-11": {
+            "height": 0.3,
+            "elevation": 0.0
+          },
+          "F2-wide-balcony-plate-12": {
+            "height": 0.3,
+            "elevation": 0.0
+          },
+          "F2-wide-balcony-plate-13": {
+            "height": 0.3,
+            "elevation": 0.0
+          },
+          "F2-wide-balcony-plate-14": {
+            "height": 0.3,
+            "elevation": 0.0
+          },
+          "F2-wide-balcony-plate-15": {
+            "height": 0.3,
+            "elevation": 0.0
+          },
+          "F2-wide-balcony-plate-16": {
+            "height": 0.3,
+            "elevation": 0.0
+          },
+          "F2-wide-balcony-plate-17": {
+            "height": 0.3,
+            "elevation": 0.0
+          },
+          "F2-wide-balcony-plate-18": {
+            "height": 0.3,
+            "elevation": 0.0
+          },
+          "F2-wide-balcony-plate-19": {
+            "height": 0.3,
+            "elevation": 0.0
+          },
+          "F2-rear-wall-20": {
+            "height": 3.1,
+            "elevation": 0.0
+          },
+          "F2-side-wall-21": {
+            "height": 3.1,
+            "elevation": 0.0
+          },
+          "F2-side-wall-22": {
+            "height": 3.1,
+            "elevation": 0.0
+          },
+          "F2-facade-opening-23": {
+            "height": 2.85,
+            "elevation": 0.15
+          },
+          "F2-balcony-parapet-24": {
+            "height": 1.05,
+            "elevation": 0.0
+          },
+          "F2-balcony-parapet-25": {
+            "height": 1.05,
+            "elevation": 0.0
+          },
+          "F2-balcony-parapet-26": {
+            "height": 1.05,
+            "elevation": 0.0
+          },
+          "F2-balcony-canopy-27": {
+            "height": 0.18,
+            "elevation": 3.13
+          },
+          "F2-canopy-post-28": {
+            "height": 2.95,
+            "elevation": 0.0
+          },
+          "F2-canopy-post-29": {
+            "height": 2.95,
+            "elevation": 0.0
+          }
+        }
+      },
+      {
+        "number": 3,
+        "source_hash": "eec85ec1065849a4f7ed5b368e32f401e5a5ade57917644f51d2608231e4208d",
+        "parameters": {
+          "meters_per_unit": 0.01,
+          "floor_height": 3.2,
+          "slab_thickness": 0.2,
+          "door_height": 2.4,
+          "window_height": 2.8,
+          "window_sill": 0.15,
+          "roof_rise": 3.2,
+          "roof_thickness": 0.2
+        },
+        "offsetX": 0,
+        "offsetY": 0,
+        "components": {
+          "F3-attic-plate-1": {
+            "height": 0.16,
+            "elevation": -0.0
+          },
+          "F3-gable-roof-2": {
+            "height": 3.2,
+            "elevation": 0
+          },
+          "F3-attic-rear-knee-wall-3": {
+            "height": 0.2,
+            "elevation": 0
+          },
+          "F3-attic-left-knee-wall-4": {
+            "height": 0.2,
+            "elevation": 0
+          },
+          "F3-attic-right-knee-wall-5": {
+            "height": 0.2,
+            "elevation": 0
+          }
+        }
+      }
+    ]
+  }
+]

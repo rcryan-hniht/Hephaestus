@@ -4,7 +4,7 @@ import { sceneToModel, sourceDescription, offsetProposal } from './backend-model
 import { groupFloorFiles, assembleFloors, sampleFloorSuggestions } from './floors.js';
 import { sampleModel, reconstructDrawing, typeNames, drawingBounds } from './model.js';
 import villaPreset from './villa-preset.json';
-import { demoPresets, demoPresetModel } from './demo-presets.js';
+import drawingPresets from './drawing-presets.json';
 
 export function createWorkspace({ reducedMotion, onClose }) {
   const $ = id => document.getElementById(id);
@@ -18,12 +18,14 @@ export function createWorkspace({ reducedMotion, onClose }) {
   let drafts = singleDrafts, floors = [], arrangementConfirmed = false;
   let previewEpoch = 0;
   let building = null;
-  let fillSuggestions = false;
+  let fillSuggestions = false, presetLoad = 0;
     const stageNames = { queued: 'Queued', extracting: 'Extracting drawing evidence', awaiting_ai_result: 'Analyzing image', validating: 'Validating geometry', building: 'Building model', needs_information: 'Confirm missing information', ready: 'Ready · Confirmed parameters', failed: 'Failed', cancelled: 'Cancelled' };
   const questionSpecs = {
     meters_per_unit: ['Meters per source unit', 1e-8, 1000], floor_height: ['Floor height (m)', .5, 20],
     slab_thickness: ['Slab thickness (m)', .01, 2], door_height: ['Door height (m)', .2, 10],
     window_height: ['Window height (m)', .1, 10], window_sill: ['Window sill height (m)', 0, 10],
+    roof_rise: ['Roof rise (m)', .05, 20], roof_thickness: ['Vertical roof thickness (m)', .01, 2],
+    stair_height: ['Stair total rise (m)', .1, 20], stair_steps: ['Number of steps', 2, 128],
     review_confirmed: ['I reviewed and corrected the candidate footprints'],
   };
   const singleApi = createJobClient({ onUpdate: updateJob, onError: apiError });
@@ -67,10 +69,39 @@ export function createWorkspace({ reducedMotion, onClose }) {
     sourceOutlines = true; $('toggle-source').textContent = 'View original drawing';
     if (selected) selectComponent(selected);
   }
+  function renderPresetComponentSettings(job) {
+    const details = $('preset-component-settings'), fields = $('preset-component-fields');
+    const floor = floors.find(f => f.client === api);
+    const visible = job.state === 'needs_information' && Boolean(floor?.presetComponents && Object.keys(floor.presetComponents).length);
+    details.hidden = !visible;
+    $('confirm-preset-components').disabled = !visible;
+    fields.replaceChildren();
+    if (!visible) return;
+    for (const [id, values] of Object.entries(floor.presetComponents)) {
+      const component = floor.latest?.proposal?.components.find(c => c.id === id);
+      const row = document.createElement('div'); row.className = 'question';
+      const heading = document.createElement('p');
+      heading.textContent = `${component?.source?.element_id || id} · ${typeNames[component?.type] || component?.type || 'Component'}`;
+      row.append(heading);
+      for (const [field, value] of Object.entries(values)) {
+        const label = document.createElement('label');
+        label.textContent = field === 'height' ? 'Height (m)' : field === 'elevation' ? 'Elevation (m)' : field === 'steps' ? 'Number of steps' : 'Roof thickness (m)';
+        const input = document.createElement('input'); input.type = 'number'; input.required = true; input.setAttribute('form', 'api-questions');
+        input.dataset.componentId = id; input.dataset.field = field; input.value = value;
+        input.min = field === 'steps' ? 2 : field === 'roof_thickness' ? .01 : field === 'elevation' ? 0 : component?.type === 'roof' ? .05 : component?.type === 'stair' ? .1 : .01;
+        input.max = field === 'steps' ? 128 : field === 'roof_thickness' ? 2 : 20;
+        input.step = field === 'steps' ? 1 : 'any';
+        label.append(input); row.append(label);
+      }
+      fields.append(row);
+    }
+    $('confirm-preset-components').checked = Boolean(floor.presetReviewed);
+  }
   function renderQuestions(job) {
     const form = $('api-questions');
     form.querySelectorAll('input').forEach(input => drafts.set(input.name, input.type === 'checkbox' ? input.checked : input.value));
     form.replaceChildren(); form.hidden = job.state !== 'needs_information';
+    renderPresetComponentSettings(job);
     if (form.hidden) return;
     for (const q of job.questions) {
       const spec = questionSpecs[q.key]; if (!spec) throw new Error('Unsupported required drawing parameter. Update the frontend.');
@@ -79,7 +110,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
       const input = document.createElement('input'); input.id = `question-${q.key}`; input.name = q.key; input.required = true;
       input.type = q.key === 'review_confirmed' ? 'checkbox' : 'number';
       if (input.type === 'checkbox') input.checked = drafts.get(q.key) === true;
-      else { input.min = spec[1]; input.max = spec[2]; input.step = 'any'; input.value = drafts.get(q.key) ?? ''; }
+      else { input.min = spec[1]; input.max = spec[2]; input.step = q.key === 'stair_steps' ? '1' : 'any'; input.value = drafts.get(q.key) ?? ''; }
       if (fillSuggestions && input.type !== 'checkbox' && input.value === '' && Number.isFinite(job.suggestions[q.key]?.value)) input.value = job.suggestions[q.key].value;
       const note = document.createElement('small'); note.id = `note-${q.key}`; note.textContent = q.message + (q.key === 'meters_per_unit' ? ' Example: a measured span of 100 source units equals 1 m → enter 0.01, not 1.' : '');
       input.setAttribute('aria-describedby', note.id); label.append(input); row.append(label, note);
@@ -173,7 +204,8 @@ export function createWorkspace({ reducedMotion, onClose }) {
     floors = []; api = singleApi; drafts = singleDrafts; arrangementConfirmed = false;
     $('floor-sources').hidden = true; $('floor-alignment').hidden = true; $('sample-preset').hidden = true;
     proposal = null; sourceJob = null; apiBusy = false; drafts.clear(); fillSuggestions = false;
-    $('api-questions').hidden = true; $('proposal-edit').hidden = true; $('toggle-source').hidden = true;
+    $('api-questions').hidden = true; $('preset-component-settings').hidden = true; $('confirm-preset-components').disabled = true;
+    $('proposal-edit').hidden = true; $('toggle-source').hidden = true;
     $('cancel-job').hidden = true; $('continue-build').disabled = true;
     message(text); status(model ? 'Current model retained' : 'No model loaded');
   }
@@ -212,6 +244,12 @@ export function createWorkspace({ reducedMotion, onClose }) {
     selected = component;
     $('component-select').value = component?.id || '';
     $('properties-form').hidden = !component;
+    $('component-steps-field').hidden = component?.type !== 'stair';
+    $('component-roof-thickness-field').hidden = component?.type !== 'roof' || !model?.backend;
+    $('component-steps').required = component?.type === 'stair';
+    $('component-roof-thickness').required = component?.type === 'roof' && Boolean(model?.backend);
+    $('component-steps').value = component?.steps ?? '';
+    $('component-roof-thickness').value = component?.roof_thickness ?? '';
     $('selection-count').textContent = component ? typeNames[component.type] : '—';
     if (component && !model?.backend && previewTracksModel && !$('plan-svg').querySelector(`[data-id="${CSS.escape(component.id)}"]`)) {
       drawPlan(model.components.filter(c => c.floor === component.floor));
@@ -222,7 +260,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     });
     if (!component) { $('selection-info').textContent = 'Select a component to inspect dimensions and source.'; return; }
     const xs = component.polygon.map(p => p[0]), zs = component.polygon.map(p => p[1]);
-    $('selection-info').textContent = `${typeNames[component.type]} · Floor ${component.source_floor ?? component.floor + 1}\n${(Math.max(...xs) - Math.min(...xs)).toFixed(2)} × ${(Math.max(...zs) - Math.min(...zs)).toFixed(2)} × ${component.height.toFixed(2)} m\n${sourceDescription(component, model.name)}\n${model.backend ? `Validated drawing evidence. Parameters: ${Object.entries(componentScene(component).parameters).map(([k,v]) => `${k.replaceAll('_', ' ')}: ${v.value} (${v.provenance})`).join('; ')}${component.opening ? ' · Opening void, no inferred glazing or door leaf.' : ''}${model.multiFloor ? ' · Elevation edits are relative to this floor.' : ''}` : model.demoPreset ? 'Approximate design dimensions; editable assumptions.' : component.assumed ? 'Height / elevation: confirmed or editable assumption.' : 'Design dimensions of sample model.'}`;
+    $('selection-info').textContent = `${typeNames[component.type]} · Floor ${component.source_floor ?? component.floor + 1}\n${(Math.max(...xs) - Math.min(...xs)).toFixed(2)} × ${(Math.max(...zs) - Math.min(...zs)).toFixed(2)} × ${component.height.toFixed(2)} m\n${sourceDescription(component, model.name)}\n${model.backend ? `Validated drawing evidence. Parameters: ${Object.entries(componentScene(component).parameters).map(([k,v]) => `${k.replaceAll('_', ' ')}: ${v.value} (${v.provenance})`).join('; ')}${component.opening ? ' · Opening void, no inferred glazing or door leaf.' : ''}${model.multiFloor ? ' · Elevation edits are relative to this floor.' : ''}` : component.assumed ? 'Height / elevation: confirmed or editable assumption.' : 'Design dimensions of sample model.'}`;
     $('component-height').value = component.height; $('component-elevation').value = (component.local_elevation ?? component.elevation) + (model.backend && component.source_type === 'room' ? component.height : 0);
     $('component-height').max = model.backend ? 20 : 100; $('component-elevation').min = model.backend ? 0 : -100; $('component-elevation').max = model.backend ? 20 : 1000;
     historyState();
@@ -248,27 +286,24 @@ export function createWorkspace({ reducedMotion, onClose }) {
     const hasView = ensureView();
     if (hasView) { view.setModel(model, fit && active); pendingFit = fit && !active; }
     $('model-empty').hidden = true;
-    $('model-label').hidden = false; $('model-label').textContent = model.backend ? `RECONSTRUCTED ${model.multiFloor ? `${model.floors} FLOORS` : model.scene.source_kind.toUpperCase()} · ${model.name} · REVISION ${model.scene.revision}` : model.demoPreset ? `DESIGN PRESET · ${model.name.toUpperCase()} · METRIC UNITS` : model.sample ? 'DEMO MODEL · METRIC UNITS' : 'PRELIMINARY DXF MODEL · VERIFY ASSUMPTIONS';
+    $('model-label').hidden = false; $('model-label').textContent = model.backend ? `RECONSTRUCTED ${model.multiFloor ? `${model.floors} FLOORS` : model.scene.source_kind.toUpperCase()} · ${model.name} · REVISION ${model.scene.revision}` : model.sample ? 'DEMO MODEL · METRIC UNITS' : 'PRELIMINARY DXF MODEL · VERIFY ASSUMPTIONS';
     $('project-name').textContent = model.name;
     if (updateSource) $('file-name').textContent = model.sample ? `${model.name} / Sample design plan` : model.name;
     $('model-notes').textContent = model.warnings.join(' ');
-    $('component-select').replaceChildren(new Option('Select on model or drawing', ''), ...model.components.map((c, i) => new Option(`${c.label || `${typeNames[c.type]} ${i + 1}`} · Floor ${c.source_floor ?? c.floor + 1}`, c.id)));
+    $('component-select').replaceChildren(new Option('Select on model or drawing', ''), ...model.components.map((c, i) => new Option(`${typeNames[c.type]} ${i + 1} · Floor ${c.source_floor ?? c.floor + 1}`, c.id)));
     $('export-model').disabled = !hasView; $('export-scene').hidden = !model.backend;
     if (updateSource) { previewTracksModel = true; sourceOutlines = false; updatePlanForFloor(); }
     else if (sourceOutlines) drawSource();
-    $('drawing-settings').hidden = Boolean(model.backend || model.demoPreset);
+    $('drawing-settings').hidden = Boolean(model.backend);
     selectComponent(null); historyState();
     status(hasView ? model.sample ? 'Viewing demo model' : 'Ready · Verify assumptions' : '3D unavailable · 2D preview available');
     if (fit) root.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === 'perspective')));
   }
   function loadSample(index = 0) {
-    loadDemo(sampleModel(index));
-  }
-  function loadDemo(next) {
     cancel('Viewing sample project design plan.');
     $('drawing-settings').hidden = false;
     $('retry-job').hidden = true; $('drawing-unit').value = 'm';
-    applyModel(next);
+    applyModel(sampleModel(index));
     closeDrawers();
   }
 
@@ -286,17 +321,17 @@ export function createWorkspace({ reducedMotion, onClose }) {
     } catch (error) { if (current === ticket) apiError(error); }
   }
 
-  async function loadVillaPreset() {
-    message('Loading the four Villa V2 drawings. Confirm their parameters before building.');
-    const current = ticket;
+  async function loadVillaPreset(preset = villaPreset) {
+    message(`Loading ${preset.name} drawings. Confirm their parameters before building.`);
+    const current = ticket, loading = ++presetLoad;
     try {
-      const files = await Promise.all(villaPreset.floors.map(async floor => {
-        const response = await fetch(`/presets/modern-villa/F${floor.number}.svg`);
+      const files = await Promise.all(preset.floors.map(async floor => {
+        const response = await fetch(`${preset.url || '/presets/modern-villa'}/F${floor.number}.svg`);
         if (!response.ok) throw new Error('The villa preset drawing is unavailable. Retry or upload the SVG files.');
         return new File([await response.blob()], `F${floor.number}.svg`, { type: 'image/svg+xml' });
       }));
-      if (current === ticket) await receiveFiles(files);
-    } catch (error) { if (current === ticket) apiError(error); }
+      if (current === ticket && loading === presetLoad) await receiveFiles(files);
+    } catch (error) { if (current === ticket && loading === presetLoad) apiError(error); }
   }
 
   function renderFloorStatus() {
@@ -361,7 +396,8 @@ export function createWorkspace({ reducedMotion, onClose }) {
     $('source-drawing').value = floor.file.name;
     $('source-files').textContent = `Build source: ${floor.file.name}${/\.svg$/i.test(floor.file.name) ? ' · SVG vector evidence' : ' · PNG inference'}. ${floor.files.length} drawing(s) retained.`;
     $('file-name').textContent = floor.file.name; $('drawing-settings').hidden = true;
-    $('api-questions').hidden = true; $('proposal-edit').hidden = true; $('retry-job').hidden = true;
+    $('api-questions').hidden = true; $('preset-component-settings').hidden = true; $('confirm-preset-components').disabled = true;
+    $('proposal-edit').hidden = true; $('retry-job').hidden = true;
     $('toggle-source').hidden = true; $('cancel-job').hidden = false;
     selectComponent(null);
     void displayFloorDrawing(floor, floor.file.name);
@@ -384,7 +420,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
           if (current !== ticket) return;
           entry.latest = update; entry.job = update.job; entry.error = null;
           if (update.scene) entry.scene = update.scene;
-          if (update.job.state === 'ready') entry.presetComponents = null;
+          if (update.job.state === 'ready') { entry.presetComponents = null; entry.presetReviewed = false; }
           if (api === entry.client) await updateJob(update);
           renderFloorStatus(); publishBuilding();
         },
@@ -497,6 +533,19 @@ export function createWorkspace({ reducedMotion, onClose }) {
     const floor = floors.find(f => f.client === api);
     void apiAction('answers', { values, component_values: floor?.presetComponents || {} });
   });
+  listen($('preset-component-fields'), 'input', event => {
+    const input = event.target, floor = floors.find(f => f.client === api);
+    if (floor?.presetComponents?.[input.dataset.componentId]) {
+      floor.presetComponents[input.dataset.componentId][input.dataset.field] = input.value === '' ? '' : Number(input.value);
+      floor.presetReviewed = false;
+      $('confirm-preset-components').checked = false;
+    }
+  });
+  listen($('confirm-preset-components'), 'change', event => {
+    const floor = floors.find(f => f.client === api);
+    if (floor) floor.presetReviewed = event.target.checked;
+  });
+  $('preset-component-settings').addEventListener('invalid', () => { $('preset-component-settings').open = true; }, { capture: true, signal: events.signal });
   listen($('toggle-source'), 'click', () => { if (sourceOutlines) showSource(); else drawSource(); });
   listen($('candidate-select'), 'change', () => {
     updateCandidate(); drawSource();
@@ -536,6 +585,8 @@ export function createWorkspace({ reducedMotion, onClose }) {
       }
     }
     $('api-questions').querySelectorAll('input[type=number]').forEach(input => { if (input.value === '') input.value = drafts.get(input.name) ?? ''; });
+    if ($('preset-component-settings').hidden) $('preset-component-settings').open = false;
+    renderPresetComponentSettings(api.job);
     arrangementConfirmed = false;
     message(`Sample suggestions filled for ${floors.length} floors. Your entries are preserved. Review the preset's component heights, then confirm each floor and the alignment.`);
   });
@@ -561,16 +612,14 @@ export function createWorkspace({ reducedMotion, onClose }) {
   listen($('back-home'), 'click', () => { active = false; root.hidden = true; closeDrawers(); onClose(); });
   for (const id of ['load-sample', 'empty-sample']) listen($(id), 'click', () => loadSample());
   listen($('load-villa-preset'), 'click', () => { void loadVillaPreset(); });
+  const presets = [{ ...villaPreset, id: 'modern' }, ...drawingPresets];
+  $('drawing-preset').replaceChildren(...presets.map(p => new Option(p.name, p.id)));
   function describePreset() {
-    const preset = demoPresets.find(p => p.id === $('demo-preset').value);
-    $('preset-description').textContent = `${preset.description} ${preset.dimensions}.`;
+    $('preset-description').textContent = presets.find(p => p.id === $('drawing-preset').value).description;
   }
   describePreset();
-  listen($('demo-preset'), 'change', describePreset);
-  listen($('preview-preset'), 'click', () => {
-    loadDemo(demoPresetModel($('demo-preset').value));
-    $('drawing-message').textContent = 'Prepared design from a visual reference. Orbit, inspect or export; dimensions are approximate.';
-  });
+  listen($('drawing-preset'), 'change', describePreset);
+  listen($('load-drawing-preset'), 'click', () => { void loadVillaPreset(presets.find(p => p.id === $('drawing-preset').value)); });
   listen($('plan-svg'), 'click', e => {
     if (!previewTracksModel || !e.target.dataset.id) return;
     if (view) view.select(e.target.dataset.id);
@@ -616,7 +665,18 @@ export function createWorkspace({ reducedMotion, onClose }) {
     if (![height, elevation, x, z].every(Number.isFinite) || height < .01 || height > 100 || Math.abs(x) > 10000 || Math.abs(z) > 10000 || elevation < -100 || elevation > 1000) return;
     if (model.backend) {
       if (!canEditComponent()) return;
-      const component_values = { [selected.id]: { height, elevation } };
+      const values = { height, elevation };
+      if (selected.type === 'stair') {
+        const steps = Number($('component-steps').value);
+        if (!Number.isInteger(steps) || steps < 2 || steps > 128) return;
+        values.steps = steps;
+      }
+      if (selected.type === 'roof') {
+        const thickness = Number($('component-roof-thickness').value);
+        if (!Number.isFinite(thickness) || thickness < .01 || thickness > 2) return;
+        values.roof_thickness = thickness;
+      }
+      const component_values = { [selected.id]: values };
       if (x || z) {
         try { await apiAction('proposal', { proposal: offsetProposal(proposal, selected.id, x, z, componentScene(selected).parameters.meters_per_unit.value), component_values }); }
         catch (error) { apiError(error); }

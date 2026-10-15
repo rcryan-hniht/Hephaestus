@@ -26,6 +26,11 @@ try {
     await page.locator('#source-floor').selectOption(String(floor));
     await page.locator('#api-questions').waitFor({ state: 'visible' });
     assert.equal(await page.locator('#question-meters_per_unit').inputValue(), '0.01');
+    if (floor > 1) {
+      await page.locator('#preset-component-settings').waitFor({ state: 'visible' });
+      if (floor === 2) await page.locator('#preset-component-settings summary').click();
+      await page.locator('#confirm-preset-components').check();
+    } else assert.equal(await page.locator('#preset-component-settings').isVisible(), false, 'F1 has no component overrides');
     await page.locator('#api-questions button[type=submit]').click();
     await page.waitForFunction(number => document.getElementById(`floor-status-${number}`).textContent.includes('Ready'), floor);
   }

@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1960" viewBox="0 0 1720 1960">
+  <title>Terrace Villa / F2 / synthetic drawing</title>
+  <desc>Synthetic stepped villa: lower garage, two living floors, terrace parapets, shallow shed roofs and an 18-step garden stair. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
+  <rect width="1720" height="1960" fill="#fafafa" />
+  <text x="140" y="60" fill="#333" font-family="Arial, sans-serif" font-size="22">HEPHAESTUS / SYNTHETIC DRAWING PRESET</text>
+  <text x="140" y="105" fill="#333" font-family="Arial, sans-serif" font-size="30">TERRACE VILLA / F2</text>
+  <text x="140" y="145" fill="#333" font-family="Arial, sans-serif" font-size="19">Suggested floor height 3.55 m / source scale 0.01 m per unit / review before building</text>
+  <g id="Floor-2" class="Floorplan">
+    <g id="F2-front-facade-1" class="Wall Front_facade">
+      <polygon points="310.000,957.000 1380.000,957.000 1380.000,977.000 310.000,977.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-interior-partition-2" class="Wall Interior_partition">
+      <polygon points="330.000,1344.200 1360.000,1344.200 1360.000,1359.200 330.000,1359.200" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-interior-door-3" class="Door Interior_door">
+      <polygon points="793.500,1359.200 883.500,1359.200 883.500,1344.200 793.500,1344.200" fill="#c45c3d" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-rear-room-4" class="Space Rear_room">
+      <polygon points="330.000,1359.200 1360.000,1359.200 1360.000,1700.000 330.000,1700.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-room-5" class="Space Living_room">
+      <polygon points="330.000,990.000 1360.000,990.000 1360.000,1344.200 330.000,1344.200" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-terrace-plate-6" class="Space Living_terrace_plate">
+      <polygon points="1360.000,1359.200 330.000,1359.200 330.000,1344.200" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-terrace-plate-7" class="Space Living_terrace_plate">
+      <polygon points="290.000,1740.000 330.000,1359.200 330.000,1700.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-terrace-plate-8" class="Space Living_terrace_plate">
+      <polygon points="330.000,1344.200 290.000,1740.000 290.000,780.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-terrace-plate-9" class="Space Living_terrace_plate">
+      <polygon points="1360.000,1359.200 330.000,1344.200 1360.000,1344.200" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-terrace-plate-10" class="Space Living_terrace_plate">
+      <polygon points="290.000,1740.000 330.000,1344.200 330.000,1359.200" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-terrace-plate-11" class="Space Living_terrace_plate">
+      <polygon points="1360.000,1700.000 290.000,1740.000 330.000,1700.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-terrace-plate-12" class="Space Living_terrace_plate">
+      <polygon points="330.000,990.000 330.000,1344.200 290.000,780.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-terrace-plate-13" class="Space Living_terrace_plate">
+      <polygon points="290.000,1740.000 1360.000,1700.000 1430.000,1740.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-terrace-plate-14" class="Space Living_terrace_plate">
+      <polygon points="1360.000,990.000 330.000,990.000 290.000,780.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-terrace-plate-15" class="Space Living_terrace_plate">
+      <polygon points="1360.000,1359.200 1430.000,1740.000 1360.000,1700.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-terrace-plate-16" class="Space Living_terrace_plate">
+      <polygon points="1360.000,990.000 290.000,780.000 1430.000,780.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-terrace-plate-17" class="Space Living_terrace_plate">
+      <polygon points="1360.000,1344.200 1430.000,1740.000 1360.000,1359.200" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-terrace-plate-18" class="Space Living_terrace_plate">
+      <polygon points="1360.000,1344.200 1360.000,990.000 1430.000,780.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-terrace-plate-19" class="Space Living_terrace_plate">
+      <polygon points="1430.000,1740.000 1360.000,1344.200 1430.000,780.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-rear-wall-20" class="Wall Rear_wall">
+      <polygon points="310.000,1700.000 1380.000,1700.000 1380.000,1720.000 310.000,1720.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-side-wall-21" class="Wall Side_wall">
+      <polygon points="330.000,1700.000 310.000,1700.000 310.000,977.000 330.000,977.000 330.000,1344.200 330.000,1359.200" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-side-wall-22" class="Wall Side_wall">
+      <polygon points="1380.000,1700.000 1360.000,1700.000 1360.000,1359.200 1360.000,1344.200 1360.000,977.000 1380.000,977.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-facade-opening-23" class="Window Facade_opening">
+      <polygon points="550.000,977.000 1280.000,977.000 1280.000,957.000 550.000,957.000" fill="#9eb9c1" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-entrance-portal-24" class="Wall Entrance_portal">
+      <polygon points="530.000,995.000 330.000,995.000 330.000,977.000 530.000,977.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-recessed-entry-door-25" class="Door Recessed_entry_door">
+      <polygon points="385.000,977.000 480.000,977.000 480.000,957.000 385.000,957.000" fill="#c45c3d" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-balcony-parapet-26" class="Wall Balcony_parapet">
+      <polygon points="800.000,780.500 1400.000,780.500 1400.000,785.000 800.000,785.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-balcony-parapet-27" class="Wall Balcony_parapet">
+      <polygon points="804.500,940.000 800.000,940.000 800.000,785.000 804.500,785.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-balcony-parapet-28" class="Wall Balcony_parapet">
+      <polygon points="1400.000,940.000 1395.500,940.000 1395.500,785.000 1400.000,785.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+  </g>
+  <text x="140" y="1780" fill="#666" font-family="Arial, sans-serif" font-size="18">Synthetic dimensions. Confirm floor and component heights, then confirm alignment.</text>
+  <text x="140" y="1820" fill="#666" font-family="Arial, sans-serif" font-size="16">Synthetic stepped villa: lower garage, two living floors, terrace parapets, shallow shed roofs and an 18-step </text>
+  <text x="140" y="1844" fill="#666" font-family="Arial, sans-serif" font-size="16">garden stair. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are o</text>
+  <text x="140" y="1868" fill="#666" font-family="Arial, sans-serif" font-size="16">mitted.</text>
+</svg>

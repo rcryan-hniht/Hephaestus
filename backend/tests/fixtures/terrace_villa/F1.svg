@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1960" viewBox="0 0 1720 1960">
+  <title>Terrace Villa / F1 / synthetic drawing</title>
+  <desc>Synthetic stepped villa: lower garage, two living floors, terrace parapets, shallow shed roofs and an 18-step garden stair. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
+  <rect width="1720" height="1960" fill="#fafafa" />
+  <text x="140" y="60" fill="#333" font-family="Arial, sans-serif" font-size="22">HEPHAESTUS / SYNTHETIC DRAWING PRESET</text>
+  <text x="140" y="105" fill="#333" font-family="Arial, sans-serif" font-size="30">TERRACE VILLA / F1</text>
+  <text x="140" y="145" fill="#333" font-family="Arial, sans-serif" font-size="19">Suggested floor height 3.2 m / source scale 0.01 m per unit / review before building</text>
+  <g id="Floor-1" class="Floorplan">
+    <g id="F1-front-facade-1" class="Wall Front_facade">
+      <polygon points="790.000,850.000 1430.000,850.000 1430.000,870.000 790.000,870.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F1-interior-partition-2" class="Wall Interior_partition">
+      <polygon points="810.000,1301.800 1410.000,1301.800 1410.000,1316.800 810.000,1316.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F1-interior-door-3" class="Door Interior_door">
+      <polygon points="1080.000,1316.800 1170.000,1316.800 1170.000,1301.800 1080.000,1301.800" fill="#c45c3d" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F1-rear-room-4" class="Space Rear_room">
+      <polygon points="810.000,1316.800 1410.000,1316.800 1410.000,1720.000 810.000,1720.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F1-living-room-5" class="Space Living_room">
+      <polygon points="810.000,880.000 1410.000,880.000 1410.000,1301.800 810.000,1301.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F1-rear-wall-6" class="Wall Rear_wall">
+      <polygon points="790.000,1720.000 1430.000,1720.000 1430.000,1740.000 790.000,1740.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F1-side-wall-7" class="Wall Side_wall">
+      <polygon points="810.000,1720.000 790.000,1720.000 790.000,870.000 810.000,870.000 810.000,1301.800 810.000,1316.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F1-side-wall-8" class="Wall Side_wall">
+      <polygon points="1430.000,1720.000 1410.000,1720.000 1410.000,1316.800 1410.000,1301.800 1410.000,870.000 1430.000,870.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F1-garage-door-9" class="Door Garage_door">
+      <polygon points="870.000,870.000 1360.000,870.000 1360.000,850.000 870.000,850.000" fill="#c45c3d" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F1-garden-retaining-wall-10" class="Wall Garden_retaining_wall">
+      <polygon points="290.000,920.000 760.000,920.000 760.000,1740.000 290.000,1740.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F1-raised-garden-terrace-11" class="Space Raised_garden_terrace">
+      <polygon points="290.000,920.000 760.000,920.000 760.000,1740.000 290.000,1740.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F1-exterior-stair-12" class="Stair Exterior_stair" data-direction="0,1" data-steps="18">
+      <polygon points="460.000,845.000 720.000,845.000 720.000,304.000 460.000,304.000" fill="#c8c8c3" stroke="#333" stroke-width="1" />
+      <text x="590.000" y="574.500" font-family="Arial, sans-serif" font-size="18" fill="#333" text-anchor="middle">18 steps / UP</text>
+    </g>
+  </g>
+  <text x="140" y="1780" fill="#666" font-family="Arial, sans-serif" font-size="18">Synthetic dimensions. Confirm floor and component heights, then confirm alignment.</text>
+  <text x="140" y="1820" fill="#666" font-family="Arial, sans-serif" font-size="16">Synthetic stepped villa: lower garage, two living floors, terrace parapets, shallow shed roofs and an 18-step </text>
+  <text x="140" y="1844" fill="#666" font-family="Arial, sans-serif" font-size="16">garden stair. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are o</text>
+  <text x="140" y="1868" fill="#666" font-family="Arial, sans-serif" font-size="16">mitted.</text>
+</svg>

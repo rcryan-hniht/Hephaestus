@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1960" viewBox="0 0 1720 1960">
+  <title>Gable Villa / F2 / synthetic drawing</title>
+  <desc>Synthetic two-storey villa with attic floor, gable roof, broad balcony and six-step entry stair. Review suggested roof rise, thickness and stair dimensions. Triangular glazing, planting and finishes are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
+  <rect width="1720" height="1960" fill="#fafafa" />
+  <text x="140" y="60" fill="#333" font-family="Arial, sans-serif" font-size="22">HEPHAESTUS / SYNTHETIC DRAWING PRESET</text>
+  <text x="140" y="105" fill="#333" font-family="Arial, sans-serif" font-size="30">GABLE VILLA / F2</text>
+  <text x="140" y="145" fill="#333" font-family="Arial, sans-serif" font-size="19">Suggested floor height 3.1 m / source scale 0.01 m per unit / review before building</text>
+  <g id="Floor-2" class="Floorplan">
+    <g id="F2-front-facade-1" class="Wall Front_facade">
+      <polygon points="365.000,926.000 1355.000,926.000 1355.000,946.000 365.000,946.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-interior-partition-2" class="Wall Interior_partition">
+      <polygon points="385.000,1303.800 1335.000,1303.800 1335.000,1318.800 385.000,1318.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-interior-door-3" class="Door Interior_door">
+      <polygon points="812.500,1318.800 902.500,1318.800 902.500,1303.800 812.500,1303.800" fill="#c45c3d" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-rear-room-4" class="Space Rear_room">
+      <polygon points="385.000,1318.800 1335.000,1318.800 1335.000,1650.000 385.000,1650.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-living-room-5" class="Space Living_room">
+      <polygon points="385.000,960.000 1335.000,960.000 1335.000,1303.800 385.000,1303.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-wide-balcony-plate-6" class="Space Wide_balcony_plate">
+      <polygon points="1335.000,1318.800 385.000,1318.800 385.000,1303.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-wide-balcony-plate-7" class="Space Wide_balcony_plate">
+      <polygon points="310.000,1690.000 385.000,1318.800 385.000,1650.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-wide-balcony-plate-8" class="Space Wide_balcony_plate">
+      <polygon points="385.000,1303.800 310.000,1690.000 310.000,790.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-wide-balcony-plate-9" class="Space Wide_balcony_plate">
+      <polygon points="1335.000,1318.800 385.000,1303.800 1335.000,1303.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-wide-balcony-plate-10" class="Space Wide_balcony_plate">
+      <polygon points="310.000,1690.000 385.000,1303.800 385.000,1318.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-wide-balcony-plate-11" class="Space Wide_balcony_plate">
+      <polygon points="1410.000,1690.000 310.000,1690.000 385.000,1650.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-wide-balcony-plate-12" class="Space Wide_balcony_plate">
+      <polygon points="385.000,960.000 385.000,1303.800 310.000,790.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-wide-balcony-plate-13" class="Space Wide_balcony_plate">
+      <polygon points="1410.000,1690.000 385.000,1650.000 1335.000,1650.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-wide-balcony-plate-14" class="Space Wide_balcony_plate">
+      <polygon points="1335.000,960.000 385.000,960.000 310.000,790.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-wide-balcony-plate-15" class="Space Wide_balcony_plate">
+      <polygon points="1335.000,1318.800 1410.000,1690.000 1335.000,1650.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-wide-balcony-plate-16" class="Space Wide_balcony_plate">
+      <polygon points="1335.000,960.000 310.000,790.000 1410.000,790.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-wide-balcony-plate-17" class="Space Wide_balcony_plate">
+      <polygon points="1335.000,1303.800 1410.000,1690.000 1335.000,1318.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-wide-balcony-plate-18" class="Space Wide_balcony_plate">
+      <polygon points="1335.000,1303.800 1335.000,960.000 1410.000,790.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-wide-balcony-plate-19" class="Space Wide_balcony_plate">
+      <polygon points="1410.000,1690.000 1335.000,1303.800 1410.000,790.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-rear-wall-20" class="Wall Rear_wall">
+      <polygon points="365.000,1650.000 1355.000,1650.000 1355.000,1670.000 365.000,1670.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-side-wall-21" class="Wall Side_wall">
+      <polygon points="385.000,1650.000 365.000,1650.000 365.000,946.000 385.000,946.000 385.000,1303.800 385.000,1318.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-side-wall-22" class="Wall Side_wall">
+      <polygon points="1355.000,1650.000 1335.000,1650.000 1335.000,1318.800 1335.000,1303.800 1335.000,946.000 1355.000,946.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-facade-opening-23" class="Window Facade_opening">
+      <polygon points="410.000,946.000 1310.000,946.000 1310.000,926.000 410.000,926.000" fill="#9eb9c1" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-balcony-parapet-24" class="Wall Balcony_parapet">
+      <polygon points="350.000,800.500 1370.000,800.500 1370.000,805.000 350.000,805.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-balcony-parapet-25" class="Wall Balcony_parapet">
+      <polygon points="354.500,905.000 350.000,905.000 350.000,805.000 354.500,805.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-balcony-parapet-26" class="Wall Balcony_parapet">
+      <polygon points="1370.000,905.000 1365.500,905.000 1365.500,805.000 1370.000,805.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-balcony-canopy-27" class="Space Balcony_canopy">
+      <polygon points="310.000,780.000 1410.000,780.000 1410.000,970.000 310.000,970.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-canopy-post-28" class="Column Canopy_post">
+      <polygon points="350.000,810.000 360.000,810.000 360.000,800.000 350.000,800.000" fill="#b8926a" stroke="#333" stroke-width="1" />
+    </g>
+    <g id="F2-canopy-post-29" class="Column Canopy_post">
+      <polygon points="1360.000,810.000 1370.000,810.000 1370.000,800.000 1360.000,800.000" fill="#b8926a" stroke="#333" stroke-width="1" />
+    </g>
+  </g>
+  <text x="140" y="1780" fill="#666" font-family="Arial, sans-serif" font-size="18">Synthetic dimensions. Confirm floor and component heights, then confirm alignment.</text>
+  <text x="140" y="1820" fill="#666" font-family="Arial, sans-serif" font-size="16">Synthetic two-storey villa with attic floor, gable roof, broad balcony and six-step entry stair. Review sugges</text>
+  <text x="140" y="1844" fill="#666" font-family="Arial, sans-serif" font-size="16">ted roof rise, thickness and stair dimensions. Triangular glazing, planting and finishes are omitted.</text>
+</svg>

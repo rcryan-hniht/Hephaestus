@@ -207,8 +207,9 @@ port, with 8000 as the container default.
    ```
 
    Additional required values depend on the evidence: `slab_thickness`,
-   `door_height`, `window_height`, and `window_sill`. Component height/elevation
-   overrides can replace opening/slab defaults for those components. Floor
+   `door_height`, `window_height`, `window_sill`, `roof_rise`, `roof_thickness`,
+   `stair_height`, and integer `stair_steps`. Component height/elevation
+   overrides can replace opening/slab/roof/stair defaults for those components. Floor
    height and drawing scale remain essential. Height and elevation are meters;
    room elevation is its finished floor level and thickness extends below it.
    PNG geometry also requires `review_confirmed: true` after human review and
@@ -275,9 +276,10 @@ Scene export retains these identifiers and source polygons, plus:
   preprocessing, prompt/schema versions, settings, latency and token usage.
   Unknown provider GPU/dtype/quantization/revision information is not invented.
 
-Normalized geometry JSON is the initial export, equivalent to the scene data
-needed by Three.js. GLB generation is not implemented. Floors are extruded from
-room footprints using confirmed thickness. No roof, site, extra floors,
+The backend exports normalized geometry JSON consumed by Three.js; the frontend
+exports component-preserving GLB. Floors are extruded from room footprints using
+confirmed thickness. Explicit roof and stair footprints produce pitched roofs
+and straight flights after parameter confirmation. No site, extra floors,
 furniture, finishes, window frames or door leaves are invented.
 
 The synthetic `tests/fixtures/known_rooms.svg` has two rooms and 0.2 m walls at
@@ -296,13 +298,38 @@ transform. Requests have a 90 s timeout, two total malformed-output attempts,
 8192 output tokens and a 2 MiB response limit. Catalog size is capped at 4 MiB;
 provider errors are actionable and do not echo credentials or raw headers.
 
-SVG supports semantic classes `Wall`, `Space`, `Column`, `Door`, `Window`,
+SVG supports semantic classes `Wall`, `Space`, `Column`, `Door`, `Window`, `Roof`, `Stair`,
 polygon/rect/closed linear paths, and hierarchical affine transforms. Multiple
 direct footprints receive separate IDs. It rejects scripts, entities, image
 resources, `use`, stylesheets, active content, external references, unsupported
 curved footprints and multiple path contours. Local marker references may be
 retained without fetching anything. Ordinary unlabeled line art is not an
 automatic semantic reconstruction. Unsupported input fails visibly.
+
+Roof and stair evidence must supply a finite nonzero `data-direction` vector in
+the semantic group's local SVG coordinates. The group's affine transform maps
+that vector into source coordinates. Roofs also require exactly one `Gable` or
+`Shed` class; stairs may supply an integer `data-steps` from 2 to 128:
+
+```xml
+<g class="Roof Gable" data-direction="1,0">
+  <rect x="0" y="0" width="1000" height="800"/>
+</g>
+<g class="Stair" data-direction="0,1" data-steps="18">
+  <rect x="100" y="100" width="120" height="450"/>
+</g>
+```
+
+For gables, the direction crosses the ridge; for sheds and stairs it points
+uphill. Confirm scale and floor height, then roof rise and vertical thickness,
+or stair total rise and step count when absent from the source. Component
+`height` means roof rise or stair total rise; `elevation` means eave height or
+stair base height relative to its floor. Roof eaves default to confirmed floor
+height. Component overrides support `roof_thickness` and integer `steps`.
+The drawing presets expose their suggested component values for editing and
+explicit review before confirmation. This implementation supports straight
+stair flights, not turning or spiral stairs. The local PNG engine does not
+automatically recognize these new roof/stair classes.
 
 SVG limits are 30,000 XML elements, depth 64, 2000 components, 512 vertices per
 footprint and 20,000 total footprint vertices. Coordinates must be finite and

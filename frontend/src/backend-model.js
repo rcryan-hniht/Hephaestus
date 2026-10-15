@@ -17,7 +17,7 @@ export function sceneToModel(scene, job) {
   if (!Array.isArray(scene.components) || !scene.components.length || scene.components.length > 2000) throw new Error('Model component limit exceeded.');
   const ids = new Set(); let size = 0, hasGeometry = false;
   const components = scene.components.map(c => {
-    if (!['room','wall','column','door','window'].includes(c.type) || typeof c.id !== 'string' || ids.has(c.id)
+    if (!['room','wall','column','door','window','roof','stair'].includes(c.type) || typeof c.id !== 'string' || ids.has(c.id)
       || c.floor !== 0 || !Number.isFinite(c.height) || c.height <= 0 || !Number.isFinite(c.elevation)
       || !Array.isArray(c.polygon) || c.polygon.length < 3
       || c.polygon.some(p => !Array.isArray(p) || p.length !== 2 || p.some(n => !Number.isFinite(n)))) throw new Error('Invalid model component returned by the drawing API.');

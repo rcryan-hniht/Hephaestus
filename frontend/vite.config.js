@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { readFileSync, existsSync } from 'node:fs';
 import { cubicasaGallery } from './src/cubicasa-samples.js';
 import villaPreset from './src/villa-preset.json' with { type: 'json' };
+import drawingPresets from './src/drawing-presets.json' with { type: 'json' };
 
 const heroReference = fileURLToPath(new URL('../assets/cosmos_2096171389.webp', import.meta.url));
 const references = new Map([
@@ -10,6 +11,9 @@ const references = new Map([
   ...villaPreset.floors.map(floor => [`/presets/modern-villa/F${floor.number}.svg`, {
     path: fileURLToPath(new URL(`../backend/tests/fixtures/modern_villa/F${floor.number}.svg`, import.meta.url)), type: 'image/svg+xml',
   }]),
+  ...drawingPresets.flatMap(preset => preset.floors.map(floor => [`${preset.url}/F${floor.number}.svg`, {
+    path: fileURLToPath(new URL(`../backend/tests/fixtures/${preset.folder}/F${floor.number}.svg`, import.meta.url)), type: 'image/svg+xml',
+  }])),
   ...cubicasaGallery.flatMap(sample => [
     [sample.image, { path: fileURLToPath(new URL(`../assets/cubicasa/${sample.id}/drawing.png`, import.meta.url)), type: 'image/png' }],
     [sample.source, { path: fileURLToPath(new URL(`../assets/cubicasa/${sample.id}/source.svg`, import.meta.url)), type: 'image/svg+xml' }],
