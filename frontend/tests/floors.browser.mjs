@@ -30,9 +30,10 @@ try {
   await page.getByRole('button',{name:'Use all suggestions', exact:true}).click();
   await page.waitForFunction(() => document.getElementById('question-floor_height')?.value === '2.7');
   await page.locator('#question-floor_height').fill(number === 1 ? '3' : '2.8');
-  await page.locator('#confirm-drawing').click();
-  await page.waitForFunction(() => document.getElementById('processing-status').textContent.includes('Ready'));
+
  }
+ await page.locator('#confirm-drawing').click();
+ for (const n of [1,2]) await page.waitForFunction(n => document.getElementById(`floor-status-${n}`).textContent.includes('Ready'), n);
  assert.equal(jobs.length,2, 'one batch creates both vector build jobs');
  assert.match(await page.locator('#building-summary').textContent(),/4 drawings · 2 floors received/);
  assert.ok(jobs.every(j => j.source_kind === 'svg'));

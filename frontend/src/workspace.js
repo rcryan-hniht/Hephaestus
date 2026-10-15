@@ -39,7 +39,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     $('retry-job').hidden = !lastFile && !api.job; $('retry-job').textContent = 'Reconnect / refresh';
     $('drawing-message').focus({ preventScroll: true }); historyState();
   }
-  async function apiAction(action, payload) {
+  async function apiAction(action, payload, batch) {
     if (apiBusy) return;
     const drawingTicket = ticket, client = api;
     if (action === 'proposal') { drafts.delete('review_confirmed'); const review = $('question-review_confirmed'); if (review) review.checked = false; }
@@ -47,7 +47,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     if (floors.length) renderFloorStatus();
     [...$('api-questions').elements].filter(el => el.tagName === 'BUTTON').forEach(b => b.disabled = true);
     $('proposal-edit').querySelector('button').disabled = true;
-    try { await client.action(action, payload); }
+    try { await Promise.all((batch || [{ client, payload }]).map(entry => entry.client.action(action, entry.payload))); }
     catch (error) { apiError(error); }
     finally {
       if (drawingTicket !== ticket || client !== api) return;
@@ -74,8 +74,6 @@ export function createWorkspace({ reducedMotion, onClose }) {
     const floor = floors.find(f => f.client === api);
     const visible = job.state === 'needs_information' && Boolean(floor?.presetComponents && Object.keys(floor.presetComponents).length);
     details.hidden = !visible;
-    $('preset-component-review').hidden = !visible;
-    $('confirm-preset-components').disabled = !visible;
     fields.replaceChildren();
     if (!visible) return;
     for (const [id, values] of Object.entries(floor.presetComponents)) {
@@ -96,7 +94,6 @@ export function createWorkspace({ reducedMotion, onClose }) {
       }
       fields.append(row);
     }
-    $('confirm-preset-components').checked = Boolean(floor.presetReviewed);
   }
   function renderQuestions(job) {
     const form = $('api-questions');
@@ -105,6 +102,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     const confirmation = $('drawing-confirmation'), anchor = floors.length ? $('confirm-alignment') : $('floor-alignment');
     if (anchor.previousElementSibling !== confirmation) anchor.before(confirmation);
     confirmation.hidden = form.hidden;
+    $('confirmation-scope').textContent = floors.length ? `Confirm the entered values for all ${floors.length} selected floors in one step.` : 'Confirm the entered values for this drawing.';
     $('confirm-drawing').disabled = apiBusy;
     renderPresetComponentSettings(job);
     if (form.hidden) return;
@@ -169,7 +167,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     if (job.state === 'needs_information' && matchMedia('(max-width: 800px)').matches && active && !$('drawing-panel').classList.contains('is-open')) openDrawer('drawing-panel');
     if (floors.length) {
       renderFloorStatus();
-      if (job.state === 'ready') message('This floor is ready. Confirm the other floors and their alignment to assemble the building.');
+      if (job.state === 'ready') message('This floor is ready. Once all floors are ready, confirm their alignment to assemble the building.');
     }
   }
   function updateCandidate() {
@@ -209,7 +207,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     floors = []; api = singleApi; drafts = singleDrafts; arrangementConfirmed = false;
     $('floor-sources').hidden = true; $('floor-alignment').hidden = true; $('sample-preset').hidden = true;
     proposal = null; sourceJob = null; apiBusy = false; drafts.clear(); fillSuggestions = false;
-    $('api-questions').hidden = true; $('preset-component-settings').hidden = true; $('confirm-preset-components').disabled = true;
+    $('api-questions').hidden = true; $('preset-component-settings').hidden = true;
     $('drawing-confirmation').hidden = true;
     $('proposal-edit').hidden = true; $('toggle-source').hidden = true;
     $('cancel-job').hidden = true; $('continue-build').disabled = true;
@@ -402,7 +400,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     $('source-drawing').value = floor.file.name;
     $('source-files').textContent = `Build source: ${floor.file.name}${/\.svg$/i.test(floor.file.name) ? ' · SVG vector evidence' : ' · PNG inference'}. ${floor.files.length} drawing(s) retained.`;
     $('file-name').textContent = floor.file.name; $('drawing-settings').hidden = true;
-    $('api-questions').hidden = true; $('preset-component-settings').hidden = true; $('confirm-preset-components').disabled = true;
+    $('api-questions').hidden = true; $('preset-component-settings').hidden = true;
     $('drawing-confirmation').hidden = true;
     $('proposal-edit').hidden = true; $('retry-job').hidden = true;
     $('toggle-source').hidden = true; $('cancel-job').hidden = false;
@@ -427,7 +425,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
           if (current !== ticket) return;
           entry.latest = update; entry.job = update.job; entry.error = null;
           if (update.scene) entry.scene = update.scene;
-          if (update.job.state === 'ready') { entry.presetComponents = null; entry.presetReviewed = false; }
+          if (update.job.state === 'ready') entry.presetComponents = null;
           if (api === entry.client) await updateJob(update);
           renderFloorStatus(); publishBuilding();
         },
@@ -536,21 +534,31 @@ export function createWorkspace({ reducedMotion, onClose }) {
   });
   listen($('api-questions'), 'submit', event => {
     event.preventDefault();
-    const values = Object.fromEntries([...$('api-questions').querySelectorAll('input')].map(i => [i.name, i.type === 'checkbox' ? i.checked : Number(i.value)]));
-    const floor = floors.find(f => f.client === api);
-    void apiAction('answers', { values, component_values: floor?.presetComponents || {} });
+    if (apiBusy) return;
+    const values = () => Object.fromEntries([...$('api-questions').querySelectorAll('input')].map(i => [i.name, i.type === 'checkbox' ? i.checked : Number(i.value)]));
+    if (!floors.length) { void apiAction('answers', { values: values() }); return; }
+    const activeFloor = floors.find(f => f.client === api), batch = [];
+    for (const floor of floors) {
+      if (floor.job?.state === 'ready') continue;
+      activateFloor(floor);
+      if (floor.job?.state !== 'needs_information') {
+        message(`F${floor.number} must finish processing or be retried before confirming the building.`);
+        return;
+      }
+      if (!$('api-questions').reportValidity()) {
+        message(`Complete the required values for F${floor.number}. No floors have been confirmed.`);
+        return;
+      }
+      batch.push({ client: floor.client, payload: { values: values(), component_values: structuredClone(floor.presetComponents || {}) } });
+    }
+    activateFloor(activeFloor);
+    void apiAction('answers', undefined, batch);
   });
   listen($('preset-component-fields'), 'input', event => {
     const input = event.target, floor = floors.find(f => f.client === api);
     if (floor?.presetComponents?.[input.dataset.componentId]) {
       floor.presetComponents[input.dataset.componentId][input.dataset.field] = input.value === '' ? '' : Number(input.value);
-      floor.presetReviewed = false;
-      $('confirm-preset-components').checked = false;
     }
-  });
-  listen($('confirm-preset-components'), 'change', event => {
-    const floor = floors.find(f => f.client === api);
-    if (floor) floor.presetReviewed = event.target.checked;
   });
   $('preset-component-settings').addEventListener('invalid', () => { $('preset-component-settings').open = true; }, { capture: true, signal: events.signal });
   listen($('toggle-source'), 'click', () => { if (sourceOutlines) showSource(); else drawSource(); });
@@ -595,7 +603,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     if ($('preset-component-settings').hidden) $('preset-component-settings').open = false;
     renderPresetComponentSettings(api.job);
     arrangementConfirmed = false;
-    message(`Sample suggestions filled for ${floors.length} floors. Your entries are preserved. Review the preset's component heights, then confirm each floor and the alignment.`);
+    message(`Sample suggestions filled for ${floors.length} floors. Your entries are preserved. Review the values, then confirm all floors together and confirm their alignment.`);
   });
   listen($('floor-alignment'), 'input', event => {
     if (!event.target.closest('#floor-offsets')) return;

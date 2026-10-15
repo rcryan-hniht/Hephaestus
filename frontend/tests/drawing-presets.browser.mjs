@@ -40,52 +40,41 @@ try {
     assert.equal(await page.locator('#question-floor_height').inputValue(), '3.7');
     assert.equal(answers.length, before, 'Suggestions must await explicit confirmation');
     await page.locator('#question-floor_height').fill(id === 'terrace' ? '3.2' : id === 'portal' ? '4.5' : '4.2');
+    assert.equal(await page.locator('#confirm-preset-components').count(), 0);
     for (let floor = 1; floor <= count; floor++) {
       await page.locator('#source-floor').selectOption(String(floor));
       await page.locator('#api-questions').waitFor({ state: 'visible' });
       assert.equal(await page.locator('#question-meters_per_unit').inputValue(), '0.01');
-      await page.locator('#preset-component-settings').waitFor({ state: 'visible' });
-      assert.equal(await page.locator('#confirm-preset-components').isChecked(), false);
-      if (floor === 1) {
-        await page.locator('#preset-component-settings summary').click();
-        const height = page.locator('#preset-component-settings input[data-field="height"]').first();
-        const componentId = await height.getAttribute('data-component-id');
-        const edited = String(Number(await height.inputValue()) - 0.1);
-        await height.fill(edited);
-        await page.locator('#source-floor').selectOption('2');
-        await page.locator('#source-floor').selectOption('1');
-        assert.equal(await page.locator(`#preset-component-settings input[data-component-id="${componentId}"][data-field="height"]`).inputValue(), edited);
-        await height.fill('21');
-        await page.locator('#confirm-preset-components').check();
-        await page.locator('#confirm-drawing').click();
-        assert.equal(answers.length, before, 'Out-of-range component values must block building');
-        await height.fill(edited);
-        await page.locator('#preset-component-settings summary').click();
-        assert.equal(await page.locator('#preset-component-settings').getAttribute('open'), null);
-        await page.locator('#confirm-drawing').click();
-        assert.equal(answers.length, before, 'Unreviewed component suggestions must block building');
-        assert.equal(await page.locator('#confirm-preset-components').isVisible(), true, 'Review checkbox stays beside its build action');
-        assert.equal(await page.evaluate(() => {
-          const review = document.getElementById('confirm-preset-components').closest('label').getBoundingClientRect();
-          const build = document.getElementById('confirm-drawing').getBoundingClientRect();
-          const alignment = document.querySelector('#confirm-alignment').getBoundingClientRect();
-          return review.bottom <= build.top && build.bottom <= alignment.top
-            && document.getElementById('drawing-confirmation').nextElementSibling.id === 'confirm-alignment';
-        }), true, 'Review, build, then alignment follow in order');
-        if (id === 'terrace') {
-          await page.locator('#drawing-confirmation').scrollIntoViewIfNeeded();
-          await page.screenshot({ path: '/tmp/hephaestus-confirmation-order.png' });
-        }
-        await page.locator('#confirm-preset-components').check();
-        await page.locator('#confirm-drawing').click();
-        await page.waitForFunction(n => document.getElementById(`floor-status-${n}`).textContent.includes('Ready'), floor);
-        assert.equal(answers.at(-1).component_values[componentId].height, Number(edited));
-        continue;
-      }
-      await page.locator('#confirm-preset-components').check();
-      await page.locator('#confirm-drawing').click();
+    }
+    await page.locator('#source-floor').selectOption('1');
+    await page.locator('#preset-component-settings summary').click();
+    const height = page.locator('#preset-component-settings input[data-field="height"]').first();
+    const componentId = await height.getAttribute('data-component-id');
+    const edited = String(Number(await height.inputValue()) - 0.1);
+    await height.fill('21');
+    await page.locator('#confirm-drawing').click();
+    assert.equal(answers.length, before, 'Out-of-range component values block the whole batch');
+    await height.fill(edited);
+    await page.locator('#source-floor').selectOption('2');
+    const otherHeight = await page.locator('#question-floor_height').inputValue();
+    await page.locator('#question-floor_height').fill('');
+    await page.locator('#source-floor').selectOption('1');
+    assert.equal(await page.locator(`#preset-component-settings input[data-component-id="${componentId}"][data-field="height"]`).inputValue(), edited);
+    await page.locator('#confirm-drawing').click();
+    assert.equal(answers.length, before, 'An incomplete inactive floor cannot partially confirm the batch');
+    assert.equal(await page.locator('#source-floor').inputValue(), '2');
+    await page.locator('#question-floor_height').fill(otherHeight);
+    assert.equal(await page.evaluate(() => {
+      const build = document.getElementById('confirm-drawing').getBoundingClientRect();
+      const alignment = document.getElementById('confirm-alignment').getBoundingClientRect();
+      return build.bottom <= alignment.top && document.getElementById('drawing-confirmation').nextElementSibling.id === 'confirm-alignment';
+    }), true);
+    await page.locator('#confirm-drawing').click();
+    for (let floor = 1; floor <= count; floor++) {
       await page.waitForFunction(n => document.getElementById(`floor-status-${n}`).textContent.includes('Ready'), floor);
     }
+    assert.equal(answers.length - before, count, 'One build click confirms all selected drawings');
+    assert.equal(answers.slice(before).find(answer => answer.component_values[componentId]).component_values[componentId].height, Number(edited));
     const assembled = page.waitForResponse(r => r.url().endsWith(`/api/buildings/${building.id}/scene`) && r.status() === 200);
     await page.locator('#confirm-alignment').click();
     const scene = await (await assembled).json();

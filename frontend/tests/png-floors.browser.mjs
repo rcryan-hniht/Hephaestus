@@ -19,9 +19,10 @@ try {
   assert.equal(await page.locator('#question-meters_per_unit').inputValue(),'');
   await page.locator('#question-meters_per_unit').fill('.1');
   await page.locator('#question-review_confirmed').check();
-  await page.locator('#confirm-drawing').click();
-  await page.waitForFunction(()=>document.getElementById('processing-status').textContent.includes('Ready'));
+
  }
+ await page.locator('#confirm-drawing').click();
+ for (const n of [1,2]) await page.waitForFunction(n => document.getElementById(`floor-status-${n}`).textContent.includes('Ready'), n);
  assert.match(await page.locator('#building-summary').textContent(),/2 drawings · 2 floors received/);
  await page.locator('#confirm-alignment').click();
  await page.waitForFunction(()=>document.getElementById('model-label').textContent.includes('2 FLOORS'));
