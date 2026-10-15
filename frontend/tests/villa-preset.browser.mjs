@@ -31,14 +31,14 @@ try {
       if (floor === 2) await page.locator('#preset-component-settings summary').click();
       await page.locator('#confirm-preset-components').check();
     } else assert.equal(await page.locator('#preset-component-settings').isVisible(), false, 'F1 has no component overrides');
-    await page.locator('#api-questions button[type=submit]').click();
+    await page.locator('#confirm-drawing').click();
     await page.waitForFunction(number => document.getElementById(`floor-status-${number}`).textContent.includes('Ready'), floor);
   }
   assert.equal(answers.length, 4);
   const canopyOverride = Object.values(answers[3].component_values).find(values => values.elevation === 3);
   assert.deepEqual(canopyOverride, { height: .15, elevation: 3 });
   const published = page.waitForResponse(response => response.url().endsWith(`/api/buildings/${building.id}/scene`) && response.status() === 200);
-  await page.locator('#floor-alignment button[type=submit]').click();
+  await page.locator('#confirm-alignment').click();
   const scene = await (await published).json();
   assert.deepEqual(scene.floors.map(floor => floor.transform[1]), [0, 3.6, 6.9, 10.2]);
   const canopy = scene.components.find(c => c.source.element_id === 'F4-canopy');

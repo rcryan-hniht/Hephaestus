@@ -30,7 +30,7 @@ try {
   await page.getByRole('button',{name:'Use all suggestions', exact:true}).click();
   await page.waitForFunction(() => document.getElementById('question-floor_height')?.value === '2.7');
   await page.locator('#question-floor_height').fill(number === 1 ? '3' : '2.8');
-  await page.locator('#api-questions button[type=submit]').click();
+  await page.locator('#confirm-drawing').click();
   await page.waitForFunction(() => document.getElementById('processing-status').textContent.includes('Ready'));
  }
  assert.equal(jobs.length,2, 'one batch creates both vector build jobs');
@@ -39,7 +39,7 @@ try {
  assert.equal(await page.locator('#model-label').isVisible(),false, 'do not publish before alignment confirmation');
  await page.locator('#floor-2-x').fill('1');
  await page.locator('#floor-2-y').fill('.5');
- await page.locator('#floor-alignment button[type=submit]').click();
+ await page.locator('#confirm-alignment').click();
  await page.waitForFunction(() => document.getElementById('model-label').textContent.includes('2 FLOORS'));
  assert.equal(await page.locator('#export-model').isEnabled(),true);
  const jsonDownload = page.waitForEvent('download'); await page.locator('#export-scene').click();

@@ -13,6 +13,7 @@ try {
   });
   await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4176');
   await page.locator('#explore-demo').click();
+  assert.equal(await page.locator('#confirm-drawing[form="api-questions"]').count(), 1);
   await page.evaluate(() => {
     const original = CanvasRenderingContext2D.prototype.fillText;
     window.__blueprintTexts = [];
@@ -56,29 +57,41 @@ try {
         assert.equal(await page.locator(`#preset-component-settings input[data-component-id="${componentId}"][data-field="height"]`).inputValue(), edited);
         await height.fill('21');
         await page.locator('#confirm-preset-components').check();
-        await page.locator('#api-questions button[type=submit]').click();
+        await page.locator('#confirm-drawing').click();
         assert.equal(answers.length, before, 'Out-of-range component values must block building');
         await height.fill(edited);
         await page.locator('#preset-component-settings summary').click();
         assert.equal(await page.locator('#preset-component-settings').getAttribute('open'), null);
-        await page.locator('#api-questions button[type=submit]').click();
+        await page.locator('#confirm-drawing').click();
         assert.equal(answers.length, before, 'Unreviewed component suggestions must block building');
-        assert.notEqual(await page.locator('#preset-component-settings').getAttribute('open'), null, 'Invalid review must reveal its control');
+        assert.equal(await page.locator('#confirm-preset-components').isVisible(), true, 'Review checkbox stays beside its build action');
+        assert.equal(await page.evaluate(() => {
+          const review = document.getElementById('confirm-preset-components').closest('label').getBoundingClientRect();
+          const build = document.getElementById('confirm-drawing').getBoundingClientRect();
+          const alignment = document.querySelector('#confirm-alignment').getBoundingClientRect();
+          return review.bottom <= build.top && build.bottom <= alignment.top
+            && document.getElementById('drawing-confirmation').nextElementSibling.id === 'confirm-alignment';
+        }), true, 'Review, build, then alignment follow in order');
+        if (id === 'terrace') {
+          await page.locator('#drawing-confirmation').scrollIntoViewIfNeeded();
+          await page.screenshot({ path: '/tmp/hephaestus-confirmation-order.png' });
+        }
         await page.locator('#confirm-preset-components').check();
-        await page.locator('#api-questions button[type=submit]').click();
+        await page.locator('#confirm-drawing').click();
         await page.waitForFunction(n => document.getElementById(`floor-status-${n}`).textContent.includes('Ready'), floor);
         assert.equal(answers.at(-1).component_values[componentId].height, Number(edited));
         continue;
       }
       await page.locator('#confirm-preset-components').check();
-      await page.locator('#api-questions button[type=submit]').click();
+      await page.locator('#confirm-drawing').click();
       await page.waitForFunction(n => document.getElementById(`floor-status-${n}`).textContent.includes('Ready'), floor);
     }
     const assembled = page.waitForResponse(r => r.url().endsWith(`/api/buildings/${building.id}/scene`) && r.status() === 200);
-    await page.locator('#floor-alignment button[type=submit]').click();
+    await page.locator('#confirm-alignment').click();
     const scene = await (await assembled).json();
     assert.ok(scene.components.some(c => c.type === 'stair' && c.steps >= 2));
     assert.ok(scene.components.some(c => c.type === 'roof' && c.roof_thickness > 0));
+    if (id === 'terrace') assert.deepEqual(scene.components.filter(c => c.type === 'stair').map(c => c.source_floor), [1, 2]);
     if (id === 'gable') assert.ok(scene.components.some(c => c.type === 'roof' && c.roof_kind === 'gable'));
     await page.waitForFunction(() => document.getElementById('model-label').textContent.startsWith('RECONSTRUCTED'));
     assert.deepEqual(await page.evaluate(() => window.__blueprintTexts.filter(text =>
@@ -87,6 +100,13 @@ try {
     assert.equal(await page.locator('#export-model').isEnabled(), true);
     await page.locator('#fit-model').click();
     await page.screenshot({ path: `/tmp/hephaestus-drawing-preset-${id}.png` });
+    if (id === 'terrace') {
+      await page.locator('[data-type="wall"]').uncheck();
+      await page.locator('[data-type="roof"]').uncheck();
+      await page.screenshot({ path: '/tmp/hephaestus-terrace-interior-stairs.png' });
+      await page.locator('[data-type="wall"]').check();
+      await page.locator('[data-type="roof"]').check();
+    }
     await page.locator('#export-model').click();
     const downloaded = page.waitForEvent('download');
     await page.locator('[data-export="glb"]').click();

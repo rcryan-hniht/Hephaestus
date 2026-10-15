@@ -19,7 +19,7 @@ try {
   for (const [key, value] of Object.entries({ meters_per_unit: '.01', floor_height: '3', slab_thickness: '.2', door_height: '2.1', window_height: '1.2', window_sill: '.9' })) {
     await page.locator(`#question-${key}`).fill(value);
   }
-  await page.locator('#api-questions button[type=submit]').click();
+  await page.locator('#confirm-drawing').click();
   await page.waitForFunction(() => document.getElementById('processing-status').textContent.startsWith('Ready ·'));
   assert.equal(await page.locator('#api-questions').isVisible(), false);
   assert.equal(await page.locator('#drawing-image').isVisible(), true);

@@ -23,7 +23,7 @@ try {
   await page.waitForFunction(() => !document.getElementById('question-review_confirmed')?.checked && !document.getElementById('proposal-edit').hidden);
   assert.equal(await page.locator('#question-review_confirmed').isChecked(), false);
   await page.locator('#question-review_confirmed').check();
-  await page.locator('#api-questions button[type=submit]').click();
+  await page.locator('#confirm-drawing').click();
   await page.waitForFunction(() => document.getElementById('model-label').textContent.includes('REVISION 1'));
   assert.equal(await page.locator('#drawing-image').isVisible(), true);
   await page.locator('#toggle-source').click();
@@ -37,7 +37,7 @@ try {
   assert.equal(await page.locator('#question-review_confirmed').isChecked(), false);
   assert.match(await page.locator('#model-label').textContent(), /REVISION 1/);
   await page.locator('#question-review_confirmed').check();
-  await page.locator('#api-questions button[type=submit]').click();
+  await page.locator('#confirm-drawing').click();
   await page.waitForFunction(() => document.getElementById('model-label').textContent.includes('REVISION 2'));
   const jobId = id.split(':')[0];
   const scene = await (await page.request.get(`${new URL(page.url()).origin}/api/jobs/${jobId}/scene`)).json();

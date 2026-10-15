@@ -19,11 +19,11 @@ try {
   assert.equal(await page.locator('#question-meters_per_unit').inputValue(),'');
   await page.locator('#question-meters_per_unit').fill('.1');
   await page.locator('#question-review_confirmed').check();
-  await page.locator('#api-questions button[type=submit]').click();
+  await page.locator('#confirm-drawing').click();
   await page.waitForFunction(()=>document.getElementById('processing-status').textContent.includes('Ready'));
  }
  assert.match(await page.locator('#building-summary').textContent(),/2 drawings · 2 floors received/);
- await page.locator('#floor-alignment button').click();
+ await page.locator('#confirm-alignment').click();
  await page.waitForFunction(()=>document.getElementById('model-label').textContent.includes('2 FLOORS'));
  const downloaded=page.waitForEvent('download');await page.locator('#export-scene').click();
  const scene=JSON.parse(await readFile(await (await downloaded).path(),'utf8'));
