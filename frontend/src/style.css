@@ -104,7 +104,6 @@ canvas { display: block; width: 100%; height: 100%; }
 .work-item strong { display: block; font-size: 16px; font-weight: 500; margin-bottom: 6px; }
 .work-item small { display: block; font-size: 13px; line-height: 1.7; color: var(--muted); }
 .work-item .work-open { width: 44px; height: 44px; text-align: center; font-size: 22px; }
-.work-item[data-active="true"] strong { color: var(--accent); }
 .antigravity { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; user-select: none; z-index: 5; opacity: .5; }
 
 /* Workspace */
