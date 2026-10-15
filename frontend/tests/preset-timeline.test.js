@@ -6,10 +6,10 @@ test('a preset holds its drawing, builds, completes a full orbit and sinks befor
   expect(presetState(.99).progress).toBe(0);
   expect(presetState(2)).toMatchObject({ label: 'Building', progress: .5 });
   expect(presetState(3)).toMatchObject({ mode: 'solid', progress: 1, rotation: 0 });
-  expect(presetState(9)).toMatchObject({ mode: 'edges', progress: 1, rotation: 120 });
-  expect(presetState(15)).toMatchObject({ mode: 'transparent', progress: 1, rotation: 240 });
-  expect(presetState(21)).toMatchObject({ label: 'Returning to drawing', progress: 1, rotation: 360 });
-  expect(presetState(22.5)).toMatchObject({ progress: .5, tilt: .5, rotation: 360 });
-  expect(presetState(24)).toMatchObject({ progress: 0, tilt: 0, rotation: 360 });
-  expect(presetState(25).progress).toBe(0);
+  expect(presetState(7)).toMatchObject({ mode: 'edges', progress: 1, rotation: 120 });
+  expect(presetState(11)).toMatchObject({ mode: 'transparent', progress: 1, rotation: 240 });
+  expect(presetState(15)).toMatchObject({ label: 'Returning to drawing', progress: 1, rotation: 360 });
+  expect(presetState(16.5)).toMatchObject({ progress: .5, tilt: .5, rotation: 360 });
+  expect(presetState(18)).toMatchObject({ progress: 0, tilt: 0, rotation: 360 });
+  expect(presetState(19).progress).toBe(0);
 });
