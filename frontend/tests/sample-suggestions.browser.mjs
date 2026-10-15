@@ -1,3 +1,4 @@
+import { showLandingActions } from './helpers/landing.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 
@@ -29,7 +30,7 @@ try {
   await route.fulfill({ status: path === '/api/buildings' ? 202 : 200, contentType: 'application/json', body: JSON.stringify(response) });
  });
  await page.goto(process.env.TEST_URL || 'http://localhost:3000');
- await page.locator('[data-upload]').first().click();
+ await showLandingActions(page); await page.locator('[data-upload]').first().click();
  const png = Buffer.from(await page.evaluate(() => { const c = document.createElement('canvas'); c.width = 300; c.height = 200; return c.toDataURL().split(',')[1]; }), 'base64');
  const files = [1,2].map(n => ({ name: `F${n}_sample.png`, mimeType: 'image/png', buffer: png }));
  await page.locator('#file-input').setInputFiles(files);

@@ -10,6 +10,7 @@ page.on('pageerror', error => errors.push(error.message));
 try {
   await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4174');
   await page.waitForTimeout(300);
+  assert.equal(await page.locator('#explore-demo').isVisible(), false, 'Landing actions belong only to the final phase');
 
   // 1. Navigation bar is removed
   const navCount = await page.locator('.nav').count();
@@ -41,6 +42,7 @@ try {
   // Verify chapter 1 is active
   const activeChapter = await page.evaluate(() => document.body.dataset.chapter);
   assert.equal(activeChapter, '1', 'Chapter 1 (Phase 2) should be active');
+  assert.equal(await page.locator('#explore-demo').isVisible(), false);
 
   // Verify 3D canvas is visible
   const canvas = page.locator('#landing-canvas');
@@ -52,8 +54,15 @@ try {
   // 4. Test workspace entry via "Upload your drawing" or "Explore a demo"
   await page.keyboard.press('PageDown'); // to works
   await page.waitForTimeout(400);
-  await page.keyboard.press('Home'); // back to hero
-  await page.waitForTimeout(400);
+  await page.waitForFunction(() => document.body.dataset.chapter === '2' && Math.abs(scrollY - innerHeight * 2) < 1);
+  const placement = await page.evaluate(() => {
+    const action = document.getElementById('landing-action').getBoundingClientRect();
+    const frame = document.getElementById('visual-frame').getBoundingClientRect();
+    const works = document.getElementById('work-list').getBoundingClientRect();
+    return { besideCanvas: action.left > frame.right, belowWorks: action.top > works.bottom, fits: action.right <= innerWidth && action.bottom < innerHeight };
+  });
+  assert.deepEqual(placement, { besideCanvas: true, belowWorks: true, fits: true });
+  await page.screenshot({ path: '/tmp/hephaestus-final-actions-desktop.png' });
 
   const demoButton = page.locator('#explore-demo');
   await demoButton.click();
@@ -65,6 +74,8 @@ try {
   for (const width of [375, 390]) {
     await page.setViewportSize({ width, height: 844 });
     await page.reload();
+    await page.keyboard.press('Home');
+    await page.waitForFunction(() => document.body.dataset.chapter === '0' && scrollY < 1);
     await page.evaluate(async () => {
       await document.fonts.ready;
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -78,6 +89,19 @@ try {
     assert.ok(layout.sloganBottom < layout.photoTop, `${width}px: enlarged slogan must stay above the photo after fonts load`);
     assert.ok(layout.descriptionSize >= 16);
     assert.equal(layout.overflow, false);
+    await page.keyboard.press('End');
+    await page.waitForFunction(() => document.body.dataset.chapter === '2' && Math.abs(scrollY - innerHeight * 2) < 1);
+    const mobileAction = await page.locator('#landing-action').boundingBox();
+    const mobileCanvas = await page.locator('#visual-frame').boundingBox();
+    assert.ok(mobileAction.y > mobileCanvas.y + mobileCanvas.height);
+    assert.ok(mobileAction.y + mobileAction.height < 844 && mobileAction.x + mobileAction.width <= width);
+    await page.screenshot({ path: `/tmp/hephaestus-final-actions-${width}.png` });
+    await page.locator('#explore-demo').focus();
+    await page.keyboard.press('Home');
+    await page.waitForFunction(() => document.body.dataset.chapter === '0');
+    assert.equal(await page.locator('.skip-link').evaluate(el => el === document.activeElement), true, 'Focus must leave controls before the final phase hides');
+    await page.locator('.skip-link').click();
+    await page.waitForFunction(() => document.activeElement?.matches('#landing-action [data-upload]'));
   }
 
   assert.deepEqual(errors, []);

@@ -1,3 +1,4 @@
+import { showLandingActions } from './helpers/landing.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 
@@ -47,10 +48,13 @@ try {
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   }
   await page.screenshot({ path: '/tmp/hephaestus-masked-heading.png' });
-  await page.locator('[data-upload]').first().click();
+  await showLandingActions(page); await page.locator('[data-upload]').first().click();
   assert.equal(await heading.isVisible(), false);
-  await page.locator('#back-home').click(); assert.equal(await heading.isVisible(), true);
-  await page.locator('[data-chapter="1"]').click(); await page.locator('[data-chapter="0"]').first().click();
+  await page.locator('#back-home').click(); await page.keyboard.press('Home');
+  await heading.waitFor({ state: 'visible' });
+  await page.keyboard.press('PageDown');
+  await page.waitForFunction(() => document.body.dataset.chapter === '1');
+  await page.keyboard.press('Home');
   await heading.waitFor({ state: 'visible' });
   assert.equal(await heading.isVisible(), true);
   assert.deepEqual(errors, []);
@@ -61,7 +65,7 @@ try {
   assert.equal(await fallback.locator('h1 [data-ready=true]').count(), 0);
   const readable = await fallback.locator('.masked-heading__measure').evaluateAll(nodes => nodes.every(el => getComputedStyle(el).color !== 'rgba(0, 0, 0, 0)'));
   assert.equal(readable, true);
-  await fallback.locator('[data-upload]').first().click();
+  await showLandingActions(fallback); await fallback.locator('[data-upload]').first().click();
   assert.equal(await fallback.locator('#workspace').isVisible(), true);
   console.log('PASS: MaskedHeading semantics, image mask, responsive glyph bounds, reduced motion, workspace/chapter transitions and missing-image fallback');
 } finally { await browser.close(); }

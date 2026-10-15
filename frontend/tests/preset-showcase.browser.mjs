@@ -1,3 +1,4 @@
+import { showLandingActions } from './helpers/landing.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 
@@ -24,7 +25,7 @@ try {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await page.keyboard.press('PageDown');
   await page.waitForFunction(() => document.body.dataset.chapter === '2');
-  await page.locator('#explore-demo').click();
+  await showLandingActions(page); await page.locator('#explore-demo').click();
   assert.equal(await page.locator('#workspace').isVisible(), true);
   assert.deepEqual(errors, []);
   const failed = await browser.newPage({ reducedMotion: 'reduce' });

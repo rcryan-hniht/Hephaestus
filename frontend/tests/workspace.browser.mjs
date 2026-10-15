@@ -1,3 +1,4 @@
+import { showLandingActions } from './helpers/landing.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -10,7 +11,7 @@ const errors = [];
 page.on('pageerror', error => errors.push(error.message));
 try {
   await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4174');
-  await page.locator('[data-upload]').first().click();
+  await showLandingActions(page); await page.locator('[data-upload]').first().click();
   const accepted = page.waitForResponse(r => r.url().endsWith('/api/jobs') && r.status() === 202);
   await page.locator('#file-input').setInputFiles(new URL('../../backend/tests/fixtures/known_rooms.svg', import.meta.url).pathname);
   const job = await (await accepted).json();

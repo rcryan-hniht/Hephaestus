@@ -1,3 +1,4 @@
+import { showLandingActions } from './helpers/landing.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -7,7 +8,7 @@ page.setDefaultTimeout(10000);
 let release;
 try {
  await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4174');
- await page.locator('[data-upload]').first().click();
+ await showLandingActions(page); await page.locator('[data-upload]').first().click();
  const svg = await readFile(new URL('../../backend/tests/fixtures/known_rooms.svg',import.meta.url));
  const valid = number => ({name:`F${number}.svg`,mimeType:'image/svg+xml',buffer:svg});
  const rejected = page.waitForResponse(r=>r.url().endsWith('/api/buildings') && r.status()===422);

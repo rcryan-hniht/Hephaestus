@@ -85,13 +85,13 @@ canvas { display: block; width: 100%; height: 100%; }
 .open-preview:hover { background: var(--accent); }
 .canvas-error { position: absolute; inset: 25% 10%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; line-height: 1.8; color: var(--muted); margin: 0; }
 #reference-fallback { z-index: 2; }
-.landing-action { position: absolute; top: 0; left: 0; max-width: 40.5vw; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; will-change: transform; }
+.landing-action { position: absolute; top: 0; left: 0; max-width: 40.5vw; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; visibility: hidden; will-change: transform; }
 .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
 .landing-action .button { font-size: 15px; }
 .demo-link { display: inline-flex; gap: 14px; align-items: center; min-height: 44px; border: 0; border-bottom: 1px solid var(--line); background: none; font-size: 15px; padding: 0; white-space: nowrap; }
 .demo-link:hover { color: var(--accent); }
 .landing-action>span { font-size: 14px; color: var(--muted); }
-.slogan { margin: 13px 0 0; font-size: 14px; line-height: 1.75; color: var(--muted); }
+.slogan { position: absolute; top: 0; left: 0; margin: 0; font-size: 14px; line-height: 1.75; color: var(--muted); }
 .slogan em { color: var(--accent); }
 .scene-annotation { position: absolute; left: 7.5vw; top: 0; display: flex; gap: 10px; align-items: center; font: 9px var(--mono); letter-spacing: .08em; color: var(--muted); }
 .scene-annotation>span:first-child { font-size: 20px; color: var(--accent); }
@@ -265,7 +265,7 @@ canvas { display: block; width: 100%; height: 100%; }
   .workspace-body { grid-template-columns: 220px minmax(0,1fr) 220px; }
   .panel { padding: 16px 12px; }
   .work-item { grid-template-columns: 1fr 44px; }
-  .work-item svg { display: none; }
+  .work-item svg, .work-item > img { display: none; }
   .hero-actions { gap: 16px; }
   .landing-action .button { gap: 12px; padding: 11px 15px; }
 }
@@ -317,6 +317,7 @@ canvas { display: block; width: 100%; height: 100%; }
   .landing-footer { bottom: 5px; }
   .scene-annotation { display: none; }
   .work-item { padding: 8px 0; }.work-item strong { font-size: 13px; }.work-item small { font-size: 11px; }
+  .work-item small:last-child { display: none; }
 }
 @media (max-width: 800px) and (max-height: 619px) and (orientation: landscape) {
   .chapter-copy { width: 40.5vw; }
@@ -331,8 +332,6 @@ canvas { display: block; width: 100%; height: 100%; }
   *,*::before,*::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .chapter-copy,.visual-frame,.landing-action,.work-list { will-change: auto; }
 }
-
-.landing-action .slogan { position: absolute; top: 100%; left: 0; margin: 16px 0 0; }
 
 .export-control { position: relative; }
 .export-options { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; width: 220px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: #fff; box-shadow: 0 8px 24px #0000000f; }

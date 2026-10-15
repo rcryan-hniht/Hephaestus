@@ -1,3 +1,4 @@
+import { showLandingActions } from './helpers/landing.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 
@@ -50,12 +51,12 @@ try {
     await at(1, 900);
     await page.keyboard.press('Home');
     await at(0, 0);
-    await page.locator('#explore-demo').click();
+    await showLandingActions(page); await page.locator('#explore-demo').click();
     await page.locator('#workspace').waitFor({ state: 'visible' });
     await page.mouse.wheel(0, 400);
-    assert.equal(await page.evaluate(() => document.body.dataset.chapter), '0');
+    assert.equal(await page.evaluate(() => document.body.dataset.chapter), '2');
     await page.locator('#back-home').click();
-    await at(0, 0);
+    await at(2, 1800);
     await page.setViewportSize({ width: 390, height: 844 });
     assert.equal(await page.evaluate(() => document.documentElement.scrollHeight - innerHeight), 1688);
     await page.keyboard.press('End');

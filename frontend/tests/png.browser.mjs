@@ -1,3 +1,4 @@
+import { showLandingActions } from './helpers/landing.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 
@@ -7,7 +8,7 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, red
 page.setDefaultTimeout(15000);
 try {
   await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4175');
-  await page.locator('[data-upload]').first().click();
+  await showLandingActions(page); await page.locator('[data-upload]').first().click();
   const png = await page.evaluate(() => { const c = document.createElement('canvas'); c.width = 20; c.height = 10; return c.toDataURL().split(',')[1]; });
   await page.locator('#file-input').setInputFiles({ name: 'mock.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64') });
   await page.locator('#api-questions').waitFor({ state: 'visible' });

@@ -1,3 +1,4 @@
+import { showLandingActions } from './helpers/landing.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 
@@ -27,7 +28,7 @@ try {
   const still = await canvas.screenshot();
   await page.mouse.move(500, 200); await page.waitForTimeout(300);
   assert.equal(still.equals(await canvas.screenshot()), true);
-  await page.locator('[data-upload]').first().click(); assert.equal(await canvas.isVisible(), false);
+  await showLandingActions(page); await page.locator('[data-upload]').first().click(); assert.equal(await canvas.isVisible(), false);
   await page.locator('#back-home').click(); assert.equal(await canvas.isVisible(), true);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForTimeout(100);
@@ -46,7 +47,7 @@ try {
   await fallback.addInitScript(() => { const original = HTMLCanvasElement.prototype.getContext; HTMLCanvasElement.prototype.getContext = function(type, ...args) { return type.startsWith('webgl') ? null : original.call(this, type, ...args); }; });
   await fallback.goto(process.env.TEST_URL || 'http://127.0.0.1:4174');
   assert.equal(await fallback.locator('#antigravity-canvas').isVisible(), false);
-  await fallback.locator('#explore-demo').click();
+  await showLandingActions(fallback); await fallback.locator('#explore-demo').click();
   await fallback.locator('#sample-preset').waitFor({ state: 'visible' });
   await fallback.locator('#use-sample-suggestions').click();
   await fallback.locator('#confirm-drawing').click();

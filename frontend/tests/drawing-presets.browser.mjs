@@ -1,3 +1,4 @@
+import { showLandingActions } from './helpers/landing.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -12,7 +13,7 @@ try {
     if (request.method() === 'POST' && request.url().endsWith('/answers')) answers.push(request.postDataJSON());
   });
   await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4176');
-  await page.locator('#explore-demo').click();
+  await showLandingActions(page); await page.locator('#explore-demo').click();
   await page.locator('#sample-preset').waitFor({ state: 'visible' });
   assert.equal(await page.locator('#confirm-drawing[form="api-questions"]').count(), 1);
   await page.evaluate(() => {

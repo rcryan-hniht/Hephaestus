@@ -1,3 +1,4 @@
+import { showLandingActions } from './helpers/landing.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -7,7 +8,7 @@ const page = await browser.newPage({viewport:{width:1440,height:900},reducedMoti
 page.setDefaultTimeout(10000);
 try {
  await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4174');
- await page.locator('#explore-demo').click();
+ await showLandingActions(page); await page.locator('#explore-demo').click();
  await confirmVilla(page);
  assert.equal(await page.locator('#export-format').count(),0,'format picker appears only after pressing Export');
  await page.route('**/api/capabilities',route=>route.fulfill({json:{blender_available:true}}));

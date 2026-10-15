@@ -1,3 +1,4 @@
+import { showLandingActions } from './helpers/landing.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -8,7 +9,7 @@ const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion
 page.setDefaultTimeout(60000);
 try {
  await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4174');
- await page.locator('#explore-demo').click();
+ await showLandingActions(page); await page.locator('#explore-demo').click();
  await confirmVilla(page);
  await page.locator('#export-model').click();
  await page.waitForFunction(()=>!document.querySelector('[data-export=blend]').disabled);

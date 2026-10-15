@@ -1,3 +1,4 @@
+import { showLandingActions } from './helpers/landing.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -6,7 +7,7 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, red
 page.setDefaultTimeout(10000);
 try {
  await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4174');
- await page.locator('[data-upload]').first().click();
+ await showLandingActions(page); await page.locator('[data-upload]').first().click();
  const source = new URL('../../backend/tests/fixtures/known_rooms.svg', import.meta.url).pathname;
  const svg = await readFile(source);
  await page.locator('#file-input').setInputFiles([1, 2].map(n => ({ name: `F${n}.svg`, mimeType: 'image/svg+xml', buffer: svg })));

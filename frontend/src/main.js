@@ -21,6 +21,7 @@ let scene, showcase, sceneFailed = false, raf, previous = 0;
 let workspaceOpen = false, returnFocus, savedScroll = 0, chapter = 0, height = innerHeight, dirty = true;
 let lastWidth = 0, lastHeight = 0, lastOffset = scrollY;
 let wheelLocked = false, destination = 0, loopProgress = null, lastWheel = -Infinity;
+let focusAction = false;
 const photo = $('hero-photograph');
 const maskedHeadings = [...document.querySelectorAll('h1 > span')].map(root => createMaskedHeading(root, { src: photo.getAttribute('src'), brightness: .65 }));
 
@@ -62,6 +63,9 @@ function goChapter(index) {
   dirty = true;
 }
 listen($('explore-demo'), 'click', () => openWorkspace(true));
+listen(document.querySelector('.skip-link'), 'click', event => {
+  event.preventDefault(); focusAction = true; goChapter(2); dirty = true;
+});
 cubicasaSamples.forEach((sample, index) => {
   const item = document.createElement('div'); item.className = 'work-item'; item.dataset.active = String(index === 0);
   const image = new Image(); image.src = sample.image; image.alt = ''; image.loading = 'lazy';
@@ -150,15 +154,15 @@ function layout() {
   const margin = width * (mobile ? .06 : .075);
   const top = mobile ? 32 : (compact ? 24 : Math.max(48, height * 0.075));
   const bottom = height - (compact ? 42 : mobile ? 48 : 72);
-  const action = $('landing-action');
-  const slogan = action.querySelector('.slogan');
-  slogan.style.visibility = chapter === 0 ? 'visible' : 'hidden';
+  const action = $('landing-action'), works = $('work-list');
+  action.style.maxWidth = `${mobile ? width * .88 : works.offsetWidth}px`;
+  const slogan = document.querySelector('.slogan');
   slogan.setAttribute('aria-hidden', String(chapter !== 0));
   // Measure the actual text and actions instead of positioning a visual over them.
   const copyHeights = copies.map(c => c.offsetHeight), actionHeight = action.offsetHeight;
-  const heroActionHeight = actionHeight + slogan.offsetHeight + 16;
+  const heroActionHeight = slogan.offsetHeight;
   const heroCopyY = mobile ? top : Math.max(top, (top + bottom - copyHeights[0] - heroActionHeight - (compact ? 14 : 28)) / 2);
-  const manifestoCopyY = mobile ? top : Math.max(top, (top + bottom - copyHeights[1] - actionHeight - (compact ? 14 : 28)) / 2);
+  const manifestoCopyY = mobile ? top : Math.max(top, (top + bottom - copyHeights[1]) / 2);
   const copyPositions = [
     { x: margin, y: heroCopyY },
     { x: margin, y: manifestoCopyY },
@@ -170,10 +174,10 @@ function layout() {
   const photoH = Math.max(100, bottom - photoY);
   const worksY = top + copyHeights[2] + (mobile ? 16 : 24);
   const worksListH = $('work-list').offsetHeight;
-  const worksFrameH = mobile ? Math.max(100, bottom - worksY - worksListH - actionHeight - 34) : Math.max(compact ? 70 : 110, bottom - worksY - actionHeight - 20);
+  const worksFrameH = mobile ? Math.max(100, bottom - worksY - worksListH - actionHeight - 34) : Math.max(compact ? 70 : 110, bottom - worksY);
   const visualPositions = mobile ? [
     { x: margin, y: photoY, w: width * .88, h: photoH },
-    { x: margin, y: manifestoActionY + actionHeight + 18, w: width * .88, h: Math.max(100, bottom - manifestoActionY - actionHeight - 18) },
+    { x: margin, y: manifestoActionY + 18, w: width * .88, h: Math.max(100, bottom - manifestoActionY - 18) },
     { x: margin, y: worksY, w: width * .88, h: worksFrameH },
   ] : [
     { x: width * .5, y: 0, w: width * .5, h: height },
@@ -202,6 +206,9 @@ function layout() {
   });
   const heroWeight = from === 0 ? 1 - mix : next === 0 ? mix : 0;
   const worksWeight = from === 2 ? 1 - mix : next === 2 ? mix : 0;
+  slogan.style.visibility = heroWeight > 0 ? 'visible' : 'hidden';
+  slogan.style.opacity = String(heroWeight);
+  slogan.style.transform = `translate(${margin}px,${heroActionY}px)`;
   const modelWeight = 1 - heroWeight;
   const photoMask = from === 0 ? `inset(0 0 ${mix * 100}% 0)` : next === 0 ? `inset(${(1 - mix) * 100}% 0 0 0)` : 'inset(100% 0 0 0)';
   photo.style.clipPath = motion.matches ? heroWeight ? 'none' : 'inset(100% 0 0 0)' : photoMask;
@@ -218,22 +225,23 @@ function layout() {
   const interactive = chapter === 2 && mix === 0 && !!scene && !driftWall;
   $('open-preview').hidden = !interactive;
   canvas.tabIndex = interactive ? 0 : -1; canvas.classList.toggle('is-interactive', interactive);
-  const works = $('work-list');
-  if (chapter !== 2 && works.contains(document.activeElement)) {
-    $('explore-demo').focus({ preventScroll: true });
+  if (chapter !== 2 && (works.contains(document.activeElement) || action.contains(document.activeElement))) {
+    document.querySelector('.skip-link').focus({ preventScroll: true });
   }
   works.style.visibility = worksWeight > 0 ? 'visible' : 'hidden';
   works.style.opacity = String(worksWeight);
   works.inert = chapter !== 2; works.setAttribute('aria-hidden', String(works.inert));
-  works.style.top = `${mobile ? worksY + worksFrameH + 12 : compact ? top + Math.max(0, (bottom - top - worksListH) / 2) : worksY + Math.max(0, (worksFrameH - worksListH) / 2)}px`;
+  const worksContentH = worksListH + actionHeight + 20;
+  const worksTop = mobile ? worksY + worksFrameH + 12 : Math.max(top, Math.min(bottom - worksContentH, ((compact ? top : worksY) + bottom - worksContentH) / 2));
+  works.style.top = `${worksTop}px`;
   works.style.transform = `translateY(${motion.matches ? 0 : (1 - worksWeight) * 24}px)`;
-  const actionPositions = [
-    { x: margin, y: heroActionY },
-    { x: margin, y: manifestoActionY },
-    { x: margin, y: mobile ? worksY + worksFrameH + worksListH + 22 : worksY + worksFrameH + 20 },
-  ];
-  action.style.transform = `translate(${lerp(actionPositions[from].x, actionPositions[next].x, mix)}px,${lerp(actionPositions[from].y, actionPositions[next].y, mix)}px)`;
-  $('action-note').textContent = ['From floor plan to a new perspective.', 'Upload drawing. Confirm scale. Explore.', 'Scroll further to return where ideas begin.'][chapter];
+  action.style.visibility = worksWeight > 0 ? 'visible' : 'hidden';
+  action.style.opacity = String(worksWeight);
+  action.inert = chapter !== 2; action.setAttribute('aria-hidden', String(action.inert));
+  action.style.transform = `translate(${mobile ? margin : works.offsetLeft}px,${worksTop + worksListH + (mobile ? 10 : 20) + (motion.matches ? 0 : (1 - worksWeight) * 24)}px)`;
+  if (focusAction && chapter === 2 && mix === 0) {
+    action.querySelector('[data-upload]').focus({ preventScroll: true }); focusAction = false;
+  }
   const annotation = document.querySelector('.scene-annotation');
   annotation.style.opacity = String(heroWeight); annotation.style.top = `${Math.max(top, heroCopyY - 42)}px`;
   if (from === 2 && mix > 0) scene?.morphHome(mix);

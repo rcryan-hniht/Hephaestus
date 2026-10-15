@@ -1,3 +1,4 @@
+import { showLandingActions } from './helpers/landing.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 
@@ -11,7 +12,7 @@ try {
   });
   await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4176');
   const submission = page.waitForResponse(response => response.url().endsWith('/api/buildings') && response.request().method() === 'POST');
-  await page.locator('#explore-demo').click();
+  await showLandingActions(page); await page.locator('#explore-demo').click();
   assert.equal(await page.locator('#drawing-preset option[value="modern"]').textContent(), '3F villa');
   const building = await (await submission).json();
   assert.equal(building.floors.length, 4);
@@ -76,7 +77,7 @@ try {
   for (const id of ['empty-sample', 'load-sample']) {
     const entry = await browser.newPage({ viewport: { width: 1600, height: 1000 }, reducedMotion: 'reduce' });
     await entry.goto(process.env.TEST_URL || 'http://127.0.0.1:4176');
-    await entry.locator('[data-upload]').first().click();
+    await showLandingActions(entry); await entry.locator('[data-upload]').first().click();
     const batch = entry.waitForResponse(r => r.url().endsWith('/api/buildings') && r.request().method() === 'POST');
     await entry.locator(`#${id}`).click();
     assert.equal((await (await batch).json()).floors.length, 4);
