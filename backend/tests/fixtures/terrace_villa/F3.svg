@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1960" viewBox="0 0 1720 1960">
   <title>Terrace Villa / F3 / synthetic drawing</title>
-  <desc>Synthetic stepped villa: lower garage, two living floors, terrace parapets, shallow shed roofs and an 18-step garden stair. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
+  <desc>Synthetic stepped villa: lower garage, two living floors, terrace parapets, shallow shed roofs and internal stairs connecting all three floors. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
   <rect width="1720" height="1960" fill="#fafafa" />
   <text x="140" y="60" fill="#333" font-family="Arial, sans-serif" font-size="22">HEPHAESTUS / SYNTHETIC DRAWING PRESET</text>
   <text x="140" y="105" fill="#333" font-family="Arial, sans-serif" font-size="30">TERRACE VILLA / F3</text>
@@ -11,19 +11,21 @@
       <polygon points="330.000,1016.000 1370.000,1016.000 1370.000,1036.000 330.000,1036.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F3-interior-partition-2" class="Wall Interior_partition">
-      <polygon points="350.000,1367.800 1350.000,1367.800 1350.000,1382.800 350.000,1382.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="350.000,1367.800 350.000,1382.800 980.000,1382.800 980.000,1367.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="1350.000,1382.800 1350.000,1367.800 1140.000,1367.800 1140.000,1382.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F3-interior-door-3" class="Door Interior_door">
       <polygon points="800.000,1382.800 890.000,1382.800 890.000,1367.800 800.000,1367.800" fill="#c45c3d" stroke="#333" stroke-width="1" />
     </g>
     <g id="F3-rear-room-4" class="Space Rear_room">
-      <polygon points="350.000,1382.800 1350.000,1382.800 1350.000,1690.000 350.000,1690.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="350.000,1382.800 350.000,1690.000 1350.000,1690.000 1350.000,1382.800 1140.000,1382.800 1140.000,1620.000 980.000,1620.000 980.000,1382.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F3-living-room-5" class="Space Living_room">
-      <polygon points="350.000,1050.000 1350.000,1050.000 1350.000,1367.800 350.000,1367.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="1350.000,1367.800 1350.000,1050.000 350.000,1050.000 350.000,1367.800 980.000,1367.800 980.000,1110.000 1140.000,1110.000 1140.000,1367.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F3-upper-terrace-plate-6" class="Space Upper_terrace_plate">
-      <polygon points="1350.000,1382.800 350.000,1382.800 350.000,1367.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="1350.000,1382.800 1140.000,1379.650 1140.000,1382.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="350.000,1367.800 350.000,1382.800 980.000,1382.800 980.000,1377.250" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F3-upper-terrace-plate-7" class="Space Upper_terrace_plate">
       <polygon points="280.000,1750.000 350.000,1382.800 350.000,1690.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
@@ -32,7 +34,8 @@
       <polygon points="350.000,1367.800 280.000,1750.000 280.000,800.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F3-upper-terrace-plate-9" class="Space Upper_terrace_plate">
-      <polygon points="1350.000,1382.800 350.000,1367.800 1350.000,1367.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="1350.000,1382.800 1350.000,1367.800 1140.000,1367.800 1140.000,1379.650" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="350.000,1367.800 980.000,1377.250 980.000,1367.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F3-upper-terrace-plate-10" class="Space Upper_terrace_plate">
       <polygon points="280.000,1750.000 350.000,1367.800 350.000,1382.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
@@ -96,9 +99,13 @@
       <polygon points="680.000,1730.000 1430.000,1730.000 1430.000,850.000 680.000,850.000" fill="#d9dde0" stroke="#333" stroke-width="1" />
       <text x="1055.000" y="1290.000" font-family="Arial, sans-serif" font-size="18" fill="#333" text-anchor="middle">SHED / UP</text>
     </g>
+    <g id="F3-stair-void">
+      <polygon fill="none" stroke="#c45c3d" stroke-width="2" stroke-dasharray="8 5" points="1140.000,1110.000 1140.000,1620.000 980.000,1620.000 980.000,1110.000" />
+      <text x="1060.0" y="1660" font-family="Arial, sans-serif" font-size="16" fill="#c45c3d" text-anchor="middle">STAIR VOID / FROM F2</text>
+    </g>
   </g>
   <text x="140" y="1780" fill="#666" font-family="Arial, sans-serif" font-size="18">Synthetic dimensions. Confirm floor and component heights, then confirm alignment.</text>
-  <text x="140" y="1820" fill="#666" font-family="Arial, sans-serif" font-size="16">Synthetic stepped villa: lower garage, two living floors, terrace parapets, shallow shed roofs and an 18-step </text>
-  <text x="140" y="1844" fill="#666" font-family="Arial, sans-serif" font-size="16">garden stair. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are o</text>
-  <text x="140" y="1868" fill="#666" font-family="Arial, sans-serif" font-size="16">mitted.</text>
+  <text x="140" y="1820" fill="#666" font-family="Arial, sans-serif" font-size="16">Internal stairs connect F1 to F2 (18 steps) and F2 to F3 (20 steps), with open stairwells.</text>
+  <text x="140" y="1844" fill="#666" font-family="Arial, sans-serif" font-size="16">Review suggested roof rise, thickness and stair dimensions before building.</text>
+  <text x="140" y="1868" fill="#666" font-family="Arial, sans-serif" font-size="16">Planting, finishes and glazing are omitted.</text>
 </svg>

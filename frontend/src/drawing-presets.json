@@ -2,13 +2,13 @@
   {
     "id": "terrace",
     "name": "Terrace Villa",
-    "description": "Synthetic stepped villa: lower garage, two living floors, terrace parapets, shallow shed roofs and an 18-step garden stair. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are omitted.",
+    "description": "Synthetic stepped villa: lower garage, two living floors, terrace parapets, shallow shed roofs and internal stairs connecting all three floors. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are omitted.",
     "folder": "terrace_villa",
     "url": "/presets/terrace-villa",
     "floors": [
       {
         "number": 1,
-        "source_hash": "d5efcc8440d7c4315c23a5bb14c6ad6e1ee69fdaa5cd3901b3da99679a14a912",
+        "source_hash": "3b200da748ed42238289feb7d38bd16025f764ca81dfefcd6d8c9357e3185e05",
         "parameters": {
           "meters_per_unit": 0.01,
           "floor_height": 3.2,
@@ -66,7 +66,7 @@
             "height": 0.22,
             "elevation": 3.2
           },
-          "F1-exterior-stair-12": {
+          "F1-interior-stair-12": {
             "height": 3.2,
             "elevation": 0
           }
@@ -74,14 +74,16 @@
       },
       {
         "number": 2,
-        "source_hash": "9bdd468dc5356c9882f2999bfdf9c2aeab6ade8da384a477e1c30708f362b2c2",
+        "source_hash": "8c322c0d25dd9dd0a9a03cc5824f067a53ff0b55f152536d68cc9858a3c68759",
         "parameters": {
           "meters_per_unit": 0.01,
           "floor_height": 3.55,
           "slab_thickness": 0.2,
           "door_height": 2.4,
           "window_height": 2.8,
-          "window_sill": 0.15
+          "window_sill": 0.15,
+          "stair_height": 3.55,
+          "stair_steps": 20
         },
         "offsetX": 0,
         "offsetY": 0,
@@ -197,12 +199,16 @@
           "F2-balcony-parapet-28": {
             "height": 1.05,
             "elevation": 0.0
+          },
+          "F2-interior-stair-29": {
+            "height": 3.55,
+            "elevation": 0
           }
         }
       },
       {
         "number": 3,
-        "source_hash": "bcd7e71c8ee248397833b24e323859ca9311ffe1fd4a050c89c91b1d7a0d38b8",
+        "source_hash": "5bc1d7fca47dd7742213aef96bea649d1a1a1267e6880059aca5c292ef48468b",
         "parameters": {
           "meters_per_unit": 0.01,
           "floor_height": 3.45,
