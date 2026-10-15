@@ -152,9 +152,20 @@ def test_villa_drawings_require_confirmation_and_build_source_bound_floors(
             crown = next(
                 c for c in scene["components"] if c["source"]["element_id"] == "F2-portal-crown-32"
             )
-            assert Polygon(crown["polygon"]).area == pytest.approx(63)
+            assert Polygon(crown["polygon"]).area == pytest.approx(64.575)
             path = LineString([(9.1, -14.75), (10.8, -14.75)])
             upper = [c for c in scene["components"] if c["source_floor"] == 2]
+            shared = next(c for c in upper if c["source"]["element_id"] == "F2-side-wall-27")
+            assert Polygon(shared["polygon"]).bounds == pytest.approx((9.825, -16.4, 10.025, -9.34))
+            assert not any(
+                c["source"]["element_id"] == "F2-side-wall-34"
+                or c["source"]["element_id"].startswith("F2-connecting-")
+                for c in upper
+            )
+            left = next(c for c in upper if c["source"]["element_id"] == "F2-rear-room-4")
+            right = next(c for c in upper if c["source"]["element_id"] == "F2-rear-room-9")
+            assert max(p[0] for p in left["polygon"]) == pytest.approx(9.825)
+            assert min(p[0] for p in right["polygon"]) == pytest.approx(10.025)
             floors = unary_union(
                 [
                     Polygon(c["polygon"])
@@ -166,7 +177,7 @@ def test_villa_drawings_require_confirmation_and_build_source_bound_floors(
             doors = unary_union([Polygon(c["polygon"]) for c in upper if c["type"] == "door"])
             assert floors.covers(path), "Both wings need a continuous floor connection"
             assert path.intersection(walls.difference(doors)).length < 1e-7, (
-                "Doors must open through both connecting walls"
+                "The shared wall must retain a connecting door"
             )
         if preset_id == "gable":
             assert roofs[0]["roof_kind"] == "gable"

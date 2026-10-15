@@ -1,45 +1,45 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1960" viewBox="0 0 1720 1960">
   <title>Portal Villa / F2 / synthetic drawing</title>
-  <desc>Synthetic two-storey villa: projecting frame, offset wings connected by an enclosed upper passage, balconies, a closed roof crown and shed canopy and an internal stair connecting both floors. Review suggested roof and stair dimensions. Timber fins, planting, finishes and glazing are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
+  <desc>Synthetic two-storey villa: projecting frame, offset wings enlarged to meet at one shared wall with a connecting door, balconies, a closed roof crown and shed canopy and an internal stair connecting both floors. Review suggested roof and stair dimensions. Timber fins, planting, finishes and glazing are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
   <rect width="1720" height="1960" fill="#fafafa" />
   <text x="140" y="60" fill="#333" font-family="Arial, sans-serif" font-size="22">HEPHAESTUS / SYNTHETIC DRAWING PRESET</text>
   <text x="140" y="105" fill="#333" font-family="Arial, sans-serif" font-size="30">PORTAL VILLA / F2</text>
   <text x="140" y="145" fill="#333" font-family="Arial, sans-serif" font-size="19">Suggested floor height 4.3 m / source scale 0.01 m per unit / review before building</text>
   <g id="Floor-2" class="Floorplan">
     <g id="F2-front-facade-1" class="Wall Front_facade">
-      <polygon points="345.000,914.000 945.000,914.000 945.000,934.000 345.000,934.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="345.000,914.000 1002.500,914.000 1002.500,934.000 345.000,934.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-interior-partition-2" class="Wall Interior_partition">
       <polygon points="365.000,1283.400 365.000,1298.400 710.000,1298.400 710.000,1283.400" fill="#e8e4dc" stroke="#333" stroke-width="1" />
-      <polygon points="925.000,1298.400 925.000,1283.400 870.000,1283.400 870.000,1298.400" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="982.500,1298.400 982.500,1283.400 870.000,1283.400 870.000,1298.400" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-interior-door-3" class="Door Interior_door">
       <polygon points="617.000,1298.400 707.000,1298.400 707.000,1283.400 617.000,1283.400" fill="#c45c3d" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-rear-room-4" class="Space Rear_room">
-      <polygon points="365.000,1298.400 365.000,1620.000 925.000,1620.000 925.000,1298.400 870.000,1298.400 870.000,1550.000 710.000,1550.000 710.000,1298.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="365.000,1298.400 365.000,1620.000 982.500,1620.000 982.500,1298.400 870.000,1298.400 870.000,1550.000 710.000,1550.000 710.000,1298.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-living-room-5" class="Space Living_room">
-      <polygon points="925.000,1283.400 925.000,950.000 365.000,950.000 365.000,1283.400 710.000,1283.400 710.000,1000.000 870.000,1000.000 870.000,1283.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="982.500,1283.400 982.500,950.000 365.000,950.000 365.000,1283.400 710.000,1283.400 710.000,1000.000 870.000,1000.000 870.000,1283.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-front-facade-6" class="Wall Front_facade">
-      <polygon points="1040.000,966.000 1400.000,966.000 1400.000,986.000 1040.000,986.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="982.500,966.000 1400.000,966.000 1400.000,986.000 982.500,986.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-interior-partition-7" class="Wall Interior_partition">
-      <polygon points="1060.000,1317.800 1380.000,1317.800 1380.000,1332.800 1060.000,1332.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="1002.500,1317.800 1380.000,1317.800 1380.000,1332.800 1002.500,1332.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-interior-door-8" class="Door Interior_door">
       <polygon points="1204.000,1332.800 1294.000,1332.800 1294.000,1317.800 1204.000,1317.800" fill="#c45c3d" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-rear-room-9" class="Space Rear_room">
-      <polygon points="1060.000,1332.800 1380.000,1332.800 1380.000,1640.000 1060.000,1640.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="1002.500,1332.800 1380.000,1332.800 1380.000,1640.000 1002.500,1640.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-living-room-10" class="Space Living_room">
-      <polygon points="1060.000,1000.000 1380.000,1000.000 1380.000,1317.800 1060.000,1317.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="1002.500,1000.000 1380.000,1000.000 1380.000,1317.800 1002.500,1317.800" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-11" class="Space Cantilever_balcony">
-      <polygon points="925.000,1298.400 870.000,1296.927 870.000,1298.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="982.500,1298.400 870.000,1296.927 870.000,1298.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
       <polygon points="365.000,1283.400 365.000,1298.400 710.000,1298.400 710.000,1292.641" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-12" class="Space Cantilever_balcony">
@@ -49,47 +49,47 @@
       <polygon points="365.000,1283.400 285.000,1660.000 285.000,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-14" class="Space Cantilever_balcony">
-      <polygon points="925.000,1298.400 925.000,1283.400 870.000,1283.400 870.000,1296.927" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="982.500,1298.400 982.500,1283.400 870.000,1283.400 870.000,1296.927" fill="#f4f0e8" stroke="#333" stroke-width="1" />
       <polygon points="365.000,1283.400 710.000,1292.641 710.000,1283.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-15" class="Space Cantilever_balcony">
       <polygon points="285.000,1660.000 365.000,1283.400 365.000,1298.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-16" class="Space Cantilever_balcony">
-      <polygon points="985.000,1660.000 285.000,1660.000 365.000,1620.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="1002.500,1660.000 285.000,1660.000 365.000,1620.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-17" class="Space Cantilever_balcony">
       <polygon points="365.000,950.000 365.000,1283.400 285.000,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-18" class="Space Cantilever_balcony">
-      <polygon points="985.000,1660.000 365.000,1620.000 925.000,1620.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="1002.500,1660.000 365.000,1620.000 982.500,1620.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-19" class="Space Cantilever_balcony">
-      <polygon points="985.000,760.000 365.000,950.000 285.000,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="1002.500,760.000 365.000,950.000 285.000,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-20" class="Space Cantilever_balcony">
-      <polygon points="925.000,1298.400 985.000,1660.000 925.000,1620.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="982.500,1298.400 1002.500,1660.000 982.500,1620.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-21" class="Space Cantilever_balcony">
-      <polygon points="365.000,950.000 985.000,760.000 925.000,950.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="365.000,950.000 1002.500,760.000 982.500,950.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-22" class="Space Cantilever_balcony">
-      <polygon points="925.000,1283.400 985.000,1660.000 925.000,1298.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="982.500,1283.400 1002.500,1660.000 982.500,1298.400" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-23" class="Space Cantilever_balcony">
-      <polygon points="925.000,1283.400 925.000,950.000 985.000,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="982.500,1283.400 982.500,950.000 1002.500,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-cantilever-balcony-24" class="Space Cantilever_balcony">
-      <polygon points="985.000,1660.000 925.000,1283.400 985.000,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="1002.500,1660.000 982.500,1283.400 1002.500,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-rear-wall-25" class="Wall Rear_wall">
-      <polygon points="345.000,1620.000 945.000,1620.000 945.000,1640.000 345.000,1640.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="345.000,1620.000 1002.500,1620.000 1002.500,1640.000 345.000,1640.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-side-wall-26" class="Wall Side_wall">
       <polygon points="365.000,1620.000 345.000,1620.000 345.000,934.000 365.000,934.000 365.000,1283.400 365.000,1298.400" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F2-side-wall-27" class="Wall Side_wall">
-      <polygon points="945.000,1620.000 925.000,1620.000 925.000,934.000 945.000,934.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    <g id="F2-side-wall-27" class="Wall Shared_wall">
+      <polygon points="1002.500,1640.000 982.500,1640.000 982.500,934.000 1002.500,934.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-facade-opening-28" class="Window Facade_opening">
       <polygon points="390.000,934.000 910.000,934.000 910.000,914.000 390.000,914.000" fill="#9eb9c1" stroke="#333" stroke-width="1" />
@@ -104,13 +104,10 @@
       <polygon points="935.000,895.000 930.500,895.000 930.500,780.000 935.000,780.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-portal-crown-32" class="Space Portal_crown">
-      <polygon points="985.000,760.000 985.000,1660.000 285.000,1660.000 285.000,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="1002.500,760.000 1002.500,1660.000 285.000,1660.000 285.000,760.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-rear-wall-33" class="Wall Rear_wall">
-      <polygon points="1040.000,1640.000 1400.000,1640.000 1400.000,1660.000 1040.000,1660.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
-    </g>
-    <g id="F2-side-wall-34" class="Wall Side_wall">
-      <polygon points="1060.000,1640.000 1040.000,1640.000 1040.000,986.000 1060.000,986.000 1060.000,1317.800 1060.000,1332.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="982.500,1640.000 1400.000,1640.000 1400.000,1660.000 982.500,1660.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-side-wall-35" class="Wall Side_wall">
       <polygon points="1400.000,1640.000 1380.000,1640.000 1380.000,1332.800 1380.000,1332.800 1380.000,1317.800 1380.000,1317.800 1380.000,986.000 1400.000,986.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
@@ -119,7 +116,7 @@
       <polygon points="1070.000,986.000 1360.000,986.000 1360.000,966.000 1070.000,966.000" fill="#9eb9c1" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-right-terrace-37" class="Space Right_terrace">
-      <polygon points="1010.000,840.000 1400.000,840.000 1400.000,980.000 1010.000,980.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+      <polygon points="1002.500,840.000 1400.000,840.000 1400.000,980.000 1002.500,980.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-balcony-parapet-38" class="Wall Balcony_parapet">
       <polygon points="1025.000,855.500 1385.000,855.500 1385.000,860.000 1025.000,860.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
@@ -131,30 +128,18 @@
       <polygon points="1385.000,950.000 1380.500,950.000 1380.500,860.000 1385.000,860.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-right-roof-canopy-shed-41" class="Roof Shed" data-direction="0,1">
-      <polygon points="1020.000,1680.000 1440.000,1680.000 1440.000,870.000 1020.000,870.000" fill="#d9dde0" stroke="#333" stroke-width="1" />
+      <polygon points="1002.500,1680.000 1440.000,1680.000 1440.000,870.000 1002.500,870.000" fill="#d9dde0" stroke="#333" stroke-width="1" />
       <text x="1230.000" y="1275.000" font-family="Arial, sans-serif" font-size="18" fill="#333" text-anchor="middle">SHED / UP</text>
     </g>
     <g id="F2-stair-void">
       <polygon fill="none" stroke="#c45c3d" stroke-width="2" stroke-dasharray="8 5" points="870.000,1000.000 870.000,1550.000 710.000,1550.000 710.000,1000.000" />
       <text x="790.0" y="1575.0" font-family="Arial, sans-serif" font-size="16" fill="#c45c3d" text-anchor="middle">STAIR VOID / FROM F1</text>
     </g>
-    <g id="F2-connecting-hall" class="Space Connecting_hall">
-      <polygon fill="#f4f0e8" stroke="#333" stroke-width="1" points="1060.000,1350.000 1060.000,1600.000 925.000,1600.000 925.000,1350.000" />
+    <g id="F2-shared-wall-door" class="Door Shared_opening">
+      <polygon points="1002.500,1370.000 1002.500,1580.000 982.500,1580.000 982.500,1370.000" fill="#c45c3d" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F2-connecting-hall-front-wall" class="Wall Connecting_hall">
-      <polygon fill="#e8e4dc" stroke="#333" stroke-width="1" points="1040.000,1330.000 1040.000,1350.000 945.000,1350.000 945.000,1330.000" />
-    </g>
-    <g id="F2-connecting-hall-rear-wall" class="Wall Connecting_hall">
-      <polygon fill="#e8e4dc" stroke="#333" stroke-width="1" points="1040.000,1600.000 1040.000,1620.000 945.000,1620.000 945.000,1600.000" />
-    </g>
-    <g id="F2-connecting-left-door" class="Door Connecting_opening">
-      <polygon fill="#c45c3d" stroke="#333" stroke-width="1" points="945.000,1370.000 945.000,1580.000 925.000,1580.000 925.000,1370.000" />
-    </g>
-    <g id="F2-connecting-right-door" class="Door Connecting_opening">
-      <polygon fill="#c45c3d" stroke="#333" stroke-width="1" points="1060.000,1370.000 1060.000,1580.000 1040.000,1580.000 1040.000,1370.000" />
-    </g>
-    <g id="F2-connecting-hall-canopy" class="Space Connecting_canopy">
-      <polygon fill="#f4f0e8" stroke="#333" stroke-width="1" points="1040.000,1330.000 1040.000,1620.000 945.000,1620.000 945.000,1330.000" />
+    <g id="F2-shared-door-threshold" class="Space Door_threshold">
+      <polygon points="1002.500,1370.000 1002.500,1580.000 982.500,1580.000 982.500,1370.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
   </g>
   <text x="140" y="1780" fill="#666" font-family="Arial, sans-serif" font-size="18">Synthetic dimensions. Confirm floor and component heights, then confirm alignment.</text>

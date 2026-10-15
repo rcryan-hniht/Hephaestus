@@ -83,7 +83,8 @@ try {
     if (id === 'portal') {
       assert.equal(scene.components.some(c => c.source.element_id === 'F1-tall-white-frame-26'), false);
       assert.equal(scene.components.filter(c => c.source.element_id === 'F2-portal-crown-32').length, 1);
-      for (const name of ['F2-connecting-hall', 'F2-connecting-left-door', 'F2-connecting-right-door']) {
+      assert.equal(scene.components.some(c => c.source.element_id === 'F2-side-wall-34'), false);
+      for (const name of ['F2-side-wall-27', 'F2-shared-wall-door', 'F2-shared-door-threshold']) {
         assert.ok(scene.components.some(c => c.source.element_id === name));
       }
     }

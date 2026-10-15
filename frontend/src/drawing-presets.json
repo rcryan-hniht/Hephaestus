@@ -345,7 +345,7 @@
   {
     "id": "portal",
     "name": "Portal Villa",
-    "description": "Synthetic two-storey villa: projecting frame, offset wings connected by an enclosed upper passage, balconies, a closed roof crown and shed canopy and an internal stair connecting both floors. Review suggested roof and stair dimensions. Timber fins, planting, finishes and glazing are omitted.",
+    "description": "Synthetic two-storey villa: projecting frame, offset wings enlarged to meet at one shared wall with a connecting door, balconies, a closed roof crown and shed canopy and an internal stair connecting both floors. Review suggested roof and stair dimensions. Timber fins, planting, finishes and glazing are omitted.",
     "folder": "portal_villa",
     "url": "/presets/portal-villa",
     "floors": [
@@ -481,7 +481,7 @@
       },
       {
         "number": 2,
-        "source_hash": "0ce72955dbd72f3c2c45c5e462e12653272e092bfca1b709d08e2509a85085e6",
+        "source_hash": "ac2de92274556ef206d97676d26ff11973114bd00962824ab584a3592efe7449",
         "parameters": {
           "meters_per_unit": 0.01,
           "floor_height": 4.3,
@@ -627,10 +627,6 @@
             "height": 3.55,
             "elevation": 0.0
           },
-          "F2-side-wall-34": {
-            "height": 3.55,
-            "elevation": 0.0
-          },
           "F2-side-wall-35": {
             "height": 3.55,
             "elevation": 0.0
@@ -659,29 +655,13 @@
             "height": 0.2,
             "elevation": 3.6
           },
-          "F2-connecting-hall": {
+          "F2-shared-wall-door": {
+            "height": 2.8,
+            "elevation": 0
+          },
+          "F2-shared-door-threshold": {
             "height": 0.2,
             "elevation": 0
-          },
-          "F2-connecting-hall-front-wall": {
-            "height": 3.2,
-            "elevation": 0
-          },
-          "F2-connecting-hall-rear-wall": {
-            "height": 3.2,
-            "elevation": 0
-          },
-          "F2-connecting-left-door": {
-            "height": 2.8,
-            "elevation": 0
-          },
-          "F2-connecting-right-door": {
-            "height": 2.8,
-            "elevation": 0
-          },
-          "F2-connecting-hall-canopy": {
-            "height": 0.15,
-            "elevation": 3.35
           }
         }
       }
