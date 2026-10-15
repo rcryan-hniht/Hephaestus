@@ -2,12 +2,14 @@ import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
+import { confirmVilla } from './helpers/villa.mjs';
 const browser=await chromium.launch({headless:true,args:['--enable-unsafe-swiftshader']});
 const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});
 page.setDefaultTimeout(60000);
 try {
  await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4174');
  await page.locator('#explore-demo').click();
+ await confirmVilla(page);
  await page.locator('#export-model').click();
  await page.waitForFunction(()=>!document.querySelector('[data-export=blend]').disabled);
  const download=page.waitForEvent('download');

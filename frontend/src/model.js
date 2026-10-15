@@ -1,39 +1,4 @@
 export const typeNames = { wall: 'Wall', slab: 'Slab', column: 'Column', window: 'Window', door: 'Door opening', roof: 'Roof', stair: 'Stair' };
-export const projects = [
-  { name: 'Courtyard Residence', note: 'Residential · 5 floors · Inner courtyard', floors: 5, width: 12, depth: 10 },
-  { name: 'A Modest Home', note: 'Residential · 2 floors · Open porch', floors: 2, width: 14, depth: 7 },
-  { name: 'Layers of Light', note: 'Workspace · 3 floors · Daylight atrium', floors: 3, width: 9, depth: 12 },
-];
-const rectangle = (x, z, w, d) => [[x, z], [x + w, z], [x + w, z + d], [x, z + d]];
-export function sampleModel(index = 0) {
-  const project = projects[index] || projects[0];
-  const components = [], { width: w, depth: d, floors } = project;
-  const add = (type, floor, polygon, height, elevation) => components.push({
-    id: `sample-${index}-${components.length}`, type, floor, polygon, height, elevation,
-    source: `${project.name} / floor ${floor + 1} plan`, assumed: false,
-  });
-  const ring = (floor, y, type = 'slab') => {
-    for (const r of [[-w / 2, -d / 2, w, 2.5], [-w / 2, d / 2 - 2.5, w, 2.5], [-w / 2, -d / 2 + 2.5, 2.5, d - 5], [w / 2 - 2.5, -d / 2 + 2.5, 2.5, d - 5]]) add(type, floor, rectangle(...r), .22, y);
-  };
-  for (let floor = 0; floor < floors; floor++) {
-    const y = floor * 3.2;
-    ring(floor, y);
-    for (const x of [-w / 2 + .1, w / 2 - .4]) {
-      for (const z of [-d / 2 + .1, 0, d / 2 - .4]) add('column', floor, rectangle(x, z, .3, .3), 3, y + .22);
-    }
-    for (const x of [-w / 2, w / 2 - .18]) add('wall', floor, rectangle(x, -d / 2, .18, d), 3, y + .22);
-    for (const z of [-d / 2, d / 2 - .12]) {
-      for (let panel = 0; panel < 6; panel++) {
-        const x = -w / 2 + panel * w / 6;
-        add(panel % 3 === (index + floor) % 3 ? 'wall' : 'window', floor, rectangle(x, z, w / 6 - .06, .12), 2.7, y + .42);
-      }
-    }
-    for (const z of [-d / 2 + 2.5, d / 2 - 2.6]) add('wall', floor, rectangle(-w / 2 + 2.5, z, w - 5, .1), .8, y + .22);
-  }
-  ring(floors - 1, floors * 3.2, 'roof');
-  return { name: project.name, sample: true, unit: 'm', floors, components, warnings: ['Demonstration model with design dimensions; not reconstructed from drawing.'] };
-}
-
 export function phaseAt(offset, step, reduced = false) {
   const p = Math.max(0, offset / Math.max(1, step)) % 3;
   const chapter = Math.floor(p), fraction = p - chapter;

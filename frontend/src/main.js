@@ -41,10 +41,10 @@ const workspace = createWorkspace({ reducedMotion: motion, onClose() {
   workspaceOpen = false; wheelLocked = false; $('landing').hidden = false; document.body.style.overflow = '';
   window.scrollTo(0, savedScroll); returnFocus?.focus({ preventScroll: true }); dirty = true;
 } });
-function openWorkspace(sample) {
+function openWorkspace(demo = false) {
   if (!workspaceOpen) { returnFocus = document.activeElement; savedScroll = scrollY; }
   workspaceOpen = true; $('landing').hidden = true; document.body.style.overflow = 'hidden';
-  workspace.open(); if (sample !== undefined) workspace.loadSample(sample);
+  workspace.open(); if (demo) void workspace.loadVillaPreset();
   $('back-home').focus();
 }
 document.querySelectorAll('[data-upload]').forEach(b => listen(b, 'click', () => { openWorkspace(); $('file-input').click(); }));
@@ -61,7 +61,7 @@ function goChapter(index) {
   }
   dirty = true;
 }
-listen($('explore-demo'), 'click', () => openWorkspace(0));
+listen($('explore-demo'), 'click', () => openWorkspace(true));
 cubicasaSamples.forEach((sample, index) => {
   const item = document.createElement('div'); item.className = 'work-item'; item.dataset.active = String(index === 0);
   const image = new Image(); image.src = sample.image; image.alt = ''; image.loading = 'lazy';

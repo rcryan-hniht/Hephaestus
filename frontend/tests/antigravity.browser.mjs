@@ -47,8 +47,13 @@ try {
   await fallback.goto(process.env.TEST_URL || 'http://127.0.0.1:4174');
   assert.equal(await fallback.locator('#antigravity-canvas').isVisible(), false);
   await fallback.locator('#explore-demo').click();
+  await fallback.locator('#sample-preset').waitFor({ state: 'visible' });
+  await fallback.locator('#use-sample-suggestions').click();
+  await fallback.locator('#confirm-drawing').click();
+  await fallback.waitForFunction(() => !document.getElementById('confirm-alignment').disabled);
+  await fallback.locator('#confirm-alignment').click();
   await fallback.locator('#workspace-error').waitFor({ state: 'visible' });
   assert.equal(await fallback.locator('#export-model').isDisabled(), true);
-  assert.equal(await fallback.locator('#plan-svg').isVisible(), true);
+  assert.equal(await fallback.locator('#drawing-image').isVisible(), true);
   console.log('PASS: Antigravity pointer movement, static reduced motion, workspace isolation, resize and WebGL fallback');
 } finally { await browser.close(); }

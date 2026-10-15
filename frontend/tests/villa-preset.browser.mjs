@@ -10,14 +10,15 @@ try {
     if (request.url().endsWith('/answers') && request.method() === 'POST') answers.push(request.postDataJSON());
   });
   await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4176');
+  const submission = page.waitForResponse(response => response.url().endsWith('/api/buildings') && response.request().method() === 'POST');
   await page.locator('#explore-demo').click();
   assert.equal(await page.locator('#drawing-preset option[value="modern"]').textContent(), '3F villa');
-  const submission = page.waitForResponse(response => response.url().endsWith('/api/buildings') && response.request().method() === 'POST');
-  await page.locator('#load-villa-preset').click();
   const building = await (await submission).json();
   assert.equal(building.floors.length, 4);
   assert.ok(building.floors.every(floor => floor.job.source_kind === 'svg'));
   await page.locator('#sample-preset').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#use-sample-suggestions').textContent(), 'Use villa parameters');
+  assert.equal(await page.locator('#export-model').isDisabled(), true, 'Demo entry must await villa confirmation instead of opening the old model');
   await page.locator('#question-floor_height').fill('3.7');
   await page.locator('#use-sample-suggestions').click();
   assert.equal(await page.locator('#question-floor_height').inputValue(), '3.7', 'Preset must preserve user entries');
@@ -58,5 +59,16 @@ try {
   assert.equal(await page.locator('#drawing-image').getAttribute('src'), source, 'Failed preset downloads must retain the drawing');
   assert.ok((await page.locator('#project-name').textContent()).includes('Building'));
   assert.equal(await page.locator('#export-model').isEnabled(), true, 'Failed preset downloads must retain the valid model');
+  for (const id of ['empty-sample', 'load-sample']) {
+    const entry = await browser.newPage({ viewport: { width: 1600, height: 1000 }, reducedMotion: 'reduce' });
+    await entry.goto(process.env.TEST_URL || 'http://127.0.0.1:4176');
+    await entry.locator('[data-upload]').first().click();
+    const batch = entry.waitForResponse(r => r.url().endsWith('/api/buildings') && r.request().method() === 'POST');
+    await entry.locator(`#${id}`).click();
+    assert.equal((await (await batch).json()).floors.length, 4);
+    await entry.locator('#use-sample-suggestions').waitFor({ state: 'visible' });
+    assert.equal(await entry.locator('#export-model').isDisabled(), true);
+    await entry.close();
+  }
   console.log('PASS: four-drawing villa preset, preserved edits, explicit confirmation, source-bound canopy overrides and building assembly');
 } finally { await browser.close(); }

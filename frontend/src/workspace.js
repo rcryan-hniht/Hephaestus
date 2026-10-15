@@ -2,7 +2,7 @@ import { SceneView } from './scene.js';
 import { API_BASE, apiRequest, createJobClient } from './api.js';
 import { sceneToModel, sourceDescription, offsetProposal } from './backend-model.js';
 import { groupFloorFiles, assembleFloors, sampleFloorSuggestions } from './floors.js';
-import { sampleModel, reconstructDrawing, typeNames, drawingBounds } from './model.js';
+import { reconstructDrawing, typeNames, drawingBounds } from './model.js';
 import villaPreset from './villa-preset.json';
 import drawingPresets from './drawing-presets.json';
 
@@ -303,14 +303,6 @@ export function createWorkspace({ reducedMotion, onClose }) {
     status(hasView ? model.sample ? 'Viewing demo model' : 'Ready · Verify assumptions' : '3D unavailable · 2D preview available');
     if (fit) root.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === 'perspective')));
   }
-  function loadSample(index = 0) {
-    cancel('Viewing sample project design plan.');
-    $('drawing-settings').hidden = false;
-    $('retry-job').hidden = true; $('drawing-unit').value = 'm';
-    applyModel(sampleModel(index));
-    closeDrawers();
-  }
-
   async function loadDatasetSample(sample) {
     cancel('Loading paired CubeCasa SVG. Scale and height need confirmation.');
     lastFile = null;
@@ -628,7 +620,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
   listen($('drop-zone'), 'dragleave', () => $('drop-zone').classList.remove('is-over'));
   listen($('drop-zone'), 'drop', e => { e.preventDefault(); $('drop-zone').classList.remove('is-over'); void receiveFiles([...e.dataTransfer.files]); });
   listen($('back-home'), 'click', () => { active = false; root.hidden = true; closeDrawers(); onClose(); });
-  for (const id of ['load-sample', 'empty-sample']) listen($(id), 'click', () => loadSample());
+  for (const id of ['load-sample', 'empty-sample']) listen($(id), 'click', () => { void loadVillaPreset(); });
   listen($('load-villa-preset'), 'click', () => { void loadVillaPreset(); });
   const presets = [{ ...villaPreset, id: 'modern' }, ...drawingPresets];
   $('drawing-preset').replaceChildren(...presets.map(p => new Option(p.name, p.id)));
@@ -767,7 +759,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     $('workspace-error').hidden = false; $('export-model').disabled = true;
   });
   return {
-    open, loadSample, loadDatasetSample,
+    open, loadVillaPreset, loadDatasetSample,
     render(delta) { if (active && view && !document.hidden) view.render({ active: true, delta }); },
     motionChanged() { if (view) view.controls.enableDamping = !reducedMotion.matches; },
     dispose() { void singleApi.stop(); floors.forEach(f => { void f.client.stop(); }); ticket++; previewEpoch++; worker?.terminate(); events.abort(); view?.dispose(); if (imageURL) URL.revokeObjectURL(imageURL); },
