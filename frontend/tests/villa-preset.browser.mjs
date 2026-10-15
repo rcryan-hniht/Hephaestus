@@ -34,6 +34,7 @@ try {
   await page.locator('#confirm-alignment').click();
   const scene = await (await published).json();
   assert.deepEqual(scene.floors.map(floor => floor.transform[1]), [0, 3.6, 6.9, 10.2]);
+  assert.deepEqual(scene.components.filter(c => c.type === 'stair').map(c => c.source_floor), [1, 1, 2, 2, 3, 3]);
   const canopy = scene.components.find(c => c.source.element_id === 'F4-canopy');
   assert.ok(Math.abs(canopy.elevation + canopy.height - 13.2) < 1e-8);
   assert.ok(scene.components.some(c => c.source_floor === 4 && c.height === 1.1));
@@ -42,6 +43,11 @@ try {
   await page.locator('#fit-model').click();
   await page.waitForTimeout(600);
   await page.screenshot({ path: '/tmp/hephaestus-villa-v2-workspace.png' });
+  await page.locator('[data-type="wall"]').uncheck();
+  await page.locator('#section').fill('75');
+  await page.screenshot({ path: '/tmp/hephaestus-modern-villa-interior-stairs.png' });
+  await page.locator('[data-type="wall"]').check();
+  await page.locator('#section').fill('100');
   const source = await page.locator('#drawing-image').getAttribute('src');
   await page.route('**/presets/modern-villa/F2.svg', route => route.fulfill({ status: 404, body: '' }));
   await page.locator('#load-villa-preset').click();

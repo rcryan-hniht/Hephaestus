@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1840" viewBox="0 0 1400 1840">
   <title>Modern Villa V2 / F2</title>
-  <desc>Synthetic stepped villa input. Three storeys, terraces, a recessed roof pavilion and a raised thin roof canopy. Component heights require explicit preset confirmation. Stair geometry and glazing are not inferred.</desc>
+  <desc>Synthetic stepped villa input. Three storeys, terraces, a recessed roof pavilion and a raised thin roof canopy. Internal stair flights and landings connect all four supplied floors. Component heights require explicit preset confirmation. Glazing is omitted.</desc>
   <rect width="1400" height="1840" fill="#fafafa" />
   <text x="140" y="62" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">HEPHAESTUS / MODERN VILLA V2 / SYNTHETIC INPUT</text>
   <text x="140" y="110" fill="#333" font-family="Arial, sans-serif" font-size="30" text-anchor="start">F2 / BEDROOMS / WRAPAROUND BALCONY</text>
@@ -20,7 +20,8 @@
       <polygon points="430.000,615.000 430.000,600.000 20.000,600.000 20.000,615.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-bedroom-right-south" class="Wall Partition">
-      <polygon points="830.000,575.000 430.000,575.000 430.000,590.000 830.000,590.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="730.000,575.000 730.000,590.000 830.000,590.000 830.000,575.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="430.000,575.000 430.000,590.000 530.000,590.000 530.000,575.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-primary-north" class="Wall Partition">
       <polygon points="415.000,870.000 415.000,855.000 20.000,855.000 20.000,870.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
@@ -35,13 +36,13 @@
       <polygon points="470.000,615.000 470.000,855.000 485.000,855.000 485.000,615.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-core-west" class="Wall Partition">
-      <polygon points="515.000,585.000 515.000,865.000 530.000,865.000 530.000,585.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="530.000,435.000 530.000,850.000 515.000,850.000 515.000,435.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-core-east" class="Wall Partition">
-      <polygon points="730.000,585.000 730.000,865.000 745.000,865.000 745.000,585.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="745.000,435.000 745.000,850.000 730.000,850.000 730.000,435.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-core-north" class="Wall Partition">
-      <polygon points="530.000,585.000 530.000,600.000 730.000,600.000 730.000,585.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="730.000,435.000 730.000,450.000 530.000,450.000 530.000,435.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-core-south" class="Wall Partition">
       <polygon points="530.000,850.000 530.000,865.000 730.000,865.000 730.000,850.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
@@ -54,7 +55,7 @@
       <polygon points="1000.000,1400.000 1000.000,0.000 20.000,0.000 20.000,20.000 980.000,20.000 980.000,1380.000 20.000,1380.000 20.000,1400.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-interior-slab-1" class="Space Interior">
-      <polygon points="430.000,575.000 830.000,575.000 830.000,270.000 430.000,270.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
+      <polygon points="530.000,575.000 530.000,450.000 730.000,450.000 730.000,575.000 830.000,575.000 830.000,270.000 430.000,270.000 430.000,575.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
     </g>
     <g id="F2-interior-slab-2" class="Space Interior">
       <polygon points="20.000,600.000 420.000,600.000 420.000,590.000 415.000,590.000 415.000,270.000 20.000,270.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
@@ -129,21 +130,9 @@
       <polygon points="20.000,930.000 20.000,1180.000 0.000,1180.000 0.000,930.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
     </g>
     <g class="Annotation" fill="none" stroke="#888">
-      <rect x="530" y="600" width="200" height="250" stroke-dasharray="6 4" />
-      <line x1="545" x2="630" y1="629" y2="629" />
-      <line x1="545" x2="630" y1="648" y2="648" />
-      <line x1="545" x2="630" y1="667" y2="667" />
-      <line x1="545" x2="630" y1="686" y2="686" />
-      <line x1="545" x2="630" y1="705" y2="705" />
-      <line x1="545" x2="630" y1="724" y2="724" />
-      <line x1="545" x2="630" y1="743" y2="743" />
-      <line x1="545" x2="630" y1="762" y2="762" />
-      <line x1="545" x2="630" y1="781" y2="781" />
-      <line x1="545" x2="630" y1="800" y2="800" />
-      <line x1="545" x2="630" y1="819" y2="819" />
       <rect x="420" y="900" width="300" height="300" stroke-dasharray="6 4" />
     </g>
-    <text x="682" y="733" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">UP</text>
+    <text x="682" y="420" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">STAIRS / UP</text>
     <text x="570" y="1040" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">DOUBLE-HEIGHT VOID</text>
     <text x="570" y="1070" fill="#666" font-family="Arial, sans-serif" font-size="17" text-anchor="middle">3.00 m x 3.00 m</text>
     <text x="215" y="445" fill="#333" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">BEDROOM 2</text>
@@ -152,6 +141,34 @@
     <text x="357" y="748" fill="#333" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">BATHROOM</text>
     <text x="845" y="1315" fill="#333" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">L BALCONY</text>
     <text x="520" y="-24" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">Terrace parapets: 1.10 m</text>
+    <g id="F2-stair-floor" class="Space Stair_hall">
+      <polygon fill="#f4f0e8" stroke="#333" stroke-width="1" points="530.000,850.000 730.000,850.000 730.000,785.000 530.000,785.000" />
+    </g>
+    <g id="F2-stair-landing" class="Space Stair_landing">
+      <polygon fill="#f4f0e8" stroke="#333" stroke-width="1" points="730.000,450.000 730.000,535.000 530.000,535.000 530.000,450.000" />
+    </g>
+    <g id="F2-stair-lower" class="Stair Interior_stair" data-direction="0,-1" data-steps="9">
+      <polygon fill="#c8c8c3" stroke="#333" stroke-width="1" points="625.000,535.000 625.000,785.000 535.000,785.000 535.000,535.000" />
+      <line x1="535" x2="625" y1="562.778" y2="562.778" stroke="#666" />
+      <line x1="535" x2="625" y1="590.556" y2="590.556" stroke="#666" />
+      <line x1="535" x2="625" y1="618.333" y2="618.333" stroke="#666" />
+      <line x1="535" x2="625" y1="646.111" y2="646.111" stroke="#666" />
+      <line x1="535" x2="625" y1="673.889" y2="673.889" stroke="#666" />
+      <line x1="535" x2="625" y1="701.667" y2="701.667" stroke="#666" />
+      <line x1="535" x2="625" y1="729.444" y2="729.444" stroke="#666" />
+      <line x1="535" x2="625" y1="757.222" y2="757.222" stroke="#666" />
+    </g>
+    <g id="F2-stair-upper" class="Stair Interior_stair" data-direction="0,1" data-steps="9">
+      <polygon fill="#c8c8c3" stroke="#333" stroke-width="1" points="725.000,535.000 725.000,785.000 635.000,785.000 635.000,535.000" />
+      <line x1="635" x2="725" y1="562.778" y2="562.778" stroke="#666" />
+      <line x1="635" x2="725" y1="590.556" y2="590.556" stroke="#666" />
+      <line x1="635" x2="725" y1="618.333" y2="618.333" stroke="#666" />
+      <line x1="635" x2="725" y1="646.111" y2="646.111" stroke="#666" />
+      <line x1="635" x2="725" y1="673.889" y2="673.889" stroke="#666" />
+      <line x1="635" x2="725" y1="701.667" y2="701.667" stroke="#666" />
+      <line x1="635" x2="725" y1="729.444" y2="729.444" stroke="#666" />
+      <line x1="635" x2="725" y1="757.222" y2="757.222" stroke="#666" />
+    </g>
   </g>
   <text x="140" y="1708" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Scale: 100 SVG units = 1.00 m / confirm 0.01 meters per source unit</text>
   <text x="140" y="1748" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">Floor height: 3.30 m / slab: 0.20 m / offsets X and Y: zero</text>

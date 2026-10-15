@@ -46,8 +46,11 @@ def test_modern_villa_inputs_build_setback_storeys_terraces_and_a_rooftop_canopy
             }
             response = client.post(
                 f"/api/jobs/{job_id}/answers",
-                json={"generation": job["generation"], "values": configuration["parameters"],
-                      "component_values": overrides},
+                json={
+                    "generation": job["generation"],
+                    "values": configuration["parameters"],
+                    "component_values": overrides,
+                },
             )
             assert response.status_code == 202, response.text
             for _ in range(200):
@@ -58,16 +61,33 @@ def test_modern_villa_inputs_build_setback_storeys_terraces_and_a_rooftop_canopy
             assert job["state"] == "ready", job
         response = client.post(
             f"/api/buildings/{building['id']}/alignment",
-            json={"generation": building["generation"], "offsets": [
-                {"number": number, "x": 0, "y": 0} for number in range(1, 5)
-            ]},
+            json={
+                "generation": building["generation"],
+                "offsets": [{"number": number, "x": 0, "y": 0} for number in range(1, 5)],
+            },
         )
         assert response.status_code == 200, response.text
         scene = client.get(f"/api/buildings/{building['id']}/scene").json()
         assert [floor["transform"][1] for floor in scene["floors"]] == [0, 3.6, 6.9, 10.2]
+        stairs = [c for c in scene["components"] if c["type"] == "stair"]
+        assert [c["source_floor"] for c in stairs] == [1, 1, 2, 2, 3, 3]
+        for stair in stairs:
+            footprint = Polygon(stair["polygon"])
+            assert box(6.7, -10.25, 8.7, -6.9).covers(footprint)
+            for wall in scene["components"]:
+                if wall["type"] == "wall" and wall["source_floor"] == stair["source_floor"]:
+                    assert footprint.intersection(Polygon(wall["polygon"])).area < 1e-8
+            if stair["source"]["element_id"].endswith("-upper"):
+                assert math.isclose(
+                    max(stair["mesh"]["positions"][1::3]),
+                    scene["floors"][stair["source_floor"]]["transform"][1],
+                )
         walls = [component for component in scene["components"] if component["type"] == "wall"]
         assert {wall["source_floor"] for wall in walls} == {1, 2, 3, 4}
-        assert {round(wall["height"], 2) for wall in walls if wall["source_floor"] == 4} == {1.1, 2.85}
+        assert {round(wall["height"], 2) for wall in walls if wall["source_floor"] == 4} == {
+            1.1,
+            2.85,
+        }
         canopy = next(c for c in scene["components"] if c["source"]["element_id"] == "F4-canopy")
         assert math.isclose(canopy["elevation"] + canopy["height"], 13.2)
         assert math.isclose(canopy["height"], 0.15)
@@ -78,12 +98,19 @@ def test_modern_villa_inputs_build_setback_storeys_terraces_and_a_rooftop_canopy
             widths.append(round(max(x) - min(x), 2))
         assert widths == [8.8, 8.5, 7.2, 3.6]
         for number in (2, 3, 4):
-            slabs = unary_union([
-                Polygon(c["polygon"]) for c in scene["components"]
-                if c["source_floor"] == number and c["type"] == "room"
-                and c["source"]["element_id"] != "F4-canopy"
-            ])
-            assert slabs.intersection(box(6.7, -10.9, 8.7, -8.4)).area < 1e-8
+            slabs = unary_union(
+                [
+                    Polygon(c["polygon"])
+                    for c in scene["components"]
+                    if c["source_floor"] == number
+                    and c["type"] == "room"
+                    and c["source"]["element_id"] != "F4-canopy"
+                    and math.isclose(
+                        c["elevation"] + c["height"], scene["floors"][number - 1]["transform"][1]
+                    )
+                ]
+            )
+            assert slabs.intersection(box(6.7, -10.25, 8.7, -6.9)).area < 1e-8
             if number == 2:
                 assert slabs.intersection(box(5.6, -14.4, 8.6, -11.4)).area < 1e-8
         assert any(component["type"] == "window" for component in scene["components"])

@@ -1,32 +1,49 @@
 {
   "name": "Modern Villa V2",
-  "description": "Synthetic 10 \u00d7 14 m stepped villa \u00b7 three storeys + roof pavilion. Heights: 3.6 / 3.3 / 3.3 / 3.0 m; terrace walls 1.1 m; canopy top +13.2 m. Review the values and confirm all floors together.",
+  "description": "Synthetic 10 \u00d7 14 m stepped villa \u00b7 three storeys + roof pavilion, connected by internal stairs and landings. Heights: 3.6 / 3.3 / 3.3 / 3.0 m; terrace walls 1.1 m; canopy top +13.2 m. Review the values and confirm all floors together.",
   "floors": [
     {
       "number": 1,
-      "source_hash": "0d864f8c8139ae03a24e2f60a8787d570927004377d9662b98d2badce1b8052c",
+      "source_hash": "68e87538693386d15b1e035f0061b6cd380812e521b56882a139780b59dc5ade",
       "parameters": {
         "meters_per_unit": 0.01,
         "floor_height": 3.6,
         "slab_thickness": 0.2,
         "door_height": 2.6,
         "window_height": 3.2,
-        "window_sill": 0.15
+        "window_sill": 0.15,
+        "stair_height": 1.8,
+        "stair_steps": 10
       },
       "offsetX": 0,
       "offsetY": 0,
-      "components": {}
+      "components": {
+        "F1-stair-landing": {
+          "height": 0.18,
+          "elevation": 1.8
+        },
+        "F1-stair-lower": {
+          "height": 1.8,
+          "elevation": 0
+        },
+        "F1-stair-upper": {
+          "height": 1.8,
+          "elevation": 1.8
+        }
+      }
     },
     {
       "number": 2,
-      "source_hash": "83fbb32528058b2699cde09a332e9c7c82c33961f8a85e9652f40c9f620763b3",
+      "source_hash": "4805cd8f918d05666ebf8864cd3a4cd350e198faa798af4fdca751d5980fbc89",
       "parameters": {
         "meters_per_unit": 0.01,
         "floor_height": 3.3,
         "slab_thickness": 0.2,
         "door_height": 2.6,
         "window_height": 3.0,
-        "window_sill": 0.15
+        "window_sill": 0.15,
+        "stair_height": 1.65,
+        "stair_steps": 9
       },
       "offsetX": 0,
       "offsetY": 0,
@@ -36,19 +53,33 @@
         },
         "F2-parapet-2": {
           "height": 1.1
+        },
+        "F2-stair-landing": {
+          "height": 0.18,
+          "elevation": 1.65
+        },
+        "F2-stair-lower": {
+          "height": 1.65,
+          "elevation": 0
+        },
+        "F2-stair-upper": {
+          "height": 1.65,
+          "elevation": 1.65
         }
       }
     },
     {
       "number": 3,
-      "source_hash": "26e84fa315a4ad763d63d008eb50a22fe466c2d5095e718734308564aa0f4711",
+      "source_hash": "c36c2f9ffaf0bfb4209593100d66b3db956fb1b3322042bc491d8ea911e5c7b3",
       "parameters": {
         "meters_per_unit": 0.01,
         "floor_height": 3.3,
         "slab_thickness": 0.2,
         "door_height": 2.6,
         "window_height": 3.0,
-        "window_sill": 0.15
+        "window_sill": 0.15,
+        "stair_height": 1.65,
+        "stair_steps": 9
       },
       "offsetX": 0,
       "offsetY": 0,
@@ -58,12 +89,24 @@
         },
         "F3-parapet-2": {
           "height": 1.1
+        },
+        "F3-stair-landing": {
+          "height": 0.18,
+          "elevation": 1.65
+        },
+        "F3-stair-lower": {
+          "height": 1.65,
+          "elevation": 0
+        },
+        "F3-stair-upper": {
+          "height": 1.65,
+          "elevation": 1.65
         }
       }
     },
     {
       "number": 4,
-      "source_hash": "59db733a7904f85c161c3576646ae3ccf4815003fe106335c336fe1f35b768d0",
+      "source_hash": "9832f33500320399ba4a23e42ca4d73c0ed9c3f594de45a1643d286502485fd2",
       "parameters": {
         "meters_per_unit": 0.01,
         "floor_height": 3.0,

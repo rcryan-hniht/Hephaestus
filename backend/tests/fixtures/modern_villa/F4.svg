@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1840" viewBox="0 0 1400 1840">
   <title>Modern Villa V2 / F4</title>
-  <desc>Synthetic stepped villa input. Three storeys, terraces, a recessed roof pavilion and a raised thin roof canopy. Component heights require explicit preset confirmation. Stair geometry and glazing are not inferred.</desc>
+  <desc>Synthetic stepped villa input. Three storeys, terraces, a recessed roof pavilion and a raised thin roof canopy. Internal stair flights and landings connect all four supplied floors. Component heights require explicit preset confirmation. Glazing is omitted.</desc>
   <rect width="1400" height="1840" fill="#fafafa" />
   <text x="140" y="62" fill="#666" font-family="Arial, sans-serif" font-size="20" text-anchor="start">HEPHAESTUS / MODERN VILLA V2 / SYNTHETIC INPUT</text>
   <text x="140" y="110" fill="#333" font-family="Arial, sans-serif" font-size="30" text-anchor="start">F4 / ROOF TERRACE / PAVILION / CANOPY</text>
@@ -23,7 +23,7 @@
       <polygon points="450.000,890.000 530.000,890.000 530.000,850.000 530.000,600.000 530.000,450.000 450.000,450.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
     </g>
     <g id="F4-interior-slab-2" class="Space Interior">
-      <polygon points="530.000,890.000 770.000,890.000 770.000,450.000 530.000,450.000 530.000,600.000 730.000,600.000 730.000,850.000 530.000,850.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
+      <polygon points="770.000,890.000 770.000,450.000 730.000,450.000 730.000,600.000 730.000,785.000 730.000,850.000 530.000,850.000 530.000,890.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
     </g>
     <g id="F4-terrace-slab-1" class="Space Outdoor_Terrace">
       <polygon points="200.000,1080.000 430.000,1080.000 430.000,910.000 430.000,430.000 430.000,220.000 200.000,220.000" fill="#f4f0e8" stroke="#dad5cb" stroke-width="1" />
@@ -62,21 +62,9 @@
       <polygon points="790.000,480.000 790.000,860.000 770.000,860.000 770.000,480.000" fill="#dce7e8" stroke="#40575d" stroke-width="1" />
     </g>
     <g class="Annotation" fill="none" stroke="#888">
-      <rect x="530" y="600" width="200" height="250" stroke-dasharray="6 4" />
-      <line x1="545" x2="630" y1="629" y2="629" />
-      <line x1="545" x2="630" y1="648" y2="648" />
-      <line x1="545" x2="630" y1="667" y2="667" />
-      <line x1="545" x2="630" y1="686" y2="686" />
-      <line x1="545" x2="630" y1="705" y2="705" />
-      <line x1="545" x2="630" y1="724" y2="724" />
-      <line x1="545" x2="630" y1="743" y2="743" />
-      <line x1="545" x2="630" y1="762" y2="762" />
-      <line x1="545" x2="630" y1="781" y2="781" />
-      <line x1="545" x2="630" y1="800" y2="800" />
-      <line x1="545" x2="630" y1="819" y2="819" />
       <rect x="370" y="370" width="480" height="600" stroke="#b8926a" stroke-width="3" stroke-dasharray="10 5" />
     </g>
-    <text x="682" y="733" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">UP</text>
+    <text x="682" y="420" fill="#666" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">STAIR VOID / BELOW</text>
     <text x="610" y="535" fill="#333" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">ROOF PAVILION</text>
     <text x="275" y="530" fill="#333" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">TERRACE</text>
     <text x="690" y="1035" fill="#333" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">TERRACE</text>
