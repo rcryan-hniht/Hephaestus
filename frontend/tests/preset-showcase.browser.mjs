@@ -4,6 +4,10 @@ import assert from 'node:assert/strict';
 const browser = await chromium.launch({ args: ['--enable-unsafe-swiftshader'] });
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.addInitScript(() => {
+    window.requestAnimationFrame = callback => setTimeout(() => callback(performance.now() * 5), 33);
+    window.cancelAnimationFrame = clearTimeout;
+  });
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4176');

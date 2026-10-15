@@ -5,7 +5,7 @@ const browser = await chromium.launch({ args: ['--enable-unsafe-swiftshader'] })
 try {
   const page = await browser.newPage({ viewport: { width: 1000, height: 800 }, reducedMotion: 'reduce' });
   await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4176');
-  const frames = await page.evaluate(async () => {
+  const { frames, departures } = await page.evaluate(async () => {
     const { SceneView } = await import('/scene.js');
     const { createPresetShowcase } = await import('/PresetShowcase.js');
     const host = document.createElement('div');
@@ -14,57 +14,64 @@ try {
     document.body.append(host);
     const [canvas, snapshot] = host.querySelectorAll('canvas');
     const view = new SceneView(canvas, { reducedMotion: true });
-    const motion = { matches: false };
+    const motion = { matches: false }, departures = [];
+    const setModel = view.setModel.bind(view);
+    view.setModel = model => {
+      if (view.model) departures.push({ progress: view.buildProgress, scales: view.meshes.map(m => m.scale.y) });
+      setModel(model);
+    };
     const showcase = createPresetShowcase({ view, canvas, snapshot, motion, onChange() {}, onError(error) { throw error; } });
-    while (!showcase.ready) await new Promise(resolve => setTimeout(resolve, 10));
+    const deadline = performance.now() + 10000;
+    while (!showcase.ready) {
+      if (performance.now() > deadline) throw new Error('Preset data did not load');
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
     const capture = () => {
       const offset = view.camera.position.clone().sub(view.controls.target);
-      return { name: showcase.name, mode: view.mode, scale: view.meshes.find(m => m.userData.type === 'wall').scale.y,
-        angle: Math.atan2(offset.x, offset.z) * 180 / Math.PI,
+      return { name: showcase.name, mode: view.mode, scales: view.meshes.map(m => m.scale.y), shadows: view.meshes.filter(m => m.castShadow).length, label: showcase.modeLabel,
+        angle: Math.atan2(offset.x, offset.z) * 180 / Math.PI, vertical: offset.y / offset.length(),
         incomingX: new DOMMatrixReadOnly(getComputedStyle(canvas).transform).m41,
         outgoingX: new DOMMatrixReadOnly(getComputedStyle(snapshot).transform).m41,
         incomingOpacity: Number(getComputedStyle(canvas).opacity), outgoingOpacity: Number(getComputedStyle(snapshot).opacity) };
     };
     const frames = [];
-    showcase.render(0, true); frames.push(capture());
-    showcase.render(1, true); frames.push(capture());
-    showcase.render(1.99, true); frames.push(capture());
-    showcase.render(.01, true); frames.push(capture());
-    showcase.render(3, true); frames.push(capture());
-    showcase.render(2.99, true); showcase.render(.01, true); frames.push(capture());
-    for (let i = 0; i < 3; i++) { showcase.render(9, true); frames.push(capture()); }
+    for (const delta of [0, 2, 1, 12, 12, 12, 1.5, 1.5, .5]) {
+      showcase.render(delta, true); frames.push(capture());
+    }
+    for (let i = 0; i < 3; i++) { showcase.render(42, true); frames.push(capture()); }
     showcase.render(20, false); frames.push(capture());
     motion.matches = true;
     showcase.render(20, true); frames.push(capture());
     showcase.dispose(); view.dispose(); host.remove();
-    return frames;
+    return { frames, departures };
   });
-  assert.ok(frames[0].scale <= .001, 'Each preset starts as a flat drawing');
-  assert.ok(frames[1].scale > .001 && frames[1].scale < 1, 'Blocks rise into 3D');
-  assert.ok(Math.abs(frames[0].angle + 27) < .01, 'Begin 27 degrees left of the front');
-  assert.ok(Math.abs(frames[1].angle - frames[0].angle - 6) < .01, 'Orbit six degrees per second');
-  assert.ok(Math.abs(frames[4].angle - 9) < .01, 'Rotation continues through mode changes');
-  assert.ok(Math.abs(frames[5].angle + 27) < .01, 'Next preset starts its own sweep');
-  assert.equal(frames[5].incomingX, 0, 'Incoming preset stays centered');
-  assert.equal(frames[5].outgoingX, 0, 'Outgoing preset stays centered');
-  assert.ok(frames[5].incomingOpacity > 0 && frames[5].incomingOpacity < 1 && frames[5].outgoingOpacity < 1, 'Presets fade without sliding');
-  assert.deepEqual(frames.slice(0, 6).map(f => f.mode), ['solid', 'solid', 'solid', 'edges', 'transparent', 'solid']);
-  assert.equal(frames[2].scale, 1, 'Construction completes during the first Solid phase');
-  assert.equal(frames[5].name, 'Terrace Villa', 'Switch at nine seconds, including the fade');
-  assert.ok(frames[5].scale <= .001, 'Construction restarts on every preset');
-  assert.deepEqual(frames.slice(6, 9).map(f => f.name), ['Portal Villa', 'Gable Villa', '3F villa']);
-  assert.deepEqual(frames[9], frames[8], 'Leaving Manifesto freezes the cycle');
-  assert.equal(frames[10].scale, 1, 'Reduced motion shows a complete model');
-  assert.equal(frames[10].name, frames[9].name);
+  const flat = frame => frame.scales.every(scale => scale <= .001);
+  const full = frame => frame.scales.every(scale => scale === 1);
+  assert.ok(flat(frames[0]) && frames[0].vertical > .99, 'Begin with an overhead drawing');
+  assert.equal(frames[0].shadows, 0, 'Collapsed blocks do not leave ghost shadows on the drawing');
+  assert.ok(new Set(frames[1].scales).size > 1 && !full(frames[1]) && !flat(frames[1]), 'Blocks rise individually');
+  assert.deepEqual(frames.slice(2, 5).map(f => f.mode), ['solid', 'edges', 'transparent']);
+  assert.ok(frames.slice(2, 6).every(full), 'All sides are shown with complete geometry');
+  assert.ok(Math.abs(frames[3].angle - 93) < .01 && Math.abs(frames[4].angle + 147) < .01 && Math.abs(frames[5].angle + 27) < .01, 'Complete a full 360-degree orbit');
+  assert.ok(new Set(frames[6].scales).size > 1 && !full(frames[6]) && !flat(frames[6]), 'Blocks sink individually before switching');
+  assert.ok(departures.every(d => d.progress === 0 && d.scales.every(scale => scale <= .001)), 'Outgoing model is completely flat before fading');
+  assert.equal(frames[7].name, 'Terrace Villa');
+  assert.ok(flat(frames[7]) && flat(frames[8]) && frames[8].vertical > .99, 'Incoming drawing stays flat throughout the fade');
+  assert.equal(frames[8].incomingX, 0); assert.equal(frames[8].outgoingX, 0);
+  assert.ok(frames[8].incomingOpacity > 0 && frames[8].incomingOpacity < 1 && frames[8].outgoingOpacity < 1, 'Drawing-to-drawing crossfade has no swipe');
+  assert.deepEqual(frames.slice(9, 12).map(f => f.name), ['Portal Villa', 'Gable Villa', '3F villa']);
+  assert.deepEqual(frames[12], frames[11], 'Leaving Manifesto freezes the cycle');
+  assert.ok(full(frames[13]) && frames[13].name === frames[12].name, 'Reduced motion keeps a complete static model');
   const slow = await browser.newPage({ reducedMotion: 'no-preference' });
   await slow.addInitScript(() => {
-    window.requestAnimationFrame = callback => setTimeout(() => callback(performance.now()), 100);
+    // Sparse frames with an accelerated wall clock keep the 42-second regression quick.
+    window.requestAnimationFrame = callback => setTimeout(() => callback(performance.now() * 5), 100);
     window.cancelAnimationFrame = clearTimeout;
   });
   await slow.goto(process.env.TEST_URL || 'http://127.0.0.1:4176');
   await slow.evaluate(() => window.scrollTo({ top: innerHeight, behavior: 'instant' }));
   await slow.waitForFunction(() => document.getElementById('visual-label').textContent.includes('3F VILLA'));
-  await slow.waitForFunction(() => document.getElementById('visual-label').textContent.includes('TERRACE VILLA'), null, { timeout: 11000 });
+  await slow.waitForFunction(() => document.getElementById('visual-label').textContent.includes('TERRACE VILLA'), null, { timeout: 12000 });
   await slow.close();
-  console.log('PASS: nine-second preset cycles, 3s Solid/Wireframe/Transparent, repeated construction and reduced motion');
+  console.log('PASS: full orbit, individual rise/sink, drawing-to-drawing fade, preset loop, wall-clock timing and reduced motion');
 } finally { await browser.close(); }

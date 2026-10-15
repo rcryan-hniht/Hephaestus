@@ -343,21 +343,23 @@ export class SceneView {
     });
     this.onSelect(this.model?.components.find(c => c.id === id) || null);
   }
-  render({ progress = 1, active = false, orbit = false, delta = 0 } = {}) {
-    if (this.buildProgress !== progress) {
-      this.buildProgress = progress;
+  render({ progress = 1, stagger = false, active = false, orbit = false, delta = 0 } = {}) {
+    if (this.buildProgress !== progress || this.buildStagger !== stagger) {
+      this.buildProgress = progress; this.buildStagger = stagger;
       const delays = { column: .08, wall: .18, slab: .42, window: .62, roof: .82 };
-      this.meshes.forEach(mesh => {
-        const start = delays[mesh.userData.type] || 0;
-        const rise = THREE.MathUtils.clamp((progress - start) / (1 - start), .001, 1);
+      this.meshes.forEach((mesh, index) => {
+        const start = stagger ? .6 * index / Math.max(1, this.meshes.length - 1) : delays[mesh.userData.type] || 0;
+        const rise = THREE.MathUtils.clamp((progress - start) / (stagger ? .4 : 1 - start), .001, 1);
+        const reveal = stagger ? (rise <= .001 ? 0 : rise) : progress;
         mesh.scale.y = rise;
         mesh.position.y = mesh.userData.backendGeometry ? 0 : mesh.userData.elevation * rise;
         const edge = mesh.getObjectByName('edges');
-        if (edge) edge.material.opacity = 0.28 * Math.min(1, progress * 4);
+        if (edge) edge.material.opacity = 0.28 * Math.min(1, reveal * 4);
+        mesh.castShadow = !mesh.userData.selectionOnly && (!stagger || reveal > 0);
         if (mesh.userData.selectionOnly) return;
         const baseOpacity = this.mode === 'transparent' ? .22 : mesh.userData.type === 'window' ? .5 : 1;
-        mesh.material.opacity = baseOpacity * Math.min(1, progress * 5);
-        mesh.material.transparent = progress < 1 || this.mode === 'transparent' || mesh.userData.type === 'window';
+        mesh.material.opacity = baseOpacity * Math.min(1, reveal * 5);
+        mesh.material.transparent = reveal < 1 || this.mode === 'transparent' || mesh.userData.type === 'window';
       });
       this.needsRender = true; this.renderer.shadowMap.needsUpdate = true;
     }

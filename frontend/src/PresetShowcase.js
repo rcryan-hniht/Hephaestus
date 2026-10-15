@@ -1,5 +1,13 @@
+export function presetState(seconds) {
+  const progress = Math.max(0, Math.min(1, (seconds - 1) / 2, (42 - seconds) / 3));
+  const mode = seconds < 15 ? 'solid' : seconds < 27 ? 'edges' : 'transparent';
+  const label = seconds < 1 ? 'Drawing' : seconds < 3 ? 'Building' : seconds >= 39 ? 'Returning to drawing'
+    : { solid: 'Solid', edges: 'Wireframe', transparent: 'Transparent' }[mode];
+  return { progress, tilt: progress, mode, label, rotation: Math.max(0, Math.min(36, seconds - 3)) * 10 };
+}
+
 export function createPresetShowcase({ view, canvas, snapshot, motion, onChange, onError }) {
-  let models = [], index = 0, elapsed = 0, transition = null, disposed = false;
+  let models = [], index = 0, elapsed = 0, transition = null, disposed = false, label = 'Drawing';
   const context = snapshot.getContext('2d');
   function finish() {
     transition = null; snapshot.hidden = true;
@@ -7,15 +15,21 @@ export function createPresetShowcase({ view, canvas, snapshot, motion, onChange,
   }
   function renderModel() {
     if (!models.length) return;
-    const mode = motion.matches ? 'solid' : ['solid', 'edges', 'transparent'][Math.min(2, Math.floor(elapsed / 3))];
-    if (view.mode !== mode) { view.setMode(mode); onChange(); }
+    const state = presetState(elapsed), mode = motion.matches ? 'solid' : state.mode;
+    const nextLabel = motion.matches ? 'Solid' : state.label;
+    if (view.mode !== mode || label !== nextLabel) {
+      if (view.mode !== mode) view.setMode(mode);
+      label = nextLabel; onChange();
+    }
     if (!motion.matches) {
       const offset = view.homePose.camera.clone().sub(view.homePose.target);
-      const angle = (-27 + elapsed * 6) * Math.PI / 180;
+      const angle = (-27 + state.rotation) * Math.PI / 180;
       offset.applyAxisAngle(view.camera.up, angle - Math.atan2(offset.x, offset.z));
+      const top = offset.clone().set(0, offset.length(), offset.length() * .03);
+      offset.lerpVectors(top, offset.clone(), state.tilt * state.tilt * (3 - 2 * state.tilt));
       view.camera.position.copy(view.homePose.target).add(offset); view.controls.update();
     }
-    view.render({ progress: motion.matches ? 1 : Math.min(1, elapsed / 2.2) });
+    view.render({ progress: motion.matches ? 1 : state.progress, stagger: true });
   }
   function select(next) {
     if (!models.length || next === index) return;
@@ -40,19 +54,19 @@ export function createPresetShowcase({ view, canvas, snapshot, motion, onChange,
   return {
     get ready() { return models.length > 0; },
     get name() { return models[index]?.name || 'Loading villas'; },
-    get modeLabel() { return { solid: 'Solid', edges: 'Wireframe', transparent: 'Transparent' }[view.mode]; },
+    get modeLabel() { return label; },
     render(delta, active) {
       if (motion.matches && transition !== null) finish();
       if (active && models.length && !motion.matches) {
         elapsed += delta;
-        if (elapsed >= 9) {
-          const remaining = elapsed % 9;
-          select((index + Math.floor(elapsed / 9)) % models.length);
+        if (elapsed >= 42) {
+          const remaining = elapsed % 42;
+          select((index + Math.floor(elapsed / 42)) % models.length);
           elapsed = remaining;
         }
       }
       if (active && transition !== null) {
-        transition = Math.min(1, transition + delta / .85);
+        transition = Math.min(1, elapsed);
         const eased = 1 - (1 - transition) ** 3;
         snapshot.style.opacity = String(1 - eased);
         canvas.style.opacity = String(eased);
