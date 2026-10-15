@@ -43,8 +43,7 @@ try {
   await canvas.waitFor({ state: 'visible' });
   assert.equal(await canvas.isVisible(), true, 'Landing 3D canvas should be visible in Phase 2');
 
-  // Wait for automatic 3D extrusion to progress
-  await page.waitForTimeout(1800);
+  await page.waitForFunction(() => document.querySelectorAll('#preset-controls [data-preset]').length === 4);
 
   // 4. Test workspace entry via "Upload your drawing" or "Explore a demo"
   await page.locator('#next-chapter').click(); // to works

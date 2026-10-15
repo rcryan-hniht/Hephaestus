@@ -77,6 +77,13 @@ a { color: inherit; text-decoration: none; }
 .visual-topline { position: absolute; left: 14px; top: 14px; right: 14px; z-index: 3; display: flex; justify-content: space-between; font: 9px var(--mono); color: #3e433a; pointer-events: none; }
 .visual-frame[data-photo="true"] .visual-topline { top: auto; bottom: 18px; color: #fff; text-shadow: 0 1px 5px #0008; }
 .visual-viewport { position: absolute; inset: 0; }
+#preset-display, #preset-snapshot { position: absolute; inset: 0; width: 100%; height: 100%; }
+#preset-snapshot { pointer-events: none; }
+.preset-controls { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); z-index: 4; display: flex; background: #fafafa; border: 1px solid var(--line); border-radius: 6px; }
+.preset-buttons { display: flex; }
+.preset-controls button { min-width: 44px; min-height: 44px; padding: 0 10px; background: none; border: 0; font: 10px var(--mono); color: var(--muted); border-radius: 4px; }
+.preset-controls button[aria-pressed="true"] { color: var(--accent); box-shadow: inset 0 -2px var(--accent); }
+.preset-controls button:hover { color: var(--text); background: #00000008; }
 canvas { display: block; width: 100%; height: 100%; }
 .visual-viewport canvas { touch-action: pan-y; }
 .visual-viewport canvas.is-interactive { touch-action: none; }

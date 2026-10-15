@@ -1,6 +1,7 @@
 import './style.css';
 import { SceneView } from './scene.js';
-import { projects, sampleModel, phaseAt } from './model.js';
+import { phaseAt } from './model.js';
+import { createPresetShowcase } from './PresetShowcase.js';
 import { createWorkspace } from './workspace.js';
 import { createAntigravity } from './Antigravity.js';
 import { createMaskedHeading } from './MaskedHeading.js';
@@ -16,10 +17,10 @@ const listen = (element, name, fn, opts = {}) => element.addEventListener(name, 
 const frame = $('visual-frame'), canvas = $('landing-canvas'), copies = [...document.querySelectorAll('[data-copy]')];
 const particlesCanvas = $('antigravity-canvas');
 let antigravity, driftWall, brandSplit;
-let scene, sceneFailed = false, raf, previous = 0, currentProject = 0;
+let scene, showcase, sceneFailed = false, raf, previous = 0;
 let workspaceOpen = false, returnFocus, savedScroll = 0, chapter = 0, height = innerHeight, dirty = true;
 let lastWidth = 0, lastHeight = 0, lastOffset = scrollY;
-let phase2Progress = 0, wheelLocked = false, destination = 0, loopProgress = null, lastWheel = -Infinity;
+let wheelLocked = false, destination = 0, loopProgress = null, lastWheel = -Infinity;
 const photo = $('hero-photograph');
 const maskedHeadings = [...document.querySelectorAll('h1 > span')].map(root => createMaskedHeading(root, { src: photo.getAttribute('src'), brightness: .65 }));
 
@@ -62,7 +63,6 @@ function goChapter(index) {
 }
 listen($('next-chapter'), 'click', () => goChapter(chapter === 2 ? 0 : chapter + 1));
 listen($('explore-demo'), 'click', () => openWorkspace(0));
-const projectModels = projects.map((_, i) => sampleModel(i));
 cubicasaSamples.forEach((sample, index) => {
   const item = document.createElement('div'); item.className = 'work-item'; item.dataset.active = String(index === 0);
   const image = new Image(); image.src = sample.image; image.alt = ''; image.loading = 'lazy';
@@ -86,20 +86,23 @@ function prepareWall() {
   driftWall = createDriftWall($('drift-wall'), { items, onSelect: openDatasetSample });
 }
 function showFallback() {
-  scene?.dispose(); scene = null; sceneFailed = true;
+  showcase?.dispose(); showcase = null;
+  scene?.dispose(); scene = null; sceneFailed = true; dirty = true;
   $('landing-error').textContent = '3D viewing is unavailable on this device. You can still upload and preview 2D drawings.';
   canvas.hidden = true;
 }
 function prepareScene() {
   if (scene || sceneFailed) return;
-  try { scene = new SceneView(canvas, { reducedMotion: motion.matches }); scene.setModel(projectModels[currentProject]);
-    scene.controls.enableZoom = false; scene.controls.enablePan = false; canvas.style.touchAction = 'pan-y'; }
+  try { scene = new SceneView(canvas, { reducedMotion: motion.matches });
+    scene.controls.enableZoom = false; scene.controls.enablePan = false; canvas.style.touchAction = 'pan-y';
+    showcase = createPresetShowcase({ view: scene, canvas, snapshot: $('preset-snapshot'), controls: $('preset-controls'), motion,
+      onChange() { dirty = true; }, onError: showFallback }); }
   catch { showFallback(); }
 }
 listen(canvas, 'webglcontextlost', e => { e.preventDefault(); showFallback(); dirty = true; });
 listen(photo, 'error', () => { photo.hidden = true; $('reference-fallback').hidden = false; });
 if (photo.complete && !photo.naturalWidth) { photo.hidden = true; $('reference-fallback').hidden = false; }
-listen($('open-preview'), 'click', () => openWorkspace(currentProject));
+listen($('open-preview'), 'click', () => openWorkspace(0));
 listen(window, 'scroll', () => { dirty = true; });
 listen(window, 'wheel', e => {
   if (workspaceOpen || e.ctrlKey || !e.deltaY || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
@@ -204,17 +207,21 @@ function layout() {
   frame.dataset.photo = String(heroWeight >= .5);
   frame.dataset.fullBleed = String(!mobile && heroWeight >= .5 && !photo.hidden);
   if (modelWeight > 0 && worksWeight < 1) { canvas.hidden = false; prepareScene(); }
-  canvas.hidden = !scene || modelWeight <= 0 || worksWeight === 1;
-  canvas.style.opacity = String(1 - worksWeight);
+  $('preset-display').hidden = !scene || modelWeight <= 0 || worksWeight === 1;
+  $('preset-display').style.opacity = String(1 - worksWeight);
   $('landing-error').hidden = !sceneFailed || modelWeight <= 0 || worksWeight === 1;
   $('reference-fallback').style.opacity = String(heroWeight);
-  $('visual-label').textContent = heroWeight >= .5 ? 'ARCHITECTURE / A NEW PERSPECTIVE' : chapter === 1 ? 'CONSTRUCTION PROCESS DEMO' : `DEMO MODEL / ${projects[currentProject].name.toUpperCase()}`;
+  $('visual-label').textContent = heroWeight >= .5 ? 'ARCHITECTURE / A NEW PERSPECTIVE' : `PRESET SHOWCASE / ${showcase?.name.toUpperCase() || 'LOADING VILLAS'}`;
   if (worksWeight >= .5) $('visual-label').textContent = 'CUBICASA5K / SOURCE DRAWINGS';
   if (worksWeight > 0) prepareWall();
   $('drift-wall').hidden = worksWeight <= 0; $('drift-wall').style.opacity = String(worksWeight);
   const interactive = chapter === 2 && mix === 0 && !!scene && !driftWall;
   $('open-preview').hidden = !interactive;
   canvas.tabIndex = interactive ? 0 : -1; canvas.classList.toggle('is-interactive', interactive);
+  const presetControls = $('preset-controls');
+  if ((chapter !== 1 || mix !== 0) && presetControls.contains(document.activeElement)) $('next-chapter').focus({ preventScroll: true });
+  presetControls.hidden = chapter !== 1 || !showcase?.ready;
+  presetControls.inert = chapter !== 1 || mix !== 0;
   const works = $('work-list');
   if (chapter !== 2 && works.contains(document.activeElement)) {
     $('next-chapter')?.focus({ preventScroll: true });
@@ -236,10 +243,9 @@ function layout() {
   annotation.style.opacity = String(heroWeight); annotation.style.top = `${Math.max(top, heroCopyY - 42)}px`;
   if (from === 2 && mix > 0) scene?.morphHome(mix);
   else if (scene?.returnPose) { scene.morphHome(from === 2 ? 0 : 1); scene.returnPose = null; }
-  const growth = from === 1 ? phase2Progress : next === 1 ? Math.max(0, 1 - mix) : (from === 0 ? 0 : 1);
-  return { progress: motion.matches ? 1 : growth, active: interactive, orbit: !motion.matches && interactive && !scene?.interacted, visible: modelWeight > 0 && worksWeight < 1 };
+  return { showcaseActive: from === 1 && mix === 0, visible: modelWeight > 0 && worksWeight < 1 };
 }
-let renderState = { progress: 1, active: false };
+let renderState = { visible: false, showcaseActive: false };
 function animate(time) {
   const delta = Math.min((time - (previous || time)) / 1000, .05); previous = time;
   maskedHeadings.forEach(heading => heading.render(delta));
@@ -251,26 +257,10 @@ function animate(time) {
       }
     }
     if (wheelLocked && loopProgress === null && Math.abs(scrollY - destination * height) < 1) wheelLocked = false;
-    if (chapter === 1) {
-      if (phase2Progress < 1) {
-        phase2Progress = Math.min(1, phase2Progress + delta * 0.65);
-        dirty = true;
-      }
-    } else if (chapter === 0) {
-      if (phase2Progress > 0) {
-        phase2Progress = 0;
-        dirty = true;
-      }
-    } else {
-      if (phase2Progress < 1) {
-        phase2Progress = 1;
-        dirty = true;
-      }
-    }
     antigravity?.render(delta, motion.matches);
     if (dirty) { renderState = layout(); dirty = false; }
     driftWall?.render(delta);
-    if (!document.hidden && renderState.visible) scene?.render({ ...renderState, delta });
+    if (!document.hidden && renderState.visible) showcase?.render(delta, renderState.showcaseActive);
   } else workspace.render(delta);
   raf = requestAnimationFrame(animate);
 }
@@ -282,6 +272,7 @@ function dispose() {
   driftWall?.dispose();
   maskedHeadings.forEach(heading => heading.dispose());
   antigravity?.dispose();
+  showcase?.dispose();
   scene?.dispose();
   workspace.dispose();
 }
