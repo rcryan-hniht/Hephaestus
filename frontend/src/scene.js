@@ -303,7 +303,7 @@ export class SceneView {
   }
 
   setMode(mode) {
-    this.mode = mode; this.needsRender = true;
+    this.mode = mode; this.needsRender = true; this.renderer.shadowMap.needsUpdate = true;
     this.meshes.forEach(mesh => {
       if (mesh.userData.selectionOnly) return;
       mesh.material.wireframe = mode === 'edges';
