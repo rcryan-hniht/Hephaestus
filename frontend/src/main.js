@@ -174,7 +174,9 @@ function layout() {
   const photoH = Math.max(100, bottom - photoY);
   const worksY = top + copyHeights[2] + (mobile ? 16 : 24);
   const worksListH = $('work-list').offsetHeight;
-  const worksFrameH = mobile ? Math.max(100, bottom - worksY - worksListH - actionHeight - 34) : Math.max(compact ? 70 : 110, bottom - worksY);
+  const worksGap = mobile ? 16 : 32;
+  const worksContentH = actionHeight + worksGap + worksListH;
+  const worksFrameH = mobile ? Math.max(100, bottom - worksY - worksContentH - 12) : Math.max(compact ? 70 : 110, bottom - worksY);
   const visualPositions = mobile ? [
     { x: margin, y: photoY, w: width * .88, h: photoH },
     { x: margin, y: manifestoActionY + 18, w: width * .88, h: Math.max(100, bottom - manifestoActionY - 18) },
@@ -231,14 +233,13 @@ function layout() {
   works.style.visibility = worksWeight > 0 ? 'visible' : 'hidden';
   works.style.opacity = String(worksWeight);
   works.inert = chapter !== 2; works.setAttribute('aria-hidden', String(works.inert));
-  const worksContentH = worksListH + actionHeight + 20;
-  const worksTop = mobile ? worksY + worksFrameH + 12 : Math.max(top, Math.min(bottom - worksContentH, ((compact ? top : worksY) + bottom - worksContentH) / 2));
-  works.style.top = `${worksTop}px`;
+  const actionsTop = mobile ? worksY + worksFrameH + 12 : Math.max(top, Math.min(worksY, bottom - worksContentH));
+  works.style.top = `${actionsTop + actionHeight + worksGap}px`;
   works.style.transform = `translateY(${motion.matches ? 0 : (1 - worksWeight) * 24}px)`;
   action.style.visibility = worksWeight > 0 ? 'visible' : 'hidden';
   action.style.opacity = String(worksWeight);
   action.inert = chapter !== 2; action.setAttribute('aria-hidden', String(action.inert));
-  action.style.transform = `translate(${mobile ? margin : works.offsetLeft}px,${worksTop + worksListH + (mobile ? 10 : 20) + (motion.matches ? 0 : (1 - worksWeight) * 24)}px)`;
+  action.style.transform = `translate(${mobile ? margin : works.offsetLeft}px,${actionsTop + (motion.matches ? 0 : (1 - worksWeight) * 24)}px)`;
   if (focusAction && chapter === 2 && mix === 0) {
     action.querySelector('[data-upload]').focus({ preventScroll: true }); focusAction = false;
   }

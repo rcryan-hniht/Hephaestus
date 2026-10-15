@@ -59,9 +59,14 @@ try {
     const action = document.getElementById('landing-action').getBoundingClientRect();
     const frame = document.getElementById('visual-frame').getBoundingClientRect();
     const works = document.getElementById('work-list').getBoundingClientRect();
-    return { besideCanvas: action.left > frame.right, belowWorks: action.top > works.bottom, fits: action.right <= innerWidth && action.bottom < innerHeight };
+    return { besideCanvas: action.left > frame.right, aboveWorks: action.bottom < works.top, fits: action.right <= innerWidth && works.bottom < innerHeight };
   });
-  assert.deepEqual(placement, { besideCanvas: true, belowWorks: true, fits: true });
+  assert.deepEqual(placement, { besideCanvas: true, aboveWorks: true, fits: true });
+  await page.locator('#landing-action [data-upload]').focus();
+  await page.keyboard.press('Tab');
+  assert.equal(await page.locator('#explore-demo').evaluate(el => el === document.activeElement), true);
+  await page.keyboard.press('Tab');
+  assert.equal(await page.locator('#work-list .work-item button').first().evaluate(el => el === document.activeElement), true, 'Keyboard order must follow the actions above the works');
   await page.screenshot({ path: '/tmp/hephaestus-final-actions-desktop.png' });
 
   const demoButton = page.locator('#explore-demo');
@@ -93,8 +98,10 @@ try {
     await page.waitForFunction(() => document.body.dataset.chapter === '2' && Math.abs(scrollY - innerHeight * 2) < 1);
     const mobileAction = await page.locator('#landing-action').boundingBox();
     const mobileCanvas = await page.locator('#visual-frame').boundingBox();
+    const mobileWorks = await page.locator('#work-list').boundingBox();
     assert.ok(mobileAction.y > mobileCanvas.y + mobileCanvas.height);
     assert.ok(mobileAction.y + mobileAction.height < 844 && mobileAction.x + mobileAction.width <= width);
+    assert.ok(mobileAction.y + mobileAction.height < mobileWorks.y && mobileWorks.y + mobileWorks.height < 844);
     await page.screenshot({ path: `/tmp/hephaestus-final-actions-${width}.png` });
     await page.locator('#explore-demo').focus();
     await page.keyboard.press('Home');
