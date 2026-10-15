@@ -294,7 +294,7 @@ export function createWorkspace({ reducedMotion, onClose }) {
     $('project-name').textContent = model.name;
     if (updateSource) $('file-name').textContent = model.sample ? `${model.name} / Sample design plan` : model.name;
     $('model-notes').textContent = model.warnings.join(' ');
-    $('component-select').replaceChildren(new Option('Select on model or drawing', ''), ...model.components.map((c, i) => new Option(`${typeNames[c.type]} ${i + 1} · Floor ${c.source_floor ?? c.floor + 1}`, c.id)));
+    $('component-select').replaceChildren(new Option('View full architecture', ''), ...model.components.map((c, i) => new Option(`${typeNames[c.type]} ${i + 1} · Floor ${c.source_floor ?? c.floor + 1}`, c.id)));
     $('export-model').disabled = !hasView; $('export-scene').hidden = !model.backend;
     if (updateSource) { previewTracksModel = true; sourceOutlines = false; updatePlanForFloor(); }
     else if (sourceOutlines) drawSource();
@@ -661,6 +661,14 @@ export function createWorkspace({ reducedMotion, onClose }) {
     $('measurement').textContent = view.measuring ? 'Select two points on the model.' : 'Unit: m';
   });
   listen($('component-select'), 'change', e => {
+    if (!e.target.value) {
+      $('floor-select').value = 'all';
+      root.querySelectorAll('[data-type]').forEach(c => c.checked = true);
+      visibility();
+      $('section').value = 100; $('section-value').textContent = '100%'; view?.setSection(100);
+      view?.setCamera('perspective');
+      root.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === 'perspective')));
+    }
     const c = model?.components.find(c => c.id === e.target.value);
     if (c && view) {
       $('floor-select').value = String(c.floor);
