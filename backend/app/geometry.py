@@ -105,6 +105,94 @@ def roof_mesh(shape, direction, eave, rise, thickness, kind):
     return {"positions": positions, "indices": indices}
 
 
+def roof_bound_wall_mesh(shape, bottom, parts, roof, direction, eave, rise, thickness, kind):
+    projections = [x * direction[0] + z * direction[1] for x, z in roof.exterior.coords]
+    start, end = min(projections), max(projections)
+    if end - start < 1e-8:
+        raise ValueError("Referenced roof has no usable pitch span")
+    if not roof.buffer(1e-8).covers(shape):
+        raise ValueError("Roof-bound wall extends outside its referenced roof footprint")
+    ridge = (start + end) / 2
+    bands = [(start, end)] if kind == "shed" else [(start, ridge), (ridge, end)]
+
+    def underside(x, z):
+        progress = (x * direction[0] + z * direction[1] - start) / (end - start)
+        return eave + rise * (progress if kind == "shed" else 1 - abs(2 * progress - 1)) - thickness
+
+    for band_start, band_end in bands:
+        section = clip_band(shape, direction, band_start, band_end)
+        polygons = [section] if section.geom_type == "Polygon" else list(section.geoms)
+        if any(
+            underside(x, z) <= bottom + 1e-8
+            for polygon in polygons
+            if not polygon.is_empty
+            for x, z in polygon.exterior.coords
+        ):
+            raise ValueError("Referenced roof underside is at or below the wall base")
+
+    mesh = {"positions": [], "indices": []}
+
+    def triangle(a, b, c):
+        index = len(mesh["positions"]) // 3
+        mesh["positions"].extend((*a, *b, *c))
+        mesh["indices"].extend((index, index + 1, index + 2))
+
+    for i, (lo, hi, part) in enumerate(parts):
+        if part.is_empty:
+            continue
+        below = parts[i - 1][2] if i else Polygon()
+        above = parts[i + 1][2] if i + 1 < len(parts) else Polygon()
+        for band_start, band_end in bands:
+            low_height = underside(*(v * band_start for v in direction))
+            high_height = underside(*(v * band_end for v in direction))
+            cuts = [band_start, band_end]
+            for level in (lo, hi):
+                if min(low_height, high_height) < level < max(low_height, high_height):
+                    cuts.append(
+                        band_start
+                        + (band_end - band_start)
+                        * (level - low_height)
+                        / (high_height - low_height)
+                    )
+            cuts.sort()
+            for left, right in itertools.pairwise(cuts):
+                middle = underside(*(v * (left + right) / 2 for v in direction))
+                if middle <= lo:
+                    continue
+                sloped = middle < hi
+                clipped = clip_band(part, direction, left, right)
+                polygons = [clipped] if clipped.geom_type == "Polygon" else list(clipped.geoms)
+                for polygon in polygons:
+                    if polygon.is_empty or polygon.area < 1e-10:
+                        continue
+                    polygon = orient(polygon, sign=1)
+                    for cap, level, upper in (
+                        (polygon.difference(below), lo, False),
+                        (polygon if sloped else polygon.difference(above), hi, True),
+                    ):
+                        for tri in constrained_delaunay_triangles(cap).geoms:
+                            a, b, c = list(orient(tri, sign=1).exterior.coords)[:3]
+                            if upper:
+                                b, c = c, b
+                            triangle(
+                                (a[0], underside(*a) if upper and sloped else level, a[1]),
+                                (b[0], underside(*b) if upper and sloped else level, b[1]),
+                                (c[0], underside(*c) if upper and sloped else level, c[1]),
+                            )
+                    for ring in [polygon.exterior, *polygon.interiors]:
+                        for a, b in itertools.pairwise(ring.coords):
+                            if (
+                                part.boundary.distance(Point((a[0] + b[0]) / 2, (a[1] + b[1]) / 2))
+                                > 1e-8
+                            ):
+                                continue
+                            top_a = underside(*a) if sloped else hi
+                            top_b = underside(*b) if sloped else hi
+                            triangle((a[0], lo, a[1]), (a[0], top_a, a[1]), (b[0], top_b, b[1]))
+                            triangle((a[0], lo, a[1]), (b[0], top_b, b[1]), (b[0], lo, b[1]))
+    return mesh
+
+
 def stair_mesh(shape, direction, bottom, rise, steps):
     projections = [x * direction[0] + z * direction[1] for x, z in shape.exterior.coords]
     start, end = min(projections), max(projections)
@@ -212,24 +300,89 @@ def build_scene(
                 for p, b, t, i in openings
                 if c.type == "wall" and shape.intersection(p).area > 1e-9
             ]
+            mesh_top = top
+            if c.roof_id:
+                roof_confirmed = component_parameters.get(c.roof_id, {})
+                mesh_top = max(
+                    top,
+                    elevations[c.roof_id][1]
+                    - roof_confirmed.get("roof_thickness", parameters.get("roof_thickness")),
+                )
             levels = sorted(
-                {bottom, top, *(v for _, b, t, _ in relevant for v in (b, t) if bottom < v < top)}
+                {
+                    bottom,
+                    mesh_top,
+                    *(v for _, b, t, _ in relevant for v in (b, t) if bottom < v < mesh_top),
+                }
             )
             parts = []
             for lo, hi in itertools.pairwise(levels):
                 cuts = [p for p, b, t, _ in relevant if b < hi and t > lo]
                 part = shape.difference(unary_union(cuts)) if cuts else shape
                 parts.append((lo, hi, part))
-            for i, (lo, hi, part) in enumerate(parts):
-                if part.is_empty:
-                    continue
-                below = parts[i - 1][2] if i else Polygon()
-                above = parts[i + 1][2] if i + 1 < len(parts) else Polygon()
-                # Only exposed lintels/sills get caps; overlapping internal faces cause artifacts.
-                segment = extrude(part, lo, hi, part.difference(below), part.difference(above))
-                offset = len(mesh["positions"]) // 3
-                mesh["positions"].extend(segment["positions"])
-                mesh["indices"].extend(i + offset for i in segment["indices"])
+            if c.roof_id:
+                roof_component = next(r for r in proposal.components if r.id == c.roof_id)
+                roof_confirmed = component_parameters.get(c.roof_id, {})
+                roof_bottom, roof_top = elevations[c.roof_id]
+                dx, dy = roof_component.direction
+                direction = (dx / math.hypot(dx, dy), -dy / math.hypot(dx, dy))
+                roof_thickness = roof_confirmed.get(
+                    "roof_thickness", parameters.get("roof_thickness")
+                )
+                roof_shape = shapes[c.roof_id]
+                mesh = roof_bound_wall_mesh(
+                    shape,
+                    bottom,
+                    parts,
+                    roof_shape,
+                    direction,
+                    roof_bottom,
+                    roof_top - roof_bottom,
+                    roof_thickness,
+                    roof_component.roof_kind,
+                )
+                if relevant:
+                    projections = [
+                        x * direction[0] + z * direction[1] for x, z in roof_shape.exterior.coords
+                    ]
+                    start, end = min(projections), max(projections)
+                    for opening_shape, _, opening_top, opening_id in relevant:
+                        overlap = shape.intersection(opening_shape)
+                        polygons = (
+                            [overlap] if overlap.geom_type == "Polygon" else list(overlap.geoms)
+                        )
+                        for polygon in polygons:
+                            if polygon.is_empty or polygon.area < 1e-10:
+                                continue
+                            for x, z in polygon.exterior.coords:
+                                progress = (x * direction[0] + z * direction[1] - start) / (
+                                    end - start
+                                )
+                                roof_height = (
+                                    roof_bottom
+                                    + (roof_top - roof_bottom)
+                                    * (
+                                        progress
+                                        if roof_component.roof_kind == "shed"
+                                        else 1 - abs(2 * progress - 1)
+                                    )
+                                    - roof_thickness
+                                )
+                                if opening_top > roof_height + 1e-8:
+                                    raise ValueError(
+                                        f"Opening {opening_id} exceeds referenced roof underside"
+                                    )
+            else:
+                for i, (lo, hi, part) in enumerate(parts):
+                    if part.is_empty:
+                        continue
+                    below = parts[i - 1][2] if i else Polygon()
+                    above = parts[i + 1][2] if i + 1 < len(parts) else Polygon()
+                    # Only exposed lintels/sills get caps; overlapping internal faces cause artifacts.
+                    segment = extrude(part, lo, hi, part.difference(below), part.difference(above))
+                    offset = len(mesh["positions"]) // 3
+                    mesh["positions"].extend(segment["positions"])
+                    mesh["indices"].extend(i + offset for i in segment["indices"])
         bounds = shape.bounds
         result.append(
             {
@@ -241,7 +394,9 @@ def build_scene(
                     "basis": "axis_aligned_bounds",
                     "width": bounds[2] - bounds[0],
                     "depth": bounds[3] - bounds[1],
-                    "height": top - bottom + (thickness or 0),
+                    "height": (max(mesh["positions"][1::3]) - bottom)
+                    if c.roof_id
+                    else top - bottom + (thickness or 0),
                     "footprint_edge_lengths": [
                         math.dist(a, b) for a, b in itertools.pairwise(list(shape.exterior.coords))
                     ],

@@ -312,7 +312,7 @@ that vector into source coordinates. Roofs also require exactly one `Gable` or
 `Shed` class; stairs may supply an integer `data-steps` from 2 to 128:
 
 ```xml
-<g class="Roof Gable" data-direction="1,0">
+<g id="main-roof" class="Roof Gable" data-direction="1,0">
   <rect x="0" y="0" width="1000" height="800"/>
 </g>
 <g class="Stair" data-direction="0,1" data-steps="18">
@@ -330,6 +330,13 @@ The drawing presets expose their suggested component values for editing and
 explicit review before confirmation. This implementation supports straight
 stair flights, not turning or spiral stairs. The local PNG engine does not
 automatically recognize these new roof/stair classes.
+
+A wall may explicitly reference a roof with `data-roof-ref="main-roof"`. The
+reference must identify one roof in the same floor; ambiguous or missing IDs
+are rejected. Its validated footprint must stay beneath that roof. The wall's
+top is clipped to the current roof underside, including the ridge and confirmed
+thickness, while its bottom and supported opening cuts remain intact. Changing
+roof parameters rebuilds the linked gable walls together with the roof.
 
 SVG limits are 30,000 XML elements, depth 64, 2000 components, 512 vertices per
 footprint and 20,000 total footprint vertices. Coordinates must be finite and

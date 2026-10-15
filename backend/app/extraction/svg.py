@@ -176,6 +176,7 @@ def validate_svg(data: bytes):
 def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
     root, vb = validate_svg(data)
     components, dimensions, floors = [], [], set()
+    roof_refs = {}
     kinds = {
         "Wall": "wall",
         "Space": "room",
@@ -199,6 +200,8 @@ def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
         if "Floorplan" in classes:
             floors.add(node.get("id", str(len(floors))))
         kind = next((kinds[c] for c in classes if c in kinds), None)
+        if node.get("data-roof-ref") is not None and kind != "wall":
+            raise ValueError("Only a wall may have data-roof-ref")
         if kind:
             evidence = {}
             if kind in {"roof", "stair"}:
@@ -268,6 +271,8 @@ def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
                     **owner["evidence"],
                 )
             )
+            if owner["type"] == "wall" and group.get("data-roof-ref") is not None:
+                roof_refs[components[-1].id] = group.get("data-roof-ref")
             owner["seen"] = True
         for child in node:
             walk(child, t, visible, owner, depth + 1, geometry_context)
@@ -277,6 +282,17 @@ def extract_svg(data: bytes, job_id: str, source_hash: str) -> Proposal:
     walk(root, IDENTITY, True)
     if len(floors) > 1:
         raise ValueError("This experiment supports one floor per drawing")
+    for wall in components:
+        if wall.id in roof_refs:
+            source_id = roof_refs[wall.id]
+            matches = [c for c in components if c.source.element_id == source_id]
+            if len(matches) > 1:
+                raise ValueError(f"Wall {wall.id} has ambiguous roof source ID {source_id}")
+            if len(matches) != 1 or matches[0].type != "roof":
+                raise ValueError(
+                    f"Wall {wall.id} references missing or non-roof source ID {source_id}"
+                )
+            wall.roof_id = matches[0].id
     return Proposal(
         job_id=job_id,
         source_hash=source_hash,

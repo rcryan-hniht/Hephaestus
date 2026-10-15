@@ -46,6 +46,9 @@ class Component(StrictModel):
     uncertainty: str | None = Field(default=None, max_length=2000)
     direction: tuple[float, float] | None = None
     roof_kind: Literal["gable", "shed"] | None = None
+    roof_id: str | None = Field(
+        default=None, min_length=1, max_length=200, pattern=r"^[A-Za-z0-9_.:-]+$"
+    )
     steps: int | None = Field(default=None, strict=True, ge=2, le=128)
 
     @field_validator("source", mode="before")
@@ -56,6 +59,8 @@ class Component(StrictModel):
 
     @model_validator(mode="after")
     def valid_polygon(self):
+        if self.roof_id is not None and self.type != "wall":
+            raise ValueError("Only wall components may reference a roof")
         if self.type in {"roof", "stair"}:
             if (
                 self.direction is None
@@ -122,6 +127,14 @@ class Proposal(StrictModel):
     def validate_evidence(self):
         if len({c.id for c in self.components}) != len(self.components):
             raise ValueError("Component IDs must be unique")
+        components = {c.id: c for c in self.components}
+        for wall in self.components:
+            if wall.roof_id is not None:
+                roof = components.get(wall.roof_id)
+                if roof is None or roof.type != "roof" or roof.floor != wall.floor:
+                    raise ValueError(
+                        f"Wall {wall.id} references a missing or invalid roof on its floor"
+                    )
         if sum(len(c.polygon) for c in self.components) > MAX_VERTICES:
             raise ValueError("Drawing contains too many vertices")
         if self.source_kind == "png":
