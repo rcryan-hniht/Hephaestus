@@ -2,7 +2,7 @@
   {
     "id": "terrace",
     "name": "Terrace Villa",
-    "description": "Synthetic stepped villa: connected ground floor with two front openings, two living floors, terrace parapets, shallow shed roofs and internal stairs connecting all three floors. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are omitted.",
+    "description": "Synthetic stepped villa: connected ground floor with two front openings, two living floors, terrace parapets, a continuous shed roof and internal stairs connecting all three floors. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are omitted.",
     "folder": "terrace_villa",
     "url": "/presets/terrace-villa",
     "floors": [
@@ -208,7 +208,7 @@
       },
       {
         "number": 3,
-        "source_hash": "5bc1d7fca47dd7742213aef96bea649d1a1a1267e6880059aca5c292ef48468b",
+        "source_hash": "58653d65a52c599f880f5c95976157e69f09ed5e9424a701003046cfc293bc84",
         "parameters": {
           "meters_per_unit": 0.01,
           "floor_height": 3.45,
@@ -216,7 +216,7 @@
           "door_height": 2.4,
           "window_height": 2.8,
           "window_sill": 0.15,
-          "roof_rise": 0.35,
+          "roof_rise": 0.3,
           "roof_thickness": 0.15
         },
         "offsetX": 0,
@@ -330,13 +330,9 @@
             "height": 3.45,
             "elevation": 0.0
           },
-          "F3-offset-left-roof-shed-28": {
+          "F3-continuous-roof-shed": {
             "height": 0.3,
             "elevation": 3.15
-          },
-          "F3-wide-floating-roof-shed-29": {
-            "height": 0.35,
-            "elevation": 3.0
           }
         }
       }

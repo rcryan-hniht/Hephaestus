@@ -129,6 +129,25 @@ def test_villa_drawings_require_confirmation_and_build_source_bound_floors(
             )
         assert roofs
         if preset_id == "terrace":
+            assert len(roofs) == 1, (
+                "The Terrace roof must have one continuous plane without overlapping panels"
+            )
+            roof = roofs[0]
+            assert max(roof["mesh"]["positions"][1::3]) == pytest.approx(10.2)
+            footprint = Polygon(roof["polygon"])
+            for wall in scene["components"]:
+                if (
+                    wall["source_floor"] != 3
+                    or wall["type"] != "wall"
+                    or "parapet" in wall["source"]["element_id"]
+                ):
+                    continue
+                assert wall["roof_id"] == roof["id"]
+                assert footprint.covers(Polygon(wall["polygon"]))
+                positions = wall["mesh"]["positions"]
+                for y, z in zip(positions[1::3], positions[2::3], strict=True):
+                    underside = 9.75 + 0.3 * (-z - 8.5) / 8.9
+                    assert y <= underside + 1e-7, "No upper wall may protrude through the roof"
             ground = [c for c in scene["components"] if c["source_floor"] == 1]
             assert not any(
                 c["source"]["element_id"] == "F1-garden-retaining-wall-10" for c in ground

@@ -1,16 +1,16 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1960" viewBox="0 0 1720 1960">
   <title>Terrace Villa / F3 / synthetic drawing</title>
-  <desc>Synthetic stepped villa: lower garage, two living floors, terrace parapets, shallow shed roofs and internal stairs connecting all three floors. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
+  <desc>Synthetic stepped villa: lower garage, two living floors, terrace parapets, a continuous shed roof and internal stairs connecting all three floors. Review suggested roof rise, thickness and stair dimensions. Planting, finishes and glazing are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
   <rect width="1720" height="1960" fill="#fafafa" />
   <text x="140" y="60" fill="#333" font-family="Arial, sans-serif" font-size="22">HEPHAESTUS / SYNTHETIC DRAWING PRESET</text>
   <text x="140" y="105" fill="#333" font-family="Arial, sans-serif" font-size="30">TERRACE VILLA / F3</text>
   <text x="140" y="145" fill="#333" font-family="Arial, sans-serif" font-size="19">Suggested floor height 3.45 m / source scale 0.01 m per unit / review before building</text>
   <g id="Floor-3" class="Floorplan">
-    <g id="F3-front-facade-1" class="Wall Front_facade">
+    <g id="F3-front-facade-1" class="Wall Front_facade" data-roof-ref="F3-continuous-roof-shed">
       <polygon points="330.000,1016.000 1370.000,1016.000 1370.000,1036.000 330.000,1036.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-interior-partition-2" class="Wall Interior_partition">
+    <g id="F3-interior-partition-2" class="Wall Interior_partition" data-roof-ref="F3-continuous-roof-shed">
       <polygon points="350.000,1367.800 350.000,1382.800 980.000,1382.800 980.000,1367.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
       <polygon points="1350.000,1382.800 1350.000,1367.800 1140.000,1367.800 1140.000,1382.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
@@ -67,13 +67,13 @@
     <g id="F3-upper-terrace-plate-19" class="Space Upper_terrace_plate">
       <polygon points="1440.000,1750.000 1350.000,1367.800 1440.000,800.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-rear-wall-20" class="Wall Rear_wall">
+    <g id="F3-rear-wall-20" class="Wall Rear_wall" data-roof-ref="F3-continuous-roof-shed">
       <polygon points="330.000,1690.000 1370.000,1690.000 1370.000,1710.000 330.000,1710.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-side-wall-21" class="Wall Side_wall">
+    <g id="F3-side-wall-21" class="Wall Side_wall" data-roof-ref="F3-continuous-roof-shed">
       <polygon points="350.000,1690.000 330.000,1690.000 330.000,1036.000 350.000,1036.000 350.000,1367.800 350.000,1382.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-side-wall-22" class="Wall Side_wall">
+    <g id="F3-side-wall-22" class="Wall Side_wall" data-roof-ref="F3-continuous-roof-shed">
       <polygon points="1370.000,1690.000 1350.000,1690.000 1350.000,1382.800 1350.000,1367.800 1350.000,1036.000 1370.000,1036.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F3-facade-opening-23" class="Window Facade_opening">
@@ -88,16 +88,12 @@
     <g id="F3-balcony-parapet-26" class="Wall Balcony_parapet">
       <polygon points="1370.000,990.000 1365.500,990.000 1365.500,820.000 1370.000,820.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-left-rooftop-upstand-27" class="Wall Left_rooftop_upstand">
+    <g id="F3-left-rooftop-upstand-27" class="Wall Left_rooftop_upstand" data-roof-ref="F3-continuous-roof-shed">
       <polygon points="310.000,1020.000 335.000,1020.000 335.000,1730.000 310.000,1730.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F3-offset-left-roof-shed-28" class="Roof Shed" data-direction="0,1">
-      <polygon points="300.000,1740.000 700.000,1740.000 700.000,1010.000 300.000,1010.000" fill="#d9dde0" stroke="#333" stroke-width="1" />
-      <text x="500.000" y="1375.000" font-family="Arial, sans-serif" font-size="18" fill="#333" text-anchor="middle">SHED / UP</text>
-    </g>
-    <g id="F3-wide-floating-roof-shed-29" class="Roof Shed" data-direction="0,1">
-      <polygon points="680.000,1730.000 1430.000,1730.000 1430.000,850.000 680.000,850.000" fill="#d9dde0" stroke="#333" stroke-width="1" />
-      <text x="1055.000" y="1290.000" font-family="Arial, sans-serif" font-size="18" fill="#333" text-anchor="middle">SHED / UP</text>
+    <g id="F3-continuous-roof-shed" class="Roof Shed" data-direction="0,1">
+      <polygon points="300.000,1740.000 700.000,1740.000 700.000,1730.000 1430.000,1730.000 1430.000,850.000 680.000,850.000 680.000,1010.000 300.000,1010.000" fill="#d9dde0" stroke="#333" stroke-width="1" />
+      <text x="1055.000" y="1290.000" font-family="Arial, sans-serif" font-size="18" fill="#333" text-anchor="middle">CONTINUOUS SHED / UP</text>
     </g>
     <g id="F3-stair-void">
       <polygon fill="none" stroke="#c45c3d" stroke-width="2" stroke-dasharray="8 5" points="1140.000,1110.000 1140.000,1620.000 980.000,1620.000 980.000,1110.000" />

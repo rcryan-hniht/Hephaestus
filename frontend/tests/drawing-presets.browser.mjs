@@ -107,7 +107,9 @@ try {
       await page.locator('[data-view="plan"]').click();
       await page.screenshot({ path: '/tmp/hephaestus-terrace-ground-plan.png' });
       await page.locator('#floor-select').selectOption('all');
+      await page.screenshot({ path: '/tmp/hephaestus-terrace-roof-plan.png' });
       await page.locator('[data-view="perspective"]').click();
+      await page.screenshot({ path: '/tmp/hephaestus-terrace-roof-perspective.png' });
     }
     assert.deepEqual(await page.evaluate(() => window.__blueprintTexts.filter(text =>
       /CENTRAL COURTYARD|LIVING SPACE|GALLERY \/ STUDIO|38\.4 m²|32\.0 m²|SCALE 1:100|DEMO MODEL/.test(text)
