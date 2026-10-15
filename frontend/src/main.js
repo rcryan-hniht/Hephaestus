@@ -104,6 +104,7 @@ listen(photo, 'error', () => { photo.hidden = true; $('reference-fallback').hidd
 if (photo.complete && !photo.naturalWidth) { photo.hidden = true; $('reference-fallback').hidden = false; }
 listen($('open-preview'), 'click', () => openWorkspace(0));
 listen(window, 'scroll', () => { dirty = true; });
+listen(document, 'visibilitychange', () => { previous = 0; });
 listen(window, 'wheel', e => {
   if (workspaceOpen || e.ctrlKey || !e.deltaY || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
   e.preventDefault();
@@ -211,7 +212,7 @@ function layout() {
   $('preset-display').style.opacity = String(1 - worksWeight);
   $('landing-error').hidden = !sceneFailed || modelWeight <= 0 || worksWeight === 1;
   $('reference-fallback').style.opacity = String(heroWeight);
-  $('visual-label').textContent = heroWeight >= .5 ? 'ARCHITECTURE / A NEW PERSPECTIVE' : `PRESET SHOWCASE / ${showcase?.name.toUpperCase() || 'LOADING VILLAS'}`;
+  $('visual-label').textContent = heroWeight >= .5 ? 'ARCHITECTURE / A NEW PERSPECTIVE' : `PRESET SHOWCASE / ${showcase?.name.toUpperCase() || 'LOADING VILLAS'} / ${showcase?.modeLabel.toUpperCase() || 'SOLID'}`;
   if (worksWeight >= .5) $('visual-label').textContent = 'CUBICASA5K / SOURCE DRAWINGS';
   if (worksWeight > 0) prepareWall();
   $('drift-wall').hidden = worksWeight <= 0; $('drift-wall').style.opacity = String(worksWeight);
@@ -247,7 +248,8 @@ function layout() {
 }
 let renderState = { visible: false, showcaseActive: false };
 function animate(time) {
-  const delta = Math.min((time - (previous || time)) / 1000, .05); previous = time;
+  const elapsed = Math.max(0, (time - (previous || time)) / 1000);
+  const delta = Math.min(elapsed, .05); previous = time;
   maskedHeadings.forEach(heading => heading.render(delta));
   if (!workspaceOpen) {
     if (loopProgress !== null) {
@@ -260,7 +262,7 @@ function animate(time) {
     antigravity?.render(delta, motion.matches);
     if (dirty) { renderState = layout(); dirty = false; }
     driftWall?.render(delta);
-    if (!document.hidden && renderState.visible) showcase?.render(delta, renderState.showcaseActive);
+    if (!document.hidden && renderState.visible) showcase?.render(elapsed, renderState.showcaseActive);
   } else workspace.render(delta);
   raf = requestAnimationFrame(animate);
 }

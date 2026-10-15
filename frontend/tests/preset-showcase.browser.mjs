@@ -17,7 +17,7 @@ try {
   for (const [index, name] of ['3F VILLA', 'TERRACE VILLA', 'PORTAL VILLA', 'GABLE VILLA'].entries()) {
     await page.locator(`#preset-controls [data-preset="${index}"]`).click();
     await page.waitForFunction(() => document.getElementById('preset-snapshot').hidden);
-    assert.ok((await page.locator('#visual-label').textContent()).endsWith(name));
+    assert.ok((await page.locator('#visual-label').textContent()).includes(name));
     await page.screenshot({ path: `/tmp/hephaestus-manifesto-preset-${index}.png` });
   }
   await page.locator('#preset-controls [data-preset="0"]').click();
