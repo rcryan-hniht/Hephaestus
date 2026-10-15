@@ -151,7 +151,7 @@ try {
       await page.locator('#component-roof-thickness').fill('0.25');
       await page.locator('#properties-form button').click();
       await page.waitForFunction(() => document.getElementById('model-label').textContent.includes('REVISION 2.1.2'));
-      const updated = await (await page.request.get(`${new URL(page.url()).origin}/api/buildings/${building.id}/scene`)).json();
+      const updated = await (await page.request.get(new URL(`/api/buildings/${building.id}/scene`, response.url()).href)).json();
       const gable = updated.components.find(c => c.source.element_id === 'F3-front-gable-wall-6');
       assert.ok(Math.abs(Math.max(...gable.mesh.positions.filter((_, i) => i % 3 === 1)) - 10.25) < 1e-8, 'Gable walls follow edits to the roof underside');
       await page.locator('#component-select').selectOption(roof.id);
