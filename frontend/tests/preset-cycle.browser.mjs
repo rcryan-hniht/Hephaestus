@@ -35,10 +35,10 @@ try {
         incomingOpacity: Number(getComputedStyle(canvas).opacity), outgoingOpacity: Number(getComputedStyle(snapshot).opacity) };
     };
     const frames = [];
-    for (const delta of [0, 2, 1, 12, 12, 12, 1.5, 1.5, .5]) {
+    for (const delta of [0, 2, 1, 10, 10, 10, 1.5, 1.5, .5]) {
       showcase.render(delta, true); frames.push(capture());
     }
-    for (let i = 0; i < 3; i++) { showcase.render(42, true); frames.push(capture()); }
+    for (let i = 0; i < 3; i++) { showcase.render(36, true); frames.push(capture()); }
     showcase.render(20, false); frames.push(capture());
     motion.matches = true;
     showcase.render(20, true); frames.push(capture());
@@ -64,7 +64,7 @@ try {
   assert.ok(full(frames[13]) && frames[13].name === frames[12].name, 'Reduced motion keeps a complete static model');
   const slow = await browser.newPage({ reducedMotion: 'no-preference' });
   await slow.addInitScript(() => {
-    // Sparse frames with an accelerated wall clock keep the 42-second regression quick.
+    // Sparse frames with an accelerated wall clock keep the 36-second regression quick.
     window.requestAnimationFrame = callback => setTimeout(() => callback(performance.now() * 5), 100);
     window.cancelAnimationFrame = clearTimeout;
   });

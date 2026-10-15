@@ -1,9 +1,9 @@
 export function presetState(seconds) {
-  const progress = Math.max(0, Math.min(1, (seconds - 1) / 2, (42 - seconds) / 3));
-  const mode = seconds < 15 ? 'solid' : seconds < 27 ? 'edges' : 'transparent';
-  const label = seconds < 1 ? 'Drawing' : seconds < 3 ? 'Building' : seconds >= 39 ? 'Returning to drawing'
+  const progress = Math.max(0, Math.min(1, (seconds - 1) / 2, (36 - seconds) / 3));
+  const mode = seconds < 13 ? 'solid' : seconds < 23 ? 'edges' : 'transparent';
+  const label = seconds < 1 ? 'Drawing' : seconds < 3 ? 'Building' : seconds >= 33 ? 'Returning to drawing'
     : { solid: 'Solid', edges: 'Wireframe', transparent: 'Transparent' }[mode];
-  return { progress, tilt: progress, mode, label, rotation: Math.max(0, Math.min(36, seconds - 3)) * 10 };
+  return { progress, tilt: progress, mode, label, rotation: Math.max(0, Math.min(30, seconds - 3)) * 12 };
 }
 
 export function createPresetShowcase({ view, canvas, snapshot, motion, onChange, onError }) {
@@ -59,9 +59,9 @@ export function createPresetShowcase({ view, canvas, snapshot, motion, onChange,
       if (motion.matches && transition !== null) finish();
       if (active && models.length && !motion.matches) {
         elapsed += delta;
-        if (elapsed >= 42) {
-          const remaining = elapsed % 42;
-          select((index + Math.floor(elapsed / 42)) % models.length);
+        if (elapsed >= 36) {
+          const remaining = elapsed % 36;
+          select((index + Math.floor(elapsed / 36)) % models.length);
           elapsed = remaining;
         }
       }
