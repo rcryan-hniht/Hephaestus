@@ -86,13 +86,13 @@
       <polygon points="385.000,977.000 480.000,977.000 480.000,957.000 385.000,957.000" fill="#c45c3d" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-balcony-parapet-26" class="Wall Balcony_parapet">
-      <polygon points="800.000,780.500 1400.000,780.500 1400.000,785.000 800.000,785.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="1370.000,780.500 1370.000,785.000 330.000,785.000 330.000,780.500" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-balcony-parapet-27" class="Wall Balcony_parapet">
-      <polygon points="804.500,940.000 800.000,940.000 800.000,785.000 804.500,785.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="334.500,785.000 334.500,940.000 330.000,940.000 330.000,785.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-balcony-parapet-28" class="Wall Balcony_parapet">
-      <polygon points="1400.000,940.000 1395.500,940.000 1395.500,785.000 1400.000,785.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="1370.000,785.000 1370.000,940.000 1365.500,940.000 1365.500,785.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F2-interior-stair-29" class="Stair Interior_stair" data-direction="0,-1" data-steps="20">
       <polygon fill="#c8c8c3" stroke="#333" stroke-width="1" points="1120.000,1110.000 1120.000,1620.000 1000.000,1620.000 1000.000,1110.000" />

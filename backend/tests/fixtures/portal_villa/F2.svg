@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1960" viewBox="0 0 1720 1960">
   <title>Portal Villa / F2 / synthetic drawing</title>
-  <desc>Synthetic two-storey villa: projecting frame, offset wings, balconies, a shed canopy and an internal stair connecting both floors. Review suggested roof and stair dimensions. Timber fins, planting, finishes and glazing are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
+  <desc>Synthetic two-storey villa: projecting frame, offset wings connected by an enclosed upper passage, balconies, a closed roof crown and shed canopy and an internal stair connecting both floors. Review suggested roof and stair dimensions. Timber fins, planting, finishes and glazing are omitted. All dimensions and heights are editable design suggestions. Confirm before reconstruction.</desc>
   <rect width="1720" height="1960" fill="#fafafa" />
   <text x="140" y="60" fill="#333" font-family="Arial, sans-serif" font-size="22">HEPHAESTUS / SYNTHETIC DRAWING PRESET</text>
   <text x="140" y="105" fill="#333" font-family="Arial, sans-serif" font-size="30">PORTAL VILLA / F2</text>
@@ -137,6 +137,24 @@
     <g id="F2-stair-void">
       <polygon fill="none" stroke="#c45c3d" stroke-width="2" stroke-dasharray="8 5" points="870.000,1000.000 870.000,1550.000 710.000,1550.000 710.000,1000.000" />
       <text x="790.0" y="1575.0" font-family="Arial, sans-serif" font-size="16" fill="#c45c3d" text-anchor="middle">STAIR VOID / FROM F1</text>
+    </g>
+    <g id="F2-connecting-hall" class="Space Connecting_hall">
+      <polygon fill="#f4f0e8" stroke="#333" stroke-width="1" points="1060.000,1350.000 1060.000,1600.000 925.000,1600.000 925.000,1350.000" />
+    </g>
+    <g id="F2-connecting-hall-front-wall" class="Wall Connecting_hall">
+      <polygon fill="#e8e4dc" stroke="#333" stroke-width="1" points="1040.000,1330.000 1040.000,1350.000 945.000,1350.000 945.000,1330.000" />
+    </g>
+    <g id="F2-connecting-hall-rear-wall" class="Wall Connecting_hall">
+      <polygon fill="#e8e4dc" stroke="#333" stroke-width="1" points="1040.000,1600.000 1040.000,1620.000 945.000,1620.000 945.000,1600.000" />
+    </g>
+    <g id="F2-connecting-left-door" class="Door Connecting_opening">
+      <polygon fill="#c45c3d" stroke="#333" stroke-width="1" points="945.000,1370.000 945.000,1580.000 925.000,1580.000 925.000,1370.000" />
+    </g>
+    <g id="F2-connecting-right-door" class="Door Connecting_opening">
+      <polygon fill="#c45c3d" stroke="#333" stroke-width="1" points="1060.000,1370.000 1060.000,1580.000 1040.000,1580.000 1040.000,1370.000" />
+    </g>
+    <g id="F2-connecting-hall-canopy" class="Space Connecting_canopy">
+      <polygon fill="#f4f0e8" stroke="#333" stroke-width="1" points="1040.000,1330.000 1040.000,1620.000 945.000,1620.000 945.000,1330.000" />
     </g>
   </g>
   <text x="140" y="1780" fill="#666" font-family="Arial, sans-serif" font-size="18">Synthetic dimensions. Confirm floor and component heights, then confirm alignment.</text>

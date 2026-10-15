@@ -74,7 +74,7 @@
       },
       {
         "number": 2,
-        "source_hash": "8c322c0d25dd9dd0a9a03cc5824f067a53ff0b55f152536d68cc9858a3c68759",
+        "source_hash": "7aa74b89601724efd0faef86c1b51737e8e75d0d95eebdfe8a6053a4b7678e0e",
         "parameters": {
           "meters_per_unit": 0.01,
           "floor_height": 3.55,
@@ -345,7 +345,7 @@
   {
     "id": "portal",
     "name": "Portal Villa",
-    "description": "Synthetic two-storey villa: projecting frame, offset wings, balconies, a closed roof crown and shed canopy and an internal stair connecting both floors. Review suggested roof and stair dimensions. Timber fins, planting, finishes and glazing are omitted.",
+    "description": "Synthetic two-storey villa: projecting frame, offset wings connected by an enclosed upper passage, balconies, a closed roof crown and shed canopy and an internal stair connecting both floors. Review suggested roof and stair dimensions. Timber fins, planting, finishes and glazing are omitted.",
     "folder": "portal_villa",
     "url": "/presets/portal-villa",
     "floors": [
@@ -481,7 +481,7 @@
       },
       {
         "number": 2,
-        "source_hash": "d4426e87772c9c5e16293d850c2468d2c54470ba4ecd66bf004f4ac28e9bf75b",
+        "source_hash": "0ce72955dbd72f3c2c45c5e462e12653272e092bfca1b709d08e2509a85085e6",
         "parameters": {
           "meters_per_unit": 0.01,
           "floor_height": 4.3,
@@ -658,6 +658,30 @@
           "F2-right-roof-canopy-shed-41": {
             "height": 0.2,
             "elevation": 3.6
+          },
+          "F2-connecting-hall": {
+            "height": 0.2,
+            "elevation": 0
+          },
+          "F2-connecting-hall-front-wall": {
+            "height": 3.2,
+            "elevation": 0
+          },
+          "F2-connecting-hall-rear-wall": {
+            "height": 3.2,
+            "elevation": 0
+          },
+          "F2-connecting-left-door": {
+            "height": 2.8,
+            "elevation": 0
+          },
+          "F2-connecting-right-door": {
+            "height": 2.8,
+            "elevation": 0
+          },
+          "F2-connecting-hall-canopy": {
+            "height": 0.15,
+            "elevation": 3.35
           }
         }
       }

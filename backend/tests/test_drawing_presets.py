@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from shapely.geometry import Polygon
+from shapely.geometry import LineString, Polygon
 from shapely.ops import unary_union
 
 from app.config import Settings
@@ -128,6 +128,23 @@ def test_villa_drawings_require_confirmation_and_build_source_bound_floors(
                 scene["floors"][floor]["transform"][1]
             )
         assert roofs
+        if preset_id == "terrace":
+            lower = next(
+                c
+                for c in scene["components"]
+                if c["source"]["element_id"] == "F2-balcony-parapet-26"
+            )
+            upper = next(
+                c
+                for c in scene["components"]
+                if c["source"]["element_id"] == "F3-balcony-parapet-24"
+            )
+            assert min(p[0] for p in lower["polygon"]) == pytest.approx(
+                min(p[0] for p in upper["polygon"])
+            )
+            assert max(p[0] for p in lower["polygon"]) == pytest.approx(
+                max(p[0] for p in upper["polygon"])
+            )
         if preset_id == "portal":
             assert not any(
                 c["source"]["element_id"] == "F1-tall-white-frame-26" for c in scene["components"]
@@ -136,6 +153,21 @@ def test_villa_drawings_require_confirmation_and_build_source_bound_floors(
                 c for c in scene["components"] if c["source"]["element_id"] == "F2-portal-crown-32"
             )
             assert Polygon(crown["polygon"]).area == pytest.approx(63)
+            path = LineString([(9.1, -14.75), (10.8, -14.75)])
+            upper = [c for c in scene["components"] if c["source_floor"] == 2]
+            floors = unary_union(
+                [
+                    Polygon(c["polygon"])
+                    for c in upper
+                    if c["type"] == "room" and abs(c["elevation"] + c["height"] - 4.5) < 1e-7
+                ]
+            )
+            walls = unary_union([Polygon(c["polygon"]) for c in upper if c["type"] == "wall"])
+            doors = unary_union([Polygon(c["polygon"]) for c in upper if c["type"] == "door"])
+            assert floors.covers(path), "Both wings need a continuous floor connection"
+            assert path.intersection(walls.difference(doors)).length < 1e-7, (
+                "Doors must open through both connecting walls"
+            )
         if preset_id == "gable":
             assert roofs[0]["roof_kind"] == "gable"
             assert max(roofs[0]["mesh"]["positions"][1::3]) == pytest.approx(10.5)
