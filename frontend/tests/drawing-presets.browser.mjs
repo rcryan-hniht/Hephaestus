@@ -98,6 +98,17 @@ try {
     assert.deepEqual(scene.components.filter(c => c.type === 'stair').map(c => c.source_floor), Array.from({ length: count - 1 }, (_, i) => i + 1));
     if (id === 'gable') assert.ok(scene.components.some(c => c.type === 'roof' && c.roof_kind === 'gable'));
     await page.waitForFunction(() => document.getElementById('model-label').textContent.startsWith('RECONSTRUCTED'));
+    if (id === 'terrace') {
+      assert.equal(scene.components.some(c => c.source.element_id === 'F1-garden-retaining-wall-10'), false);
+      assert.ok(scene.components.some(c => c.source.element_id === 'F1-left-front-door' && c.opening));
+      await page.locator('[data-view="elevation"]').click();
+      await page.screenshot({ path: '/tmp/hephaestus-terrace-front.png' });
+      await page.locator('#floor-select').selectOption('0');
+      await page.locator('[data-view="plan"]').click();
+      await page.screenshot({ path: '/tmp/hephaestus-terrace-ground-plan.png' });
+      await page.locator('#floor-select').selectOption('all');
+      await page.locator('[data-view="perspective"]').click();
+    }
     assert.deepEqual(await page.evaluate(() => window.__blueprintTexts.filter(text =>
       /CENTRAL COURTYARD|LIVING SPACE|GALLERY \/ STUDIO|38\.4 m²|32\.0 m²|SCALE 1:100|DEMO MODEL/.test(text)
     )), [], 'Backend models must not receive demo-only blueprint labels');

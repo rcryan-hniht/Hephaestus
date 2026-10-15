@@ -27,7 +27,7 @@
       <polygon points="790.000,1720.000 1430.000,1720.000 1430.000,1740.000 790.000,1740.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F1-side-wall-7" class="Wall Side_wall">
-      <polygon points="810.000,1720.000 790.000,1720.000 790.000,870.000 810.000,870.000 810.000,1301.800 810.000,1316.800" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+      <polygon points="790.000,870.000 810.000,870.000 810.000,940.000 310.000,940.000 310.000,1720.000 790.000,1720.000 790.000,1740.000 290.000,1740.000 290.000,920.000 790.000,920.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
     </g>
     <g id="F1-side-wall-8" class="Wall Side_wall">
       <polygon points="1430.000,1720.000 1410.000,1720.000 1410.000,1316.800 1410.000,1301.800 1410.000,870.000 1430.000,870.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
@@ -35,11 +35,11 @@
     <g id="F1-garage-door-9" class="Door Garage_door">
       <polygon points="870.000,870.000 1360.000,870.000 1360.000,850.000 870.000,850.000" fill="#c45c3d" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F1-garden-retaining-wall-10" class="Wall Garden_retaining_wall">
-      <polygon points="290.000,920.000 760.000,920.000 760.000,1740.000 290.000,1740.000" fill="#e8e4dc" stroke="#333" stroke-width="1" />
+    <g id="F1-left-front-door" class="Door Front_door">
+      <polygon points="320.000,920.000 770.000,920.000 770.000,940.000 320.000,940.000" fill="#c45c3d" stroke="#333" stroke-width="1" />
     </g>
-    <g id="F1-raised-garden-terrace-11" class="Space Raised_garden_terrace">
-      <polygon points="290.000,920.000 760.000,920.000 760.000,1740.000 290.000,1740.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
+    <g id="F1-ground-extension-11" class="Space Ground_extension">
+      <polygon points="310.000,940.000 810.000,940.000 810.000,1720.000 310.000,1720.000" fill="#f4f0e8" stroke="#333" stroke-width="1" />
     </g>
     <g id="F1-interior-stair-12" class="Stair Interior_stair" data-direction="0,1" data-steps="18">
       <polygon fill="#c8c8c3" stroke="#333" stroke-width="1" points="1300.000,1110.000 1300.000,1620.000 1180.000,1620.000 1180.000,1110.000" />

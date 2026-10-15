@@ -129,6 +129,37 @@ def test_villa_drawings_require_confirmation_and_build_source_bound_floors(
             )
         assert roofs
         if preset_id == "terrace":
+            ground = [c for c in scene["components"] if c["source_floor"] == 1]
+            assert not any(
+                c["source"]["element_id"] == "F1-garden-retaining-wall-10" for c in ground
+            )
+            connection = LineString([(7.5, -11.5), (8.5, -11.5)])
+            ground_slabs = unary_union(
+                [Polygon(c["polygon"]) for c in ground if c["type"] == "room"]
+            )
+            ground_walls = unary_union(
+                [Polygon(c["polygon"]) for c in ground if c["type"] == "wall"]
+            )
+            assert ground_slabs.covers(connection), (
+                "The left room must share a continuous ground floor"
+            )
+            assert connection.intersection(ground_walls).length < 1e-7, (
+                "Remove the shared partition"
+            )
+            assert (
+                ground_walls.intersection(
+                    Polygon([(3.2, -9.5), (7.8, -9.5), (7.8, -17), (3.2, -17)])
+                ).area
+                < 1e-7
+            )
+            entry = next(c for c in ground if c["source"]["element_id"] == "F1-left-front-door")
+            assert entry["type"] == "door" and entry["opening"]
+            assert Polygon(entry["polygon"]).bounds == pytest.approx((3.2, -9.4, 7.7, -9.2))
+            assert entry["height"] == pytest.approx(2.55)
+            assert entry["elevation"] == pytest.approx(0.15)
+            assert ground_walls.covers(Polygon(entry["polygon"])), (
+                "The opening must cut a real facade wall"
+            )
             lower = next(
                 c
                 for c in scene["components"]
