@@ -1,9 +1,5 @@
-export function createPresetShowcase({ view, canvas, snapshot, controls, motion, onChange, onError }) {
-  const events = new AbortController();
-  const listen = (el, name, fn) => el.addEventListener(name, fn, { signal: events.signal });
-  let models = [], index = 0, elapsed = 0, transition = null, paused = false, disposed = false;
-  const pause = controls.querySelector('#preset-pause');
-  const buttons = controls.querySelector('.preset-buttons');
+export function createPresetShowcase({ view, canvas, snapshot, motion, onChange, onError }) {
+  let models = [], index = 0, elapsed = 0, transition = null, disposed = false;
   const context = snapshot.getContext('2d');
   function finish() {
     transition = null; snapshot.hidden = true;
@@ -26,24 +22,13 @@ export function createPresetShowcase({ view, canvas, snapshot, controls, motion,
       snapshot.hidden = false; snapshot.style.transform = 'none'; snapshot.style.opacity = '1';
       transition = 0; canvas.style.transform = 'translateX(-48px)'; canvas.style.opacity = '0';
     }
-    index = next; elapsed = paused ? 2.2 : 0;
+    index = next; elapsed = 0;
     view.setMode('solid'); view.setModel(models[index]); renderModel();
-    buttons.querySelectorAll('button').forEach((button, i) => button.setAttribute('aria-pressed', String(i === index)));
     onChange();
   }
-  listen(pause, 'click', () => {
-    paused = !paused; pause.textContent = paused ? 'Play' : 'Pause';
-    pause.setAttribute('aria-label', paused ? 'Play preset slideshow' : 'Pause preset slideshow');
-  });
   import('./prepared-presets.json').then(({ default: prepared }) => {
     if (disposed) return;
     models = prepared;
-    models.forEach((model, i) => {
-      const button = document.createElement('button'); button.type = 'button';
-      button.dataset.preset = i; button.textContent = `0${i + 1}`;
-      button.setAttribute('aria-label', `Show ${model.name}`); button.setAttribute('aria-pressed', String(i === 0));
-      listen(button, 'click', () => select(i)); buttons.append(button);
-    });
     view.setModel(models[0]); renderModel(); onChange();
   }).catch(error => { if (!disposed) onError(error); });
   return {
@@ -51,10 +36,8 @@ export function createPresetShowcase({ view, canvas, snapshot, controls, motion,
     get name() { return models[index]?.name || 'Loading villas'; },
     get modeLabel() { return { solid: 'Solid', edges: 'Wireframe', transparent: 'Transparent' }[view.mode]; },
     render(delta, active) {
-      if (motion.matches && document.activeElement === pause) buttons.children[index]?.focus({ preventScroll: true });
-      pause.hidden = motion.matches;
       if (motion.matches && transition !== null) finish();
-      if (active && models.length && !motion.matches && !paused) {
+      if (active && models.length && !motion.matches) {
         elapsed += delta;
         if (elapsed >= 9) {
           const remaining = elapsed % 9;
@@ -71,6 +54,6 @@ export function createPresetShowcase({ view, canvas, snapshot, controls, motion,
       }
       renderModel();
     },
-    dispose() { disposed = true; events.abort(); finish(); buttons.replaceChildren(); },
+    dispose() { disposed = true; finish(); },
   };
 }

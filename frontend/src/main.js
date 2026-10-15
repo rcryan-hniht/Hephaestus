@@ -95,7 +95,7 @@ function prepareScene() {
   if (scene || sceneFailed) return;
   try { scene = new SceneView(canvas, { reducedMotion: motion.matches });
     scene.controls.enableZoom = false; scene.controls.enablePan = false; canvas.style.touchAction = 'pan-y';
-    showcase = createPresetShowcase({ view: scene, canvas, snapshot: $('preset-snapshot'), controls: $('preset-controls'), motion,
+    showcase = createPresetShowcase({ view: scene, canvas, snapshot: $('preset-snapshot'), motion,
       onChange() { dirty = true; }, onError: showFallback }); }
   catch { showFallback(); }
 }
@@ -219,10 +219,6 @@ function layout() {
   const interactive = chapter === 2 && mix === 0 && !!scene && !driftWall;
   $('open-preview').hidden = !interactive;
   canvas.tabIndex = interactive ? 0 : -1; canvas.classList.toggle('is-interactive', interactive);
-  const presetControls = $('preset-controls');
-  if ((chapter !== 1 || mix !== 0) && presetControls.contains(document.activeElement)) $('next-chapter').focus({ preventScroll: true });
-  presetControls.hidden = chapter !== 1 || !showcase?.ready;
-  presetControls.inert = chapter !== 1 || mix !== 0;
   const works = $('work-list');
   if (chapter !== 2 && works.contains(document.activeElement)) {
     $('next-chapter')?.focus({ preventScroll: true });
